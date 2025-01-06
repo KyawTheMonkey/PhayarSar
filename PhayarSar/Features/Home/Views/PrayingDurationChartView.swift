@@ -48,7 +48,7 @@ struct PrayingDurationChartView: View {
           .xAxisLabels(chartData: weeklyData)
           .yAxisLabels(chartData: weeklyData, colourIndicator: .none)
           .headerBox(chartData: weeklyData)
-          .frame(height: 350)
+          .frame(height: 350, alignment: .bottom)
       }
       
       if let monthlyData, selectedMode == .monthly {
@@ -65,7 +65,7 @@ struct PrayingDurationChartView: View {
           .xAxisLabels(chartData: monthlyData)
           .yAxisLabels(chartData: monthlyData)
           .headerBox(chartData: monthlyData)
-          .frame(height: 350)
+          .frame(height: 350, alignment: .bottom)
       }
       
       if let yearlyData, selectedMode == .yearly {
@@ -82,7 +82,7 @@ struct PrayingDurationChartView: View {
           .xAxisLabels(chartData: yearlyData)
           .yAxisLabels(chartData: yearlyData)
           .headerBox(chartData: yearlyData)
-          .frame(height: 350)
+          .frame(height: 350, alignment: .bottom)
       }
     }
     .id(id)
