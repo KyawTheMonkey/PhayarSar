@@ -12,7 +12,6 @@
 		C80287442B4940ED00F165DF /* CommonPrayerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */; };
 		C80287472B4A5F3600F165DF /* PrayingProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287462B4A5F3600F165DF /* PrayingProgressView.swift */; };
 		C80287492B4A866E00F165DF /* ScrollingSpeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287482B4A866E00F165DF /* ScrollingSpeed.swift */; };
-		C8032B662C063330008C4A7E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C8032B652C063330008C4A7E /* GoogleService-Info.plist */; };
 		C8032B682C063BE4008C4A7E /* LocalizedPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8032B672C063BE4008C4A7E /* LocalizedPicker.swift */; };
 		C8032B6A2C063F16008C4A7E /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8032B692C063F16008C4A7E /* AppTheme.swift */; };
 		C815D6CB2B4B141600BFB79C /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = C815D6CA2B4B141600BFB79C /* CoreDataStack.swift */; };
@@ -24,7 +23,6 @@
 		C817924D2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C817924C2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift */; };
 		C81792502BF9ED4B00DC741E /* SpellingErrorCommentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C817924F2BF9ED4B00DC741E /* SpellingErrorCommentModel.swift */; };
 		C81792522BFB8E2700DC741E /* AskForReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792512BFB8E2700DC741E /* AskForReview.swift */; };
-		C817925B2BFB973800DC741E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C817925A2BFB973800DC741E /* GoogleService-Info.plist */; };
 		C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = C817925D2BFB979E00DC741E /* FirebaseRemoteConfig */; };
 		C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C817925F2BFB979E00DC741E /* FirebaseRemoteConfigSwift */; };
 		C81792622BFBA74F00DC741E /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792612BFBA74F00DC741E /* RemoteConfigManager.swift */; };
@@ -67,6 +65,7 @@
 		C83E27F02B2DDAB20038EDF1 /* LocalizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */; };
 		C83E27F22B2DDACC0038EDF1 /* LocalizedNavTitle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83E27F12B2DDACC0038EDF1 /* LocalizedNavTitle.swift */; };
 		C83E27F42B2DDC9B0038EDF1 /* LocalizedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83E27F32B2DDC9B0038EDF1 /* LocalizedButton.swift */; };
+		C83E43A02D2B85030082BC5A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */; };
 		C84240BC2B2DD29300A2B234 /* Language.json in Resources */ = {isa = PBXBuildFile; fileRef = C84240BB2B2DD29300A2B234 /* Language.json */; };
 		C84240BE2B2DD31700A2B234 /* LocalizedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84240BD2B2DD31700A2B234 /* LocalizedComponents.swift */; };
 		C84240C02B2DD34900A2B234 /* LocalizedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84240BF2B2DD34900A2B234 /* LocalizedKey.swift */; };
@@ -230,7 +229,6 @@
 		C817924C2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellingErrorCommentScreen.swift; sourceTree = "<group>"; };
 		C817924F2BF9ED4B00DC741E /* SpellingErrorCommentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellingErrorCommentModel.swift; sourceTree = "<group>"; };
 		C81792512BFB8E2700DC741E /* AskForReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskForReview.swift; sourceTree = "<group>"; };
-		C817925A2BFB973800DC741E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C81792612BFBA74F00DC741E /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
 		C81792642BFBB36E00DC741E /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
 		C81792672BFBB8FB00DC741E /* WhatIsNewFRCModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatIsNewFRCModel.swift; sourceTree = "<group>"; };
@@ -274,6 +272,7 @@
 		C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedText.swift; sourceTree = "<group>"; };
 		C83E27F12B2DDACC0038EDF1 /* LocalizedNavTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedNavTitle.swift; sourceTree = "<group>"; };
 		C83E27F32B2DDC9B0038EDF1 /* LocalizedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedButton.swift; sourceTree = "<group>"; };
+		C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C84240BB2B2DD29300A2B234 /* Language.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Language.json; sourceTree = "<group>"; };
 		C84240BD2B2DD31700A2B234 /* LocalizedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedComponents.swift; sourceTree = "<group>"; };
 		C84240BF2B2DD34900A2B234 /* LocalizedKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedKey.swift; sourceTree = "<group>"; };
@@ -554,6 +553,7 @@
 		C82039AC2B1CABE4000EEF61 /* PhayarSar */ = {
 			isa = PBXGroup;
 			children = (
+				C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */,
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
 				C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */,
 				C815D6C92B4B140700BFB79C /* CoreData */,
@@ -564,7 +564,6 @@
 				C82039D72B1CC2E9000EEF61 /* Features */,
 				C82039DB2B1CC48C000EEF61 /* Resources */,
 				C82039E52B1CC508000EEF61 /* Info.plist */,
-				C817925A2BFB973800DC741E /* GoogleService-Info.plist */,
 				C82039B32B1CABE6000EEF61 /* Preview Content */,
 			);
 			path = PhayarSar;
@@ -1050,7 +1049,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					C82039A92B1CABE4000EEF61 = {
 						CreatedOnToolsVersion = 15.0.1;
@@ -1105,7 +1104,7 @@
 			files = (
 				C82039B52B1CABE6000EEF61 /* Preview Assets.xcassets in Resources */,
 				C8CEF9F72B68003000EF9B9E /* တရားဂုဏ်တော်.json in Resources */,
-				C817925B2BFB973800DC741E /* GoogleService-Info.plist in Resources */,
+				C83E43A02D2B85030082BC5A /* GoogleService-Info.plist in Resources */,
 				C8CEF9F52B67FF9500EF9B9E /* ဘုရားဂုဏ်တော်.json in Resources */,
 				C8D403112B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json in Resources */,
 				C8D4031B2B6B46E900448EDC /* မောရသုတ်.json in Resources */,
@@ -1169,7 +1168,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C8032B662C063330008C4A7E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1456,7 +1454,6 @@
 		C82039CF2B1CABE6000EEF61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PhayarSar/PhayarSar.entitlements;
@@ -1492,7 +1489,6 @@
 		C82039D02B1CABE6000EEF61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PhayarSar/PhayarSar.entitlements;
@@ -1528,7 +1524,6 @@
 		C82039D22B1CABE6000EEF61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1548,7 +1543,6 @@
 		C82039D32B1CABE6000EEF61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1568,7 +1562,6 @@
 		C82039D52B1CABE6000EEF61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
@@ -1586,7 +1579,6 @@
 		C82039D62B1CABE6000EEF61 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
@@ -1607,6 +1599,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
+				"EXCLUDED_ARCHS[sdk=*]" = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PhayarSarNotificationService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PhayarSarNotificationService;
@@ -1633,6 +1626,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
+				EXCLUDED_ARCHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PhayarSarNotificationService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PhayarSarNotificationService;
@@ -1725,7 +1719,7 @@
 			repositoryURL = "https://github.com/siteline/swiftui-introspect.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.4;
+				minimumVersion = 1.3.0;
 			};
 		};
 		C8D730B72B46F74900D19D57 /* XCRemoteSwiftPackageReference "CompactSlider" */ = {

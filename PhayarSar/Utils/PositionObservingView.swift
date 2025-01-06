@@ -68,7 +68,7 @@ struct OffsetObservingScrollView<Content: View>: View {
         content: content
       )
     }
-    .introspect(.scrollView, on: .iOS(.v15, .v16, .v17)) { s in
+    .introspect(.scrollView, on: .iOS(.v15, .v16, .v17, .v18)) { s in
       if scrollView == nil {
         scrollView = s
         scrollView?.delegate = delegate
