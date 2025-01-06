@@ -49,6 +49,11 @@ final class DailyPrayingTimeRepository: ObservableObject {
 
     if let today = prayingTimes.first(where: { calendar.isDateInToday($0.date) }) {
       self.today = today
+    } else {
+      let today = DailyPrayingTime(context: moc)
+      today.date = .init()
+      today.durationInSeconds = 0
+      self.today = today
     }
   }
   
