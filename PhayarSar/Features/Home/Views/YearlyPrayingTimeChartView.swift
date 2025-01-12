@@ -15,6 +15,8 @@ struct YearlyPrayingTimeChartView: View {
   @State private var isFetching = false
   @State private var yearlData: [DailyPrayingTimeVO] = []
   @State private var totalSeconds: Double = 0
+  @State private var showAverage = false
+  @State private var averageMinutes: Double = 0
   @EnvironmentObject private var preferences: UserPreferences
   
   var body: some View {
@@ -28,6 +30,8 @@ struct YearlyPrayingTimeChartView: View {
         }
         
         Spacer()
+        
+        Checkbox(title: "Show Avg.", value: $showAverage)
       }
       
       ZStack {
@@ -54,6 +58,28 @@ struct YearlyPrayingTimeChartView: View {
                 )
               )
             }
+            
+            RuleMark(y: .value("Average", Double(totalSeconds) / 7))
+              .lineStyle(.init(lineWidth: 1.5, dash: [5], dashPhase: 3))
+              .foregroundStyle(.blue)
+              .annotation(alignment: .trailing) {
+                Text("\(String(format: "%.1f", ["\(averageMinutes)"])) mins")
+                  .foregroundStyle(.black)
+                  .font(.qsB(10))
+                  .padding(.horizontal, 8)
+                  .padding(.vertical, 4)
+                  .background {
+                    RoundedRectangle(cornerRadius: 4)
+                      .fill(.white)
+                  }
+                  .overlay {
+                    RoundedRectangle(cornerRadius: 4)
+                      .strokeBorder(Color.gray, lineWidth: 0.5)
+                      .opacity(0.4)
+                  }
+                  .opacity(showAverage ? 1 : 0)
+              }
+              .opacity(showAverage ? 1 : 0)
           }
         }
       }
@@ -113,23 +139,15 @@ struct YearlyPrayingTimeChartView: View {
         isFetching = false
         yearlData = monthlyData
         totalSeconds = Double(yearlData.reduce(0) { $0 + $1.durationInSeconds })
-        yearlData.forEach { print($0) }
+        averageMinutes = totalSeconds / 12
       }
     }
   }
   
   @ViewBuilder
   private func TotalDuration() -> some View {
-    let minutes = totalSeconds / 60
-    let hours = minutes / 60
-    
-    if hours >= 1 {
-      LocalizedText(.x_hour_y_min, args: [String(format: "%.0f", hours)])
-    }
-//    if totalMinutes >= 1 {
-//      LocalizedText(.x_min_s, args: [String(format: "%.0f", totalMinutes)])
-//    } else {
-//      LocalizedText(.x_sec, args: [String(format: "%.0f", totalMinutes * 60)])
-//    }
+    let hours = Int(totalSeconds / 3600)
+    let minutes = Int((Int(totalSeconds) % 3600) / 60)
+    LocalizedText(.x_hour_y_min, args: ["\(hours)", "\(minutes)"])
   }
 }

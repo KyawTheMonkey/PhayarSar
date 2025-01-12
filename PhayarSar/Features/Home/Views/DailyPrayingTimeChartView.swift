@@ -9,15 +9,6 @@ import SwiftUI
 import Charts
 import CoreData
 
-struct Line: Shape {
-  func path(in rect: CGRect) -> Path {
-    Path { path in
-      path.move(to: .init(x: rect.minX, y: rect.midY))
-      path.addLine(to: .init(x: rect.maxX, y: rect.midY))
-    }
-  }
-}
-
 struct DailyPrayingTimeChartView: View {
   private let calendar = Calendar.current
   private let stack = CoreDataStack.shared
@@ -67,13 +58,17 @@ struct DailyPrayingTimeChartView: View {
               .annotation(alignment: .trailing) {
                 Text("\(totalSeconds / 7) sec")
                   .foregroundStyle(.black)
-                  .font(.qsB(8))
+                  .font(.qsB(10))
                   .padding(.horizontal, 8)
                   .padding(.vertical, 4)
                   .background {
                     RoundedRectangle(cornerRadius: 4)
                       .fill(.white)
-                      .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 0)
+                  }
+                  .overlay {
+                    RoundedRectangle(cornerRadius: 4)
+                      .strokeBorder(Color.gray, lineWidth: 0.5)
+                      .opacity(0.4)
                   }
                   .opacity(showAverage ? 1 : 0)
               }

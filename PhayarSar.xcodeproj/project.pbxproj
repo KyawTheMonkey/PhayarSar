@@ -100,6 +100,7 @@
 		C86AAA422B9228D800D899B2 /* PageControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA412B9228D800D899B2 /* PageControlView.swift */; };
 		C86AAA4B2B92DEAB00D899B2 /* WorshipPlanRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */; };
 		C87385702D33AA4A00CEF2EB /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C873856F2D33AA4A00CEF2EB /* Checkbox.swift */; };
+		C87385742D33BB6F00CEF2EB /* Line.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87385732D33BB6F00CEF2EB /* Line.swift */; };
 		C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */; };
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
@@ -313,6 +314,7 @@
 		C86AAA412B9228D800D899B2 /* PageControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageControlView.swift; sourceTree = "<group>"; };
 		C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanRepository.swift; sourceTree = "<group>"; };
 		C873856F2D33AA4A00CEF2EB /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
+		C87385732D33BB6F00CEF2EB /* Line.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Line.swift; sourceTree = "<group>"; };
 		C88DECB62B9DF94700A96B29 /* TextType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextType.swift; sourceTree = "<group>"; };
 		C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberText.swift; sourceTree = "<group>"; };
 		C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberTextFomatter.swift; sourceTree = "<group>"; };
@@ -746,6 +748,7 @@
 		C82039ED2B1CCCA1000EEF61 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				C87385732D33BB6F00CEF2EB /* Line.swift */,
 				C82039EE2B1CCCAF000EEF61 /* AppBtnFilled.swift */,
 				C8AE59242B6E368C00ABB8F3 /* StraightLine.swift */,
 				C8AE592F2B6E471B00ABB8F3 /* RollingText.swift */,
@@ -1253,6 +1256,7 @@
 				C80287492B4A866E00F165DF /* ScrollingSpeed.swift in Sources */,
 				C84626B52B222B6B000931AE /* HomeScreen.swift in Sources */,
 				C8FCD1382BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift in Sources */,
+				C87385742D33BB6F00CEF2EB /* Line.swift in Sources */,
 				C8D6529B2B2EA76500BB6C42 /* ChooseColorScreen.swift in Sources */,
 				C82595BA2D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift in Sources */,
 				C81E927D2B2DCD0200F4ED9E /* UserPreferences.swift in Sources */,
