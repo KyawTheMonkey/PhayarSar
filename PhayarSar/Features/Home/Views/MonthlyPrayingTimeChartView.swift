@@ -69,8 +69,9 @@ struct MonthlyPrayingTimeChartView: View {
           }
         }
       }
-      .frame(height: 360)
+      .frame(height: 320)
     }
+    .frame(height: 390)
     .task {
       await fetch()
     }

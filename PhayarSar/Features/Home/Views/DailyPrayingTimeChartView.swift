@@ -76,8 +76,9 @@ struct DailyPrayingTimeChartView: View {
           }
         }
       }
-      .frame(height: 350)
+      .frame(height: 320)
     }
+    .frame(height: 390)
     .task {
       await fetch()
     }
