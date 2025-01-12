@@ -99,6 +99,7 @@
 		C851EB172BA5E2290021275F /* ReferencedWebsitesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C851EB162BA5E2290021275F /* ReferencedWebsitesScreen.swift */; };
 		C86AAA422B9228D800D899B2 /* PageControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA412B9228D800D899B2 /* PageControlView.swift */; };
 		C86AAA4B2B92DEAB00D899B2 /* WorshipPlanRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */; };
+		C87385702D33AA4A00CEF2EB /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C873856F2D33AA4A00CEF2EB /* Checkbox.swift */; };
 		C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */; };
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
@@ -311,6 +312,7 @@
 		C851EB162BA5E2290021275F /* ReferencedWebsitesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferencedWebsitesScreen.swift; sourceTree = "<group>"; };
 		C86AAA412B9228D800D899B2 /* PageControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageControlView.swift; sourceTree = "<group>"; };
 		C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanRepository.swift; sourceTree = "<group>"; };
+		C873856F2D33AA4A00CEF2EB /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		C88DECB62B9DF94700A96B29 /* TextType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextType.swift; sourceTree = "<group>"; };
 		C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberText.swift; sourceTree = "<group>"; };
 		C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberTextFomatter.swift; sourceTree = "<group>"; };
@@ -748,6 +750,7 @@
 				C8AE59242B6E368C00ABB8F3 /* StraightLine.swift */,
 				C8AE592F2B6E471B00ABB8F3 /* RollingText.swift */,
 				C86AAA412B9228D800D899B2 /* PageControlView.swift */,
+				C873856F2D33AA4A00CEF2EB /* Checkbox.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1194,6 +1197,7 @@
 				C81E829D2B6CAC8300A59147 /* AllPrayerPickerScreen.swift in Sources */,
 				C8AE592E2B6E38BE00ABB8F3 /* WorshipPlan.swift in Sources */,
 				C83E27F02B2DDAB20038EDF1 /* LocalizedText.swift in Sources */,
+				C87385702D33AA4A00CEF2EB /* Checkbox.swift in Sources */,
 				C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */,
 				C815D6CB2B4B141600BFB79C /* CoreDataStack.swift in Sources */,
 				C8D403092B68A94F00448EDC /* MorphinDemoView.swift in Sources */,
