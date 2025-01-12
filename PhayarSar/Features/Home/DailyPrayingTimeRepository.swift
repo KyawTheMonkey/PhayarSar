@@ -86,49 +86,6 @@ final class DailyPrayingTimeRepository: ObservableObject {
       .sorted(by: { $1.date > $0.date })
   }
   
-  func prayingDataForThisYear() -> [(LocalizedKey, Int)] {
-    let sorted = prayingTimes.sorted(by: { $1.date > $0.date })
-
-    return getFirstAndLastDayOfMonth(year: 2024)
-      .enumerated()
-      .map { index, tuple in
-        let key: LocalizedKey = switch index {
-        case 0:
-          .jan
-        case 1:
-          .feb
-        case 2:
-          .mar
-        case 3:
-          .apr
-        case 4:
-          .may
-        case 5:
-          .jun
-        case 6:
-          .jul
-        case 7:
-          .aug
-        case 8:
-          .sep
-        case 9:
-          .oct
-        case 10:
-          .nov
-        default:
-          .dec
-        }
-        
-        return (
-          key,
-          Int(sorted
-            .filter { (tuple.firstDay ... tuple.lastDay).contains($0.date) }
-            .map(\.durationInSeconds)
-            .reduce(0, +))
-        )
-      }
-  }
-  
   private func getFirstAndLastDayOfMonth(year: Int) -> [(firstDay: Date, lastDay: Date)] {
     var result: [(firstDay: Date, lastDay: Date)] = []
     

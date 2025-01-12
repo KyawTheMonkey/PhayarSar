@@ -14,24 +14,51 @@ struct YearlyPrayingTimeChartView: View {
   private let stack = CoreDataStack.shared
   @State private var isFetching = false
   @State private var yearlData: [DailyPrayingTimeVO] = []
-  
+  @State private var totalSeconds: Double = 0
   @EnvironmentObject private var preferences: UserPreferences
   
   var body: some View {
-    ZStack {
-      if isFetching {
-        Text("Calclating...⌛")
-      } else {
-        Chart(yearlData) { data in
-          ForEach(yearlData) { data in
-            BarMark(x: .value("Month", data.date.toStringWith(.MMM)),
-                    y: .value("Seconds", Double(data.durationInSeconds) / 60))
-            .foregroundStyle(preferences.accentColor.color)
+    VStack(spacing: 12) {
+      HStack {
+        VStack(alignment: .leading, spacing: 0) {
+          TotalDuration()
+            .font(.dmSerif(28))
+          LocalizedText(.within_this_year)
+            .font(.qsR(10))
+        }
+        
+        Spacer()
+      }
+      
+      ZStack {
+        if isFetching {
+          Text("Calclating...⌛")
+        } else {
+          Chart(yearlData) { data in
+            ForEach(yearlData) { data in
+              BarMark(
+                x: .value(
+                  "Month",
+                  LocalizedKey(
+                    rawValue: data.date.toStringWith(.MMM).lowercased()
+                  )?.localize(preferences.appLang) ?? ""
+                ),
+                y: .value("Seconds", Double(data.durationInSeconds) / 60)
+              )
+              .foregroundStyle(
+                by: .value(
+                  "Month",
+                  LocalizedKey(
+                    rawValue: data.date.toStringWith(.MMM).lowercased()
+                  )?.localize(preferences.appLang) ?? ""
+                )
+              )
+            }
           }
         }
       }
+      .frame(height: 360)
     }
-    .frame(height: 360)
     .task {
       await fetch()
     }
@@ -85,8 +112,24 @@ struct YearlyPrayingTimeChartView: View {
       await MainActor.run {
         isFetching = false
         yearlData = monthlyData
+        totalSeconds = Double(yearlData.reduce(0) { $0 + $1.durationInSeconds })
         yearlData.forEach { print($0) }
       }
     }
+  }
+  
+  @ViewBuilder
+  private func TotalDuration() -> some View {
+    let minutes = totalSeconds / 60
+    let hours = minutes / 60
+    
+    if hours >= 1 {
+      LocalizedText(.x_hour_y_min, args: [String(format: "%.0f", hours)])
+    }
+//    if totalMinutes >= 1 {
+//      LocalizedText(.x_min_s, args: [String(format: "%.0f", totalMinutes)])
+//    } else {
+//      LocalizedText(.x_sec, args: [String(format: "%.0f", totalMinutes * 60)])
+//    }
   }
 }
