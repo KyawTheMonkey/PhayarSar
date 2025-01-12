@@ -25,9 +25,7 @@ struct PrayingDurationChartView: View {
   @Environment(\.colorScheme) private var colorScheme
   @EnvironmentObject private var preferences: UserPreferences
   @EnvironmentObject private var prayingTimeRepo: DailyPrayingTimeRepository
-  @State private var weeklyData: BarChartData?
-  @State private var monthlyData: LineChartData?
-  @State private var yearlyData: LineChartData?
+  
   @State private var selectedMode = PrayingDurationChartSegment.weekly
     
   var body: some View {
@@ -40,60 +38,28 @@ struct PrayingDurationChartView: View {
       }
       .pickerStyle(.segmented)
       
-      if let weeklyData, selectedMode == .weekly {
-        BarChart(chartData: weeklyData)
-          .touchOverlay(chartData: weeklyData, unit: .suffix(of: "⌛️"))
-          .xAxisGrid(chartData: weeklyData)
-          .yAxisGrid(chartData: weeklyData)
-          .xAxisLabels(chartData: weeklyData)
-          .yAxisLabels(chartData: weeklyData, colourIndicator: .none)
-          .headerBox(chartData: weeklyData)
-          .frame(height: 350, alignment: .bottom)
+      if selectedMode == .weekly {
+        DailyPrayingTimeChartView()
       }
       
-      if let monthlyData, selectedMode == .monthly {
-        FilledLineChart(chartData: monthlyData)
-          .filledTopLine(
-            chartData: monthlyData,
-            lineColour: .init(colour: preferences.accentColor.color),
-            strokeStyle: StrokeStyle(lineWidth: 1.5)
-          )
-          .touchOverlay(chartData: monthlyData, unit: .suffix(of: "⌛️"))
-//          .pointMarkers(chartData: monthlyData)
-          .xAxisGrid(chartData: monthlyData)
-          .yAxisGrid(chartData: monthlyData)
-          .xAxisLabels(chartData: monthlyData)
-          .yAxisLabels(chartData: monthlyData)
-          .headerBox(chartData: monthlyData)
-          .frame(height: 350, alignment: .bottom)
+      if selectedMode == .monthly {
+        MonthlyPrayingTimeChartView()
       }
       
-      if let yearlyData, selectedMode == .yearly {
-        FilledLineChart(chartData: yearlyData)
-          .filledTopLine(
-            chartData: yearlyData,
-            lineColour: .init(colour: preferences.accentColor.color),
-            strokeStyle: StrokeStyle(lineWidth: 1.5)
-          )
-          .touchOverlay(chartData: yearlyData, unit: .suffix(of: "⌛️"))
-//          .pointMarkers(chartData: yearlyData)
-          .xAxisGrid(chartData: yearlyData)
-          .yAxisGrid(chartData: yearlyData)
-          .xAxisLabels(chartData: yearlyData)
-          .yAxisLabels(chartData: yearlyData)
-          .headerBox(chartData: yearlyData)
-          .frame(height: 350, alignment: .bottom)
+      if selectedMode == .yearly {
+        YearlyPrayingTimeChartView()
       }
     }
-    .id(id)
-    .onAppear {
-      setupWeeklyData()
-      setupMonthlyData()
-      setupYearlyData()
-      id = .init()
-    }
+//    .id(id)
+//    .onAppear {
+//      setupWeeklyData()
+//      setupMonthlyData()
+//      setupYearlyData()
+//      id = .init()
+//    }
   }
   
+  /*
   func setupWeeklyData() {
     let thisWeekData = prayingTimeRepo.prayingDataForThisWeek()
     let totalForThisWeek = thisWeekData.map(\.durationInSeconds).reduce(0, +)
@@ -397,6 +363,7 @@ struct PrayingDurationChartView: View {
       )
     )
   }
+   */
 }
 
 #Preview {

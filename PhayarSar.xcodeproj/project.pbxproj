@@ -60,6 +60,10 @@
 		C82039F72B1CDB4F000EEF61 /* NatPint.json in Resources */ = {isa = PBXBuildFile; fileRef = C82039F62B1CDB4F000EEF61 /* NatPint.json */; };
 		C82039FA2B1CE1C7000EEF61 /* PhayarSarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039F92B1CE1C7000EEF61 /* PhayarSarModel.swift */; };
 		C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */; };
+		C82595BA2D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82595B92D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift */; };
+		C828F5C12D3264AB007C1E01 /* DailyPrayingTimeChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */; };
+		C828F5C32D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */; };
+		C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C62D32C965007C1E01 /* Array+chunked.swift */; };
 		C83961B22B4053E900E189D9 /* View+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B12B4053E900E189D9 /* View+Preview.swift */; };
 		C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B52B40578200E189D9 /* SafeAreaInsets.swift */; };
 		C83E27F02B2DDAB20038EDF1 /* LocalizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */; };
@@ -267,6 +271,10 @@
 		C82039F62B1CDB4F000EEF61 /* NatPint.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = NatPint.json; sourceTree = "<group>"; };
 		C82039F92B1CE1C7000EEF61 /* PhayarSarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarModel.swift; sourceTree = "<group>"; };
 		C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Decode.swift"; sourceTree = "<group>"; };
+		C82595B92D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearlyPrayingTimeChartView.swift; sourceTree = "<group>"; };
+		C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrayingTimeChartView.swift; sourceTree = "<group>"; };
+		C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyPrayingTimeChartView.swift; sourceTree = "<group>"; };
+		C828F5C62D32C965007C1E01 /* Array+chunked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+chunked.swift"; sourceTree = "<group>"; };
 		C83961B12B4053E900E189D9 /* View+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Preview.swift"; sourceTree = "<group>"; };
 		C83961B52B40578200E189D9 /* SafeAreaInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaInsets.swift; sourceTree = "<group>"; };
 		C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedText.swift; sourceTree = "<group>"; };
@@ -709,6 +717,7 @@
 				C81792462BF9DD5200DC741E /* DeviceShakeObserver.swift */,
 				C81792612BFBA74F00DC741E /* RemoteConfigManager.swift */,
 				C84F4A852C01B9B100B5A502 /* AppVersionNo.swift */,
+				C828F5C62D32C965007C1E01 /* Array+chunked.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -948,9 +957,12 @@
 		C8F3393E2B94316000C1730B /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */,
 				C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */,
 				C849BF402B9C76A0004F771F /* SelectedWorshipDaysView.swift */,
 				C8FCD1392BA4A3A900AB5BD3 /* PrayingDurationChartView.swift */,
+				C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */,
+				C82595B92D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1208,6 +1220,7 @@
 				C851EB172BA5E2290021275F /* ReferencedWebsitesScreen.swift in Sources */,
 				C817924A2BF9E22500DC741E /* PrayerSpellingErrorReportScreen.swift in Sources */,
 				C84E69482B530E0B006231CD /* PrayerModeScreen.swift in Sources */,
+				C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */,
 				C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */,
 				C81E829B2B6BFEBB00A59147 /* WorshipPlanScreen.swift in Sources */,
 				C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */,
@@ -1237,6 +1250,7 @@
 				C84626B52B222B6B000931AE /* HomeScreen.swift in Sources */,
 				C8FCD1382BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift in Sources */,
 				C8D6529B2B2EA76500BB6C42 /* ChooseColorScreen.swift in Sources */,
+				C82595BA2D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift in Sources */,
 				C81E927D2B2DCD0200F4ED9E /* UserPreferences.swift in Sources */,
 				C81792682BFBB8FB00DC741E /* WhatIsNewFRCModel.swift in Sources */,
 				C8FCD1482BA58D5300AB5BD3 /* HomeSearchScreen.swift in Sources */,
@@ -1257,6 +1271,7 @@
 				C817924D2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift in Sources */,
 				C8032B682C063BE4008C4A7E /* LocalizedPicker.swift in Sources */,
 				C81CF2572B53FCA000E1B726 /* PrayingMode.swift in Sources */,
+				C828F5C12D3264AB007C1E01 /* DailyPrayingTimeChartView.swift in Sources */,
 				C86AAA4B2B92DEAB00D899B2 /* WorshipPlanRepository.swift in Sources */,
 				C84240C02B2DD34900A2B234 /* LocalizedKey.swift in Sources */,
 				C8CA45BF2B41295300240DA7 /* LocalizedLabel.swift in Sources */,
@@ -1283,6 +1298,7 @@
 				C83E27F42B2DDC9B0038EDF1 /* LocalizedButton.swift in Sources */,
 				C8FCD13A2BA4A3A900AB5BD3 /* PrayingDurationChartView.swift in Sources */,
 				C849BF412B9C76A0004F771F /* SelectedWorshipDaysView.swift in Sources */,
+				C828F5C32D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1458,7 +1474,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PhayarSar/PhayarSar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PhayarSar/Preview Content\"";
 				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
 				ENABLE_PREVIEWS = YES;
@@ -1469,12 +1485,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1493,7 +1509,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PhayarSar/PhayarSar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PhayarSar/Preview Content\"";
 				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
 				ENABLE_PREVIEWS = YES;
@@ -1504,12 +1520,12 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

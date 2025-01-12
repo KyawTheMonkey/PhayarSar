@@ -39,4 +39,26 @@ extension Date {
   var endOfMonth: Date {
     return Calendar.current.date(byAdding: DateComponents(month: 1, day: -1), to: self.startOfMonth)!
   }
+  
+  func getDaysInMonth() -> Int{
+    Calendar.current.range(of: .day, in: .month, for: self)?.count ?? 0
+  }
+  
+  func getDaysInYear() -> Int {
+    Calendar.current.range(of: .day, in: .year, for: self)?.count ?? 0
+  }
+  
+  func startOfYear() -> Date {
+    Calendar.current.date(from: Calendar.current.dateComponents([.year], from: self))!
+  }
+  
+  func endOfYear() -> Date {
+    Calendar.current.date(byAdding: DateComponents(year: 1, day: -1), to: startOfYear())!
+  }
+  
+  func isInSameMonth(as date: Date) -> Bool {
+    let calendar = Calendar.current
+    return calendar.component(.year, from: self) == calendar.component(.year, from: date) &&
+    calendar.component(.month, from: self) == calendar.component(.month, from: date)
+  }
 }
