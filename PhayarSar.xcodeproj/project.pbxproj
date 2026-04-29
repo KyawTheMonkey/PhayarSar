@@ -277,6 +277,7 @@
 		C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrayingTimeChartView.swift; sourceTree = "<group>"; };
 		C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyPrayingTimeChartView.swift; sourceTree = "<group>"; };
 		C828F5C62D32C965007C1E01 /* Array+chunked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+chunked.swift"; sourceTree = "<group>"; };
+		C82D77C52FA1CD2E0069FE44 /* PhayarSarLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = PhayarSarLibrary; sourceTree = "<group>"; };
 		C83961B12B4053E900E189D9 /* View+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Preview.swift"; sourceTree = "<group>"; };
 		C83961B52B40578200E189D9 /* SafeAreaInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaInsets.swift; sourceTree = "<group>"; };
 		C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedText.swift; sourceTree = "<group>"; };
@@ -542,6 +543,7 @@
 		C82039A12B1CABE4000EEF61 = {
 			isa = PBXGroup;
 			children = (
+				C82D77C52FA1CD2E0069FE44 /* PhayarSarLibrary */,
 				C82039AC2B1CABE4000EEF61 /* PhayarSar */,
 				C82039BD2B1CABE6000EEF61 /* PhayarSarTests */,
 				C82039C72B1CABE6000EEF61 /* PhayarSarUITests */,
