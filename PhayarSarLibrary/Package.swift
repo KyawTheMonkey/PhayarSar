@@ -23,7 +23,8 @@ let package = Package(
       name: "DesignKit",
       dependencies: [
         "UtilKit"
-      ]
+      ],
+      resources: [.process("Fonts")]
     )
   ]
 )
