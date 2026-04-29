@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
   name: "PhayarSarLibrary",
-  platforms: [.iOS(.v18)],
+  platforms: [.iOS(.v18), .macOS(.v15)],
   products: [
     .library(
       name: "UtilKit",
@@ -13,14 +13,17 @@ let package = Package(
     .library(
       name: "DesignKit",
       targets: ["DesignKit"]
-    ),
+    )
   ],
   targets: [
     .target(
       name: "UtilKit"
     ),
     .target(
-      name: "DesignKit"
+      name: "DesignKit",
+      dependencies: [
+        "UtilKit"
+      ]
     )
   ]
 )
