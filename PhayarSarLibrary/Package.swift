@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
   name: "PhayarSarLibrary",
-  platforms: [.iOS(.v18), .macOS(.v15)],
+  platforms: [.iOS(.v16), .macOS(.v13)],
   products: [
     .library(
       name: "UtilKit",
