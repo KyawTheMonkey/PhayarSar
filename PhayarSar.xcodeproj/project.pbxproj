@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -101,6 +101,8 @@
 		C86AAA4B2B92DEAB00D899B2 /* WorshipPlanRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */; };
 		C87385702D33AA4A00CEF2EB /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C873856F2D33AA4A00CEF2EB /* Checkbox.swift */; };
 		C87385742D33BB6F00CEF2EB /* Line.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87385732D33BB6F00CEF2EB /* Line.swift */; };
+		C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5352FA2FA0900FA0FED /* DesignKit */; };
+		C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5372FA2FA0900FA0FED /* UtilKit */; };
 		C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */; };
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
@@ -399,11 +401,13 @@
 				C84F4A972C03146900B5A502 /* FirebaseMessaging in Frameworks */,
 				C82039F22B1CCF13000EEF61 /* SwiftUIBackports in Frameworks */,
 				C8F339432B9433E900C1730B /* SwipeActions in Frameworks */,
+				C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */,
 				C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */,
 				C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */,
 				C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */,
 				C8F339462B94374300C1730B /* AlertToast in Frameworks */,
 				C8FCD1422BA4AF0300AB5BD3 /* SwiftUICharts in Frameworks */,
+				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1003,6 +1007,8 @@
 				C817925F2BFB979E00DC741E /* FirebaseRemoteConfigSwift */,
 				C84F4A962C03146900B5A502 /* FirebaseMessaging */,
 				C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */,
+				C874B5352FA2FA0900FA0FED /* DesignKit */,
+				C874B5372FA2FA0900FA0FED /* UtilKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1104,6 +1110,7 @@
 				C8FCD1402BA4AF0300AB5BD3 /* XCRemoteSwiftPackageReference "SwiftUICharts" */,
 				C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				C887FDF82C043D18007A6A25 /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
+				C874B5342FA2FA0900FA0FED /* XCLocalSwiftPackageReference "PhayarSarLibrary" */,
 			);
 			productRefGroup = C82039AB2B1CABE4000EEF61 /* Products */;
 			projectDirPath = "";
@@ -1495,7 +1502,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1530,7 +1537,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1723,6 +1730,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C874B5342FA2FA0900FA0FED /* XCLocalSwiftPackageReference "PhayarSarLibrary" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = PhayarSarLibrary;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1802,6 +1816,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		C874B5352FA2FA0900FA0FED /* DesignKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignKit;
+		};
+		C874B5372FA2FA0900FA0FED /* UtilKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UtilKit;
 		};
 		C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */ = {
 			isa = XCSwiftPackageProductDependency;
