@@ -6,6 +6,7 @@ import SwiftUI
 struct PhayarSarAppV2: App {
   @StateObject private var l10n = LocalisationManager.shared
   @StateObject private var theme = ThemeSwitcher.shared
+  @StateObject private var navigator = AppNavigatorModel()
 
   init() {
     Typography.registerFonts()
@@ -13,10 +14,11 @@ struct PhayarSarAppV2: App {
 
   var body: some Scene {
     WindowGroup {
-      PhayarSarMainContentView()
+      AppContentView()
         .environmentObject(l10n)
         .environment(\.language, l10n.currentLanguage)
         .environmentObject(theme)
+        .environmentObject(navigator)
         .preferredColorScheme(theme.currentTheme.colorScheme)
     }
   }
@@ -38,5 +40,6 @@ fileprivate struct PreviewEnvModifier: ViewModifier {
       .environmentObject(l10n)
       .environment(\.language, l10n.currentLanguage)
       .environmentObject(theme)
+      .environmentObject(AppNavigatorModel())
   }
 }

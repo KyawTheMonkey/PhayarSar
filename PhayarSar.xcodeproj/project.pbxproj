@@ -104,8 +104,8 @@
 		C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5352FA2FA0900FA0FED /* DesignKit */; };
 		C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5372FA2FA0900FA0FED /* UtilKit */; };
 		C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */; };
-		C874B53C2FA3024800FA0FED /* PhayarSarMainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53B2FA3024800FA0FED /* PhayarSarMainContentView.swift */; };
-		C874B53E2FA3025F00FA0FED /* PhayarSarMainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53D2FA3025F00FA0FED /* PhayarSarMainTabView.swift */; };
+		C874B53C2FA3024800FA0FED /* AppContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53B2FA3024800FA0FED /* AppContentView.swift */; };
+		C874B53E2FA3025F00FA0FED /* AppMainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */; };
 		C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */; };
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
@@ -170,6 +170,8 @@
 		C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */; };
 		C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */ = {isa = PBXBuildFile; productRef = C8D730B82B46F74900D19D57 /* CompactSlider */; };
 		C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */; };
+		C8EF0F192FA3927A00543BCA /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF0F182FA3927A00543BCA /* AppTab.swift */; };
+		C8EF0F1B2FA3955200543BCA /* AppNavigatorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF0F1A2FA3955200543BCA /* AppNavigatorModel.swift */; };
 		C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F339392B938D7A00C1730B /* String+Date.swift */; };
 		C8F3393D2B94301600C1730B /* WorshipPlanListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */; };
 		C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */; };
@@ -323,8 +325,8 @@
 		C873856F2D33AA4A00CEF2EB /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		C87385732D33BB6F00CEF2EB /* Line.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Line.swift; sourceTree = "<group>"; };
 		C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarAppV2.swift; sourceTree = "<group>"; };
-		C874B53B2FA3024800FA0FED /* PhayarSarMainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarMainContentView.swift; sourceTree = "<group>"; };
-		C874B53D2FA3025F00FA0FED /* PhayarSarMainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarMainTabView.swift; sourceTree = "<group>"; };
+		C874B53B2FA3024800FA0FED /* AppContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContentView.swift; sourceTree = "<group>"; };
+		C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMainTabView.swift; sourceTree = "<group>"; };
 		C88DECB62B9DF94700A96B29 /* TextType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextType.swift; sourceTree = "<group>"; };
 		C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberText.swift; sourceTree = "<group>"; };
 		C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberTextFomatter.swift; sourceTree = "<group>"; };
@@ -387,6 +389,8 @@
 		C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColorScreen.swift; sourceTree = "<group>"; };
 		C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCornerView.swift; sourceTree = "<group>"; };
 		C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowContentViewModifier.swift; sourceTree = "<group>"; };
+		C8EF0F182FA3927A00543BCA /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
+		C8EF0F1A2FA3955200543BCA /* AppNavigatorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigatorModel.swift; sourceTree = "<group>"; };
 		C8F339392B938D7A00C1730B /* String+Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Date.swift"; sourceTree = "<group>"; };
 		C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanListScreen.swift; sourceTree = "<group>"; };
 		C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanCardView.swift; sourceTree = "<group>"; };
@@ -581,9 +585,11 @@
 			children = (
 				C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */,
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
+				C8EF0F1A2FA3955200543BCA /* AppNavigatorModel.swift */,
+				C8EF0F182FA3927A00543BCA /* AppTab.swift */,
+				C874B53B2FA3024800FA0FED /* AppContentView.swift */,
+				C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */,
 				C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */,
-				C874B53B2FA3024800FA0FED /* PhayarSarMainContentView.swift */,
-				C874B53D2FA3025F00FA0FED /* PhayarSarMainTabView.swift */,
 				C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */,
 				C815D6C92B4B140700BFB79C /* CoreData */,
 				C81E927E2B2DCDAD00F4ED9E /* Models */,
@@ -1270,7 +1276,8 @@
 				C83E27F22B2DDACC0038EDF1 /* LocalizedNavTitle.swift in Sources */,
 				C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */,
 				C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */,
-				C874B53C2FA3024800FA0FED /* PhayarSarMainContentView.swift in Sources */,
+				C8EF0F1B2FA3955200543BCA /* AppNavigatorModel.swift in Sources */,
+				C874B53C2FA3024800FA0FED /* AppContentView.swift in Sources */,
 				C81792452BF904F500DC741E /* AnimationCompletionObserver.swift in Sources */,
 				C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */,
 				C81792522BFB8E2700DC741E /* AskForReview.swift in Sources */,
@@ -1308,13 +1315,14 @@
 				C8CA45BF2B41295300240DA7 /* LocalizedLabel.swift in Sources */,
 				C815D6CE2B4B142900BFB79C /* PhayarSar.xcdatamodeld in Sources */,
 				C8D652852B2E0BDB00BB6C42 /* TabScreen.swift in Sources */,
+				C8EF0F192FA3927A00543BCA /* AppTab.swift in Sources */,
 				C8032B6A2C063F16008C4A7E /* AppTheme.swift in Sources */,
 				C81CF2512B53E66100E1B726 /* ReadingModeView.swift in Sources */,
 				C81CF2552B53FA6C00E1B726 /* PlayerModeView.swift in Sources */,
 				C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */,
 				C82039EF2B1CCCAF000EEF61 /* AppBtnFilled.swift in Sources */,
 				C849BF462B9CB481004F771F /* WorshipPlanPrayingScreen.swift in Sources */,
-				C874B53E2FA3025F00FA0FED /* PhayarSarMainTabView.swift in Sources */,
+				C874B53E2FA3025F00FA0FED /* AppMainTabView.swift in Sources */,
 				EA578F0C2BF996EF00366ADC /* AfterAppearViewModifier.swift in Sources */,
 				C84F4A892C01BB2500B5A502 /* WhatIsNewScreen.swift in Sources */,
 				C8AE59282B6E36C900ABB8F3 /* WorshipPlanSteps.swift in Sources */,
