@@ -29,6 +29,17 @@ public enum Theme: String, CaseIterable, Identifiable, Sendable {
   case dark
   
   public var id: String { rawValue }
+  
+  public var colorScheme: ColorScheme? {
+    switch self {
+    case .light:
+      return .light
+    case .dark:
+      return .dark
+    case .system:
+      return nil
+    }
+  }
 }
 
 enum ThemeOverride {

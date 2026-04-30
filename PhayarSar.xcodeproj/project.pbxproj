@@ -169,7 +169,6 @@
 		C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */; };
 		C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */; };
 		C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */ = {isa = PBXBuildFile; productRef = C8D730B82B46F74900D19D57 /* CompactSlider */; };
-		C8EF0D592FA30B5B00543BCA /* LocalisationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF0D572FA30B5B00543BCA /* LocalisationTestView.swift */; };
 		C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */; };
 		C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F339392B938D7A00C1730B /* String+Date.swift */; };
 		C8F3393D2B94301600C1730B /* WorshipPlanListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */; };
@@ -388,7 +387,6 @@
 		C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColorScreen.swift; sourceTree = "<group>"; };
 		C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCornerView.swift; sourceTree = "<group>"; };
 		C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowContentViewModifier.swift; sourceTree = "<group>"; };
-		C8EF0D572FA30B5B00543BCA /* LocalisationTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalisationTestView.swift; sourceTree = "<group>"; };
 		C8F339392B938D7A00C1730B /* String+Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Date.swift"; sourceTree = "<group>"; };
 		C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanListScreen.swift; sourceTree = "<group>"; };
 		C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanCardView.swift; sourceTree = "<group>"; };
@@ -628,7 +626,6 @@
 		C82039D72B1CC2E9000EEF61 /* Features */ = {
 			isa = PBXGroup;
 			children = (
-				C8EF0D582FA30B5B00543BCA /* LocalisationTest */,
 				C84F4A8E2C02E5A300B5A502 /* ForceUpdate */,
 				C84F4A872C01BB1B00B5A502 /* WhatIsNew */,
 				C81792632BFBB36500DC741E /* LaunchScreen */,
@@ -972,14 +969,6 @@
 			path = ChooseColor;
 			sourceTree = "<group>";
 		};
-		C8EF0D582FA30B5B00543BCA /* LocalisationTest */ = {
-			isa = PBXGroup;
-			children = (
-				C8EF0D572FA30B5B00543BCA /* LocalisationTestView.swift */,
-			);
-			path = LocalisationTest;
-			sourceTree = "<group>";
-		};
 		C8F3393B2B94300B00C1730B /* WorshipPlanList */ = {
 			isa = PBXGroup;
 			children = (
@@ -1265,7 +1254,6 @@
 				C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */,
 				C8CA45C52B4136CC00240DA7 /* AboutPrayerScreen.swift in Sources */,
 				C8AE59302B6E471B00ABB8F3 /* RollingText.swift in Sources */,
-				C8EF0D592FA30B5B00543BCA /* LocalisationTestView.swift in Sources */,
 				C80287472B4A5F3600F165DF /* PrayingProgressView.swift in Sources */,
 				C8AAE01E2B2DB84200BE54CA /* Optional.swift in Sources */,
 				C817926A2BFBBB1A00DC741E /* Decodable+localization.swift in Sources */,
