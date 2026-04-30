@@ -22,12 +22,4 @@ public extension Color {
       opacity: alpha
     )
   }
-  
-  static func dynamic(light: Color, dark: Color) -> Color {
-    Color(UIColor { trait in
-      trait.userInterfaceStyle == .dark
-      ? UIColor(dark)
-      : UIColor(light)
-    })
-  }
 }
