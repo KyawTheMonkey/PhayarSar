@@ -17,9 +17,19 @@ let package = Package(
     .library(
       name: "LocalisationKit",
       targets: ["LocalisationKit"]
+    ),
+    .library(
+      name: "EnvironmentKit",
+      targets: ["EnvironmentKit"]
+    ),
+    .library(
+      name: "Explore",
+      targets: ["Explore"]
     )
   ],
   targets: [
+    // MARK: - Helpers
+
     .target(
       name: "UtilKit"
     ),
@@ -46,6 +56,17 @@ let package = Package(
       dependencies: [
         "LocalisationKitCodeGen"
       ]
+    ),
+    .target(
+      name: "EnvironmentKit",
+      dependencies: ["LocalisationKit", "UtilKit"]
+    ),
+
+    // MARK: - Features
+
+    .target(
+      name: "Explore",
+      dependencies: ["DesignKit", "EnvironmentKit"]
     )
   ]
 )

@@ -170,8 +170,8 @@
 		C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */; };
 		C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */ = {isa = PBXBuildFile; productRef = C8D730B82B46F74900D19D57 /* CompactSlider */; };
 		C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */; };
-		C8EF0F192FA3927A00543BCA /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF0F182FA3927A00543BCA /* AppTab.swift */; };
-		C8EF0F1B2FA3955200543BCA /* AppNavigatorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF0F1A2FA3955200543BCA /* AppNavigatorModel.swift */; };
+		C8EF0F1F2FA3A25C00543BCA /* Explore in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0F1E2FA3A25C00543BCA /* Explore */; };
+		C8EF0F212FA3A47500543BCA /* EnvironmentKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0F202FA3A47500543BCA /* EnvironmentKit */; };
 		C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F339392B938D7A00C1730B /* String+Date.swift */; };
 		C8F3393D2B94301600C1730B /* WorshipPlanListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */; };
 		C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */; };
@@ -389,8 +389,6 @@
 		C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColorScreen.swift; sourceTree = "<group>"; };
 		C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCornerView.swift; sourceTree = "<group>"; };
 		C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowContentViewModifier.swift; sourceTree = "<group>"; };
-		C8EF0F182FA3927A00543BCA /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
-		C8EF0F1A2FA3955200543BCA /* AppNavigatorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigatorModel.swift; sourceTree = "<group>"; };
 		C8F339392B938D7A00C1730B /* String+Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Date.swift"; sourceTree = "<group>"; };
 		C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanListScreen.swift; sourceTree = "<group>"; };
 		C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanCardView.swift; sourceTree = "<group>"; };
@@ -413,10 +411,12 @@
 				C82039F22B1CCF13000EEF61 /* SwiftUIBackports in Frameworks */,
 				C8F339432B9433E900C1730B /* SwipeActions in Frameworks */,
 				C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */,
+				C8EF0F212FA3A47500543BCA /* EnvironmentKit in Frameworks */,
 				C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */,
 				C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */,
 				C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */,
 				C8F339462B94374300C1730B /* AlertToast in Frameworks */,
+				C8EF0F1F2FA3A25C00543BCA /* Explore in Frameworks */,
 				C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */,
 				C8FCD1422BA4AF0300AB5BD3 /* SwiftUICharts in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
@@ -585,8 +585,6 @@
 			children = (
 				C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */,
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
-				C8EF0F1A2FA3955200543BCA /* AppNavigatorModel.swift */,
-				C8EF0F182FA3927A00543BCA /* AppTab.swift */,
 				C874B53B2FA3024800FA0FED /* AppContentView.swift */,
 				C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */,
 				C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */,
@@ -1027,6 +1025,8 @@
 				C874B5352FA2FA0900FA0FED /* DesignKit */,
 				C874B5372FA2FA0900FA0FED /* UtilKit */,
 				C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */,
+				C8EF0F1E2FA3A25C00543BCA /* Explore */,
+				C8EF0F202FA3A47500543BCA /* EnvironmentKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1276,7 +1276,6 @@
 				C83E27F22B2DDACC0038EDF1 /* LocalizedNavTitle.swift in Sources */,
 				C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */,
 				C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */,
-				C8EF0F1B2FA3955200543BCA /* AppNavigatorModel.swift in Sources */,
 				C874B53C2FA3024800FA0FED /* AppContentView.swift in Sources */,
 				C81792452BF904F500DC741E /* AnimationCompletionObserver.swift in Sources */,
 				C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */,
@@ -1315,7 +1314,6 @@
 				C8CA45BF2B41295300240DA7 /* LocalizedLabel.swift in Sources */,
 				C815D6CE2B4B142900BFB79C /* PhayarSar.xcdatamodeld in Sources */,
 				C8D652852B2E0BDB00BB6C42 /* TabScreen.swift in Sources */,
-				C8EF0F192FA3927A00543BCA /* AppTab.swift in Sources */,
 				C8032B6A2C063F16008C4A7E /* AppTheme.swift in Sources */,
 				C81CF2512B53E66100E1B726 /* ReadingModeView.swift in Sources */,
 				C81CF2552B53FA6C00E1B726 /* PlayerModeView.swift in Sources */,
@@ -1861,6 +1859,14 @@
 		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LocalisationKit;
+		};
+		C8EF0F1E2FA3A25C00543BCA /* Explore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Explore;
+		};
+		C8EF0F202FA3A47500543BCA /* EnvironmentKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = EnvironmentKit;
 		};
 		C8F339422B9433E900C1730B /* SwipeActions */ = {
 			isa = XCSwiftPackageProductDependency;

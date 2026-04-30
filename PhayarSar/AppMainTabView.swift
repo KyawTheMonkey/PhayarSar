@@ -1,3 +1,5 @@
+import EnvironmentKit
+import Explore
 import SwiftUI
 
 struct AppMainTabView: View {
@@ -23,18 +25,20 @@ struct AppMainTabView: View {
         set: { navigator.changeTabSelection(to: $0) }
       )
     ) {
-      Tab(value: AppTab.explore) {} label: {
+      Tab(value: AppTab.explore) {
+        ExploreView()
+      } label: {
         AppTab.explore.label
       }
-      
+
       Tab(value: AppTab.plan) {} label: {
         AppTab.plan.label
       }
-      
+
       Tab(value: AppTab.settings) {} label: {
         AppTab.settings.label
       }
-      
+
       Tab(value: AppTab.search, role: .search) {
         NavigationStack {
           List {}
@@ -57,11 +61,11 @@ struct AppMainTabView: View {
       Tab(value: AppTab.explore) {} label: {
         AppTab.explore.label
       }
-      
+
       Tab(value: AppTab.plan) {} label: {
         AppTab.plan.label
       }
-      
+
       Tab(value: AppTab.settings) {} label: {
         AppTab.settings.label
       }
@@ -81,13 +85,13 @@ struct AppMainTabView: View {
           AppTab.explore.label
         }
         .tag(AppTab.explore)
-      
+
       Text("Plan")
         .tabItem {
           AppTab.plan.label
         }
         .tag(AppTab.plan)
-      
+
       Text("Settings")
         .tabItem {
           AppTab.settings.label

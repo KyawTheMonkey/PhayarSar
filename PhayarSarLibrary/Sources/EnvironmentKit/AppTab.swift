@@ -2,13 +2,13 @@ import SwiftUI
 import LocalisationKit
  
 @MainActor
-enum AppTab: @MainActor Identifiable, Hashable, CaseIterable, Codable {
+public enum AppTab: @MainActor Identifiable, Hashable, CaseIterable, Codable {
   case explore
   case plan
   case settings
   case search
   
-  var id: Int {
+  public var id: Int {
     switch self {
     case .explore:
       return 0
@@ -21,12 +21,12 @@ enum AppTab: @MainActor Identifiable, Hashable, CaseIterable, Codable {
     }
   }
   
-  static func allTabs() -> [AppTab] {
+  public static func allTabs() -> [AppTab] {
     return [.explore, .plan, .settings]
   }
   
   @ViewBuilder
-  var label: some View {
+  public var label: some View {
     Label(
       title,
       systemImage: iconName
@@ -51,7 +51,7 @@ enum AppTab: @MainActor Identifiable, Hashable, CaseIterable, Codable {
     case .explore:
       return "square.stack"
     case .plan:
-      return "text.pad.header.badge.clock"
+      return "calendar.badge.clock"
     case .settings:
       return "gear"
     case .search:
