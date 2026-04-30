@@ -103,6 +103,9 @@
 		C87385742D33BB6F00CEF2EB /* Line.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87385732D33BB6F00CEF2EB /* Line.swift */; };
 		C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5352FA2FA0900FA0FED /* DesignKit */; };
 		C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5372FA2FA0900FA0FED /* UtilKit */; };
+		C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */; };
+		C874B53C2FA3024800FA0FED /* PhayarSarMainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53B2FA3024800FA0FED /* PhayarSarMainContentView.swift */; };
+		C874B53E2FA3025F00FA0FED /* PhayarSarMainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53D2FA3025F00FA0FED /* PhayarSarMainTabView.swift */; };
 		C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */; };
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
@@ -166,6 +169,8 @@
 		C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */; };
 		C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */; };
 		C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */ = {isa = PBXBuildFile; productRef = C8D730B82B46F74900D19D57 /* CompactSlider */; };
+		C8EF0D592FA30B5B00543BCA /* LocalisationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF0D572FA30B5B00543BCA /* LocalisationTestView.swift */; };
+		C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */; };
 		C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F339392B938D7A00C1730B /* String+Date.swift */; };
 		C8F3393D2B94301600C1730B /* WorshipPlanListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */; };
 		C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */; };
@@ -318,6 +323,9 @@
 		C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanRepository.swift; sourceTree = "<group>"; };
 		C873856F2D33AA4A00CEF2EB /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		C87385732D33BB6F00CEF2EB /* Line.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Line.swift; sourceTree = "<group>"; };
+		C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarAppV2.swift; sourceTree = "<group>"; };
+		C874B53B2FA3024800FA0FED /* PhayarSarMainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarMainContentView.swift; sourceTree = "<group>"; };
+		C874B53D2FA3025F00FA0FED /* PhayarSarMainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarMainTabView.swift; sourceTree = "<group>"; };
 		C88DECB62B9DF94700A96B29 /* TextType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextType.swift; sourceTree = "<group>"; };
 		C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberText.swift; sourceTree = "<group>"; };
 		C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberTextFomatter.swift; sourceTree = "<group>"; };
@@ -380,6 +388,7 @@
 		C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColorScreen.swift; sourceTree = "<group>"; };
 		C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCornerView.swift; sourceTree = "<group>"; };
 		C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowContentViewModifier.swift; sourceTree = "<group>"; };
+		C8EF0D572FA30B5B00543BCA /* LocalisationTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalisationTestView.swift; sourceTree = "<group>"; };
 		C8F339392B938D7A00C1730B /* String+Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Date.swift"; sourceTree = "<group>"; };
 		C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanListScreen.swift; sourceTree = "<group>"; };
 		C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanCardView.swift; sourceTree = "<group>"; };
@@ -406,6 +415,7 @@
 				C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */,
 				C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */,
 				C8F339462B94374300C1730B /* AlertToast in Frameworks */,
+				C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */,
 				C8FCD1422BA4AF0300AB5BD3 /* SwiftUICharts in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
@@ -573,6 +583,9 @@
 			children = (
 				C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */,
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
+				C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */,
+				C874B53B2FA3024800FA0FED /* PhayarSarMainContentView.swift */,
+				C874B53D2FA3025F00FA0FED /* PhayarSarMainTabView.swift */,
 				C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */,
 				C815D6C92B4B140700BFB79C /* CoreData */,
 				C81E927E2B2DCDAD00F4ED9E /* Models */,
@@ -615,6 +628,7 @@
 		C82039D72B1CC2E9000EEF61 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				C8EF0D582FA30B5B00543BCA /* LocalisationTest */,
 				C84F4A8E2C02E5A300B5A502 /* ForceUpdate */,
 				C84F4A872C01BB1B00B5A502 /* WhatIsNew */,
 				C81792632BFBB36500DC741E /* LaunchScreen */,
@@ -958,6 +972,14 @@
 			path = ChooseColor;
 			sourceTree = "<group>";
 		};
+		C8EF0D582FA30B5B00543BCA /* LocalisationTest */ = {
+			isa = PBXGroup;
+			children = (
+				C8EF0D572FA30B5B00543BCA /* LocalisationTestView.swift */,
+			);
+			path = LocalisationTest;
+			sourceTree = "<group>";
+		};
 		C8F3393B2B94300B00C1730B /* WorshipPlanList */ = {
 			isa = PBXGroup;
 			children = (
@@ -1009,6 +1031,7 @@
 				C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */,
 				C874B5352FA2FA0900FA0FED /* DesignKit */,
 				C874B5372FA2FA0900FA0FED /* UtilKit */,
+				C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1242,6 +1265,7 @@
 				C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */,
 				C8CA45C52B4136CC00240DA7 /* AboutPrayerScreen.swift in Sources */,
 				C8AE59302B6E471B00ABB8F3 /* RollingText.swift in Sources */,
+				C8EF0D592FA30B5B00543BCA /* LocalisationTestView.swift in Sources */,
 				C80287472B4A5F3600F165DF /* PrayingProgressView.swift in Sources */,
 				C8AAE01E2B2DB84200BE54CA /* Optional.swift in Sources */,
 				C817926A2BFBBB1A00DC741E /* Decodable+localization.swift in Sources */,
@@ -1256,7 +1280,9 @@
 				C8D4030F2B68FA7600448EDC /* PrayerCollectionsScreen.swift in Sources */,
 				C82039EB2B1CCB6D000EEF61 /* Color+CustomColors.swift in Sources */,
 				C83E27F22B2DDACC0038EDF1 /* LocalizedNavTitle.swift in Sources */,
+				C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */,
 				C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */,
+				C874B53C2FA3024800FA0FED /* PhayarSarMainContentView.swift in Sources */,
 				C81792452BF904F500DC741E /* AnimationCompletionObserver.swift in Sources */,
 				C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */,
 				C81792522BFB8E2700DC741E /* AskForReview.swift in Sources */,
@@ -1300,6 +1326,7 @@
 				C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */,
 				C82039EF2B1CCCAF000EEF61 /* AppBtnFilled.swift in Sources */,
 				C849BF462B9CB481004F771F /* WorshipPlanPrayingScreen.swift in Sources */,
+				C874B53E2FA3025F00FA0FED /* PhayarSarMainTabView.swift in Sources */,
 				EA578F0C2BF996EF00366ADC /* AfterAppearViewModifier.swift in Sources */,
 				C84F4A892C01BB2500B5A502 /* WhatIsNewScreen.swift in Sources */,
 				C8AE59282B6E36C900ABB8F3 /* WorshipPlanSteps.swift in Sources */,
@@ -1834,6 +1861,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C8D730B72B46F74900D19D57 /* XCRemoteSwiftPackageReference "CompactSlider" */;
 			productName = CompactSlider;
+		};
+		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LocalisationKit;
 		};
 		C8F339422B9433E900C1730B /* SwipeActions */ = {
 			isa = XCSwiftPackageProductDependency;

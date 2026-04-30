@@ -13,6 +13,10 @@ let package = Package(
     .library(
       name: "DesignKit",
       targets: ["DesignKit"]
+    ),
+    .library(
+      name: "LocalisationKit",
+      targets: ["LocalisationKit"]
     )
   ],
   targets: [
@@ -25,6 +29,23 @@ let package = Package(
         "UtilKit"
       ],
       resources: [.process("Fonts")]
+    ),
+    .target(
+      name: "LocalisationKit",
+      resources: [.process("Localisations")],
+      plugins: [
+        .plugin(name: "LocalisationKitPlugin")
+      ]
+    ),
+    .executableTarget(
+      name: "LocalisationKitCodeGen"
+    ),
+    .plugin(
+      name: "LocalisationKitPlugin",
+      capability: .buildTool(),
+      dependencies: [
+        "LocalisationKitCodeGen"
+      ]
     )
   ]
 )

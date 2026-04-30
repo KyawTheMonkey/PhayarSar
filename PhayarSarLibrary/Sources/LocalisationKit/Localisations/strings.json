@@ -1,0 +1,26 @@
+{
+  "welcome_to_phayarsar": {
+    "En": "Welcome to\nPhayarSar",
+    "Mm": "ဘုရားစာ App ကနေ\nကြိုဆိုပါတယ်"
+  },
+  "hello": {
+    "En": "Hello {0} and {1}",
+    "Mm": "ကြိုဆိုပါတယ် {0} နှင့် {1}"
+  },
+  "greeting_single": {
+    "En": "Welcome, {0}!",
+    "Mm": "{0} ကြိုဆိုပါတယ်!"
+  },
+  "user_count": {
+    "En": "{0} has {1} prayers completed",
+    "Mm": "{0} သည် ဆုတောင်းချက် {1} ခု ပြီးစီးခဲ့သည်"
+  },
+  "three_args_example": {
+    "En": "{0} and {1} are in {2}",
+    "Mm": "{0} နှင့် {1} သည် {2} တွင်ရှိသည်"
+  },
+  "good morning": {
+    "En": "Good {0}",
+    "Mm": "ကောင်းသော {0}"
+  }
+}

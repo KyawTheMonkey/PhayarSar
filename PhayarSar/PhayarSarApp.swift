@@ -9,10 +9,12 @@ import SwiftUI
 import UserNotifications
 import FirebaseCore
 import FirebaseMessaging
+import DesignKit
+import LocalisationKit
 
 var langDict: [String: [String: String]] = [:]
 
-@main
+//@main
 struct PhayarSarApp: App {
   @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
   
@@ -20,6 +22,7 @@ struct PhayarSarApp: App {
   @StateObject private var worshipPlanRepo = WorshipPlanRepository()
   @StateObject private var dailyPrayingTimeRepository = DailyPrayingTimeRepository()
   @StateObject private var remoteConfigManager = RemoteConfigManager()
+  @StateObject private var localisationManager = LocalisationManager.shared
   
   private let coreDataStack = CoreDataStack.shared
   
@@ -68,6 +71,8 @@ extension PhayarSarApp {
       .environmentObject(worshipPlanRepo)
       .environmentObject(dailyPrayingTimeRepository)
       .environmentObject(remoteConfigManager)
+      .environmentObject(localisationManager)
+      .environment(\.language, localisationManager.currentLanguage)
       .environment(\.managedObjectContext, coreDataStack.viewContext)
       .preferredColorScheme(preferences.appTheme.colorScheme)
     }
