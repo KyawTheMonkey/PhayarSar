@@ -95,6 +95,11 @@ public enum AppColor {
   )
   
   public static let buttonSecondaryText = primary
+  
+  public static let searchBarBackground = Color.dynamic(
+    light: Palette.Neutral.primaryAltDark,
+    dark: Color(white: 0.25)
+  )
 }
 
 fileprivate enum Palette {
