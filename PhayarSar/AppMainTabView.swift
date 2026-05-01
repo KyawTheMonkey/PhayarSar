@@ -58,7 +58,9 @@ struct AppMainTabView: View {
         set: { navigator.changeTabSelection(to: $0) }
       )
     ) {
-      Tab(value: AppTab.explore) {} label: {
+      Tab(value: AppTab.explore) {
+        ExploreView()
+      } label: {
         AppTab.explore.label
       }
 
@@ -80,7 +82,7 @@ struct AppMainTabView: View {
         set: { navigator.changeTabSelection(to: $0) }
       )
     ) {
-      Text("Explore")
+      ExploreView()
         .tabItem {
           AppTab.explore.label
         }
