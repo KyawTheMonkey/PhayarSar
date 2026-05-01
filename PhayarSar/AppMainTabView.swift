@@ -1,3 +1,4 @@
+import DesignKit
 import EnvironmentKit
 import Explore
 import SwiftUI
@@ -9,10 +10,14 @@ struct AppMainTabView: View {
   var body: some View {
     if #available(iOS 26.0, *) {
       TabView_iOS26()
+        .tint(Color.accent)
+
     } else if #available(iOS 18.0, *) {
       TabView_iOS18()
+        .tint(Color.accent)
     } else {
       TabView_Old()
+        .accentColor(Color.accent)
     }
   }
 

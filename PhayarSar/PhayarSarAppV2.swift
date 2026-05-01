@@ -11,6 +11,13 @@ struct PhayarSarAppV2: App {
 
   init() {
     Typography.registerFonts()
+    
+    let appearance = UINavigationBarAppearance()
+    appearance.titleTextAttributes = [.font: UIFont(name: "QuickSand-Bold", size: 18)!]
+    appearance.largeTitleTextAttributes = [.font: UIFont(name: "DMSerifDisplay-Regular", size: 34)!]
+    
+    UINavigationBar.appearance().standardAppearance = appearance
+    UINavigationBar.appearance().scrollEdgeAppearance = appearance
   }
 
   var body: some Scene {

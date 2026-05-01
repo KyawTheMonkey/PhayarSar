@@ -30,7 +30,6 @@ struct ExploreNavView: View {
     .background {
       AppColor.background.ignoresSafeArea()
     }
-    .blur(radius: blurRadius)
     .enableInjection()
   }
   
