@@ -152,7 +152,7 @@ fileprivate enum Palette {
     static let secondaryDark = Color(hex: "#c9c9c9")
     static let primaryAltDark = Color(hex: "#fdfffc")
     static let primaryDark = Color(hex: "#fcfff7")
-    static let darkDark = Color(hex: "#1a1918")
+    static let darkDark = Color(hex: "#2e2d2c")
   }
   
   enum Base {

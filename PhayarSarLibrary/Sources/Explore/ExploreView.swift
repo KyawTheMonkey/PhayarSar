@@ -10,38 +10,59 @@ public struct ExploreView: View {
   public init() {}
 
   public var body: some View {
-    NavigationStack(path: $navigator.path) {
-      List {
-        if #unavailable(iOS 26) {
-          ExploreNavView()
-            .listRowInsets(.init(top: 0, leading: -10, bottom: 0, trailing: -10))
-        }
-        Section("Quick actions") {
-          NavigationLink(value: "prayers") {
-            Label("All Prayers", systemImage: "books.vertical")
-              .font(AppFont.bodySemibold)
-          }
-
-          NavigationLink(value: "audios") {
-            Label("Chantings", systemImage: "music.note.list")
-              .font(AppFont.bodySemibold)
+    NavigationStack(path: self.$navigator.path) {
+      ScrollView {
+        LazyVStack(alignment: .leading, spacing: 16) {
+          if #unavailable(iOS 26) {
+            ExploreNavView()
+            
+            QuickActionsView()
           }
         }
-        .listRowBackground(AppColor.card)
-
-        ForYouCardView()
-        
-        ForYouCardView()
-        
-        ForYouCardView()
-        
-        ForYouCardView()
-        
-        ForYouCardView()
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity, alignment: .leading)
       }
       .scrollContentBackground(.hidden)
       .background(AppColor.background)
       .navTitle_iOS26()
+      .toolbar {
+        if #available(iOS 26, *) {
+          ToolbarItem(placement: .topBarLeading) {
+            Menu {
+              Button {} label: {
+                Label("Bookmark", systemImage: "bookmark.fill")
+              }
+              
+              Button {} label: {
+                Label("Statistics", systemImage: "chart.bar.fill")
+              }
+              
+              Button {} label: {
+                Label("Downloads", systemImage: "square.and.arrow.down.fill")
+              }
+
+              Divider()
+
+              Section {
+                Button {} label: {
+                  Label("Scroll to top", systemImage: "arrow.up.circle.fill")
+                }
+              } header: {
+                Text("Quick actions")
+              }
+            } label: {
+              Image(systemName: "line.3.horizontal")
+                .fontWeight(.bold)
+            }
+          }
+
+          ToolbarItem(placement: .topBarTrailing) {
+            Button {} label: {
+              Text("Sign in")
+            }
+          }
+        }
+      }
       .tint(AppColor.accent)
       .enableInjection()
     }
@@ -63,7 +84,7 @@ public struct ExploreView: View {
   }
 }
 
-fileprivate extension View {
+private extension View {
   @ViewBuilder func navTitle_iOS26() -> some View {
     if #available(iOS 26, *) {
       self.navigationTitle("PhayarSar")

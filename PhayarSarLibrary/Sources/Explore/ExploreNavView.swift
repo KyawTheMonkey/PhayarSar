@@ -26,7 +26,7 @@ struct ExploreNavView: View {
     }
     .foregroundStyle(AppColor.textPrimary)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .padding()
+    .padding(.top, 30)
     .background {
       AppColor.background.ignoresSafeArea()
     }
