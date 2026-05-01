@@ -23,7 +23,7 @@ public enum AppColor {
   // MARK: - Backgrounds
 
   public static let background = Color.dynamic(
-    light: Palette.Base.white,
+    light: Palette.Neutral.lighter,
     dark: Palette.Base.whiteDark
   )
   
@@ -33,8 +33,8 @@ public enum AppColor {
   )
   
   public static let card = Color.dynamic(
-    light: Palette.Neutral.lighter,
-    dark: Palette.Neutral.lighterDark
+    light: Palette.Base.white,
+    dark: Palette.Neutral.darkDark
   )
   
   // MARK: - Text
@@ -144,10 +144,10 @@ fileprivate enum Palette {
     static let quaternaryDark = Color(hex: "#0c0c0c")
     static let tertiaryAltDark = Color(hex: "#0c0c0c")
     static let tertiaryDark = Color(hex: "#fdfffa")
-    static let secondaryDark = Color(hex: "#fdfffb")
+    static let secondaryDark = Color(hex: "#c9c9c9")
     static let primaryAltDark = Color(hex: "#fdfffc")
     static let primaryDark = Color(hex: "#fcfff7")
-    static let darkDark = Color(hex: "#fefffd")
+    static let darkDark = Color(hex: "#1a1918")
   }
   
   enum Base {
