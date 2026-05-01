@@ -27,6 +27,9 @@ let package = Package(
       targets: ["Explore"]
     )
   ],
+  dependencies: [
+    .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0")
+  ],
   targets: [
     // MARK: - Helpers
 
@@ -59,7 +62,7 @@ let package = Package(
     ),
     .target(
       name: "EnvironmentKit",
-      dependencies: ["LocalisationKit", "UtilKit"]
+      dependencies: ["LocalisationKit", "UtilKit", "Inject"]
     ),
 
     // MARK: - Features
