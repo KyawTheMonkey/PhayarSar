@@ -4,32 +4,57 @@ import SwiftUI
 
 struct QuickActionsView: View {
   @ObserveInjection private var injectionObserver
-
+  @State private var isQuickActionsShowing = true
+  
   var body: some View {
-    VStack(alignment: .leading, spacing: 5) {
-      Text("Quick Actions".uppercased())
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(.secondary)
-        .padding(.leading)
+    VStack(alignment: .leading, spacing: 16) {
+      quickActionHeaderView()
       
-      VStack(alignment: .leading) {
-        Row(title: "Bookmark", systemImage: "bookmark.fill", hasDivier: true)
-        Row(title: "Statistics", systemImage: "chart.bar.fill", hasDivier: true)
-        Row(title: "Downloads", systemImage: "square.and.arrow.down.fill", hasDivier: false)
-      }
-      .padding()
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .background {
-        RoundedRectangle(cornerRadius: 18)
-          .fill(AppColor.card)
-          .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 0)
+      if isQuickActionsShowing {
+        VStack(alignment: .leading, spacing: 12) {
+          Row(title: "Bookmark", systemImage: "bookmark.fill", hasDivier: true)
+          Row(title: "Statistics", systemImage: "chart.bar.fill", hasDivier: true)
+          Row(title: "Downloads", systemImage: "square.and.arrow.down.fill", hasDivier: false)
+        }
+        .padding([.horizontal, .bottom])
       }
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .clipShape(RoundedRectangle(cornerRadius: 18))
+    .background {
+      RoundedRectangle(cornerRadius: 18)
+        .fill(AppColor.card)
+        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 0)
+    }
     .padding(.top)
-
     .enableInjection()
   }
   
+  @ViewBuilder fileprivate func quickActionHeaderView() -> some View {
+    HStack {
+      Text("Quick Actions")
+        .font(AppFont.caption)
+        .fontWeight(.semibold)
+      Spacer()
+      Image(systemName: isQuickActionsShowing ? "xmark" : "line.3.horizontal")
+    }
+    .font(.caption)
+    .padding([.horizontal])
+    .padding([.vertical], 12)
+    .background(AppColor.searchBarBackground)
+    .overlay(alignment: .bottom) {
+      if isQuickActionsShowing {
+        Divider()
+      }
+    }
+    .contentShape(.rect)
+    .onTapGesture {
+      withAnimation {
+        isQuickActionsShowing.toggle()
+      }
+    }
+  }
+
   @ViewBuilder
   private func Row(title: String, systemImage: String, hasDivier: Bool) -> some View {
     HStack {
@@ -49,7 +74,8 @@ struct QuickActionsView: View {
     .overlay(alignment: .bottom) {
       if hasDivier {
         Divider()
-          .padding(.leading, 25)
+          .padding(.leading, 28)
+          .padding(.trailing, -18)
       }
     }
   }
