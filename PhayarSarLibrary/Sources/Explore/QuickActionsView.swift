@@ -37,6 +37,7 @@ struct QuickActionsView: View {
         .fontWeight(.semibold)
       Spacer()
       Image(systemName: isQuickActionsShowing ? "xmark" : "line.3.horizontal")
+        .contentTransition_iOS17()
     }
     .font(.caption)
     .padding([.horizontal])
@@ -49,7 +50,7 @@ struct QuickActionsView: View {
     }
     .contentShape(.rect)
     .onTapGesture {
-      withAnimation {
+      withAnimation(.smooth) {
         isQuickActionsShowing.toggle()
       }
     }
@@ -77,6 +78,16 @@ struct QuickActionsView: View {
           .padding(.leading, 28)
           .padding(.trailing, -18)
       }
+    }
+  }
+}
+
+extension View {
+  @ViewBuilder fileprivate func contentTransition_iOS17() -> some View{
+    if #available(iOS 17, *) {
+      contentTransition(.symbolEffect(.replace))
+    } else {
+      self
     }
   }
 }
