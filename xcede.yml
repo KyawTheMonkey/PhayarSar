@@ -1,0 +1,6 @@
+scheme: PhayarSar
+platform: sim
+device: "EF990CB7-7E45-4610-829C-94B938E680A8"
+project: PhayarSar.xcodeproj
+buildwithxcode: true
+beautifier: xcbeautify --disable-logging -q
