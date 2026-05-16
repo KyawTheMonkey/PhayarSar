@@ -43,6 +43,12 @@ public enum AppFont {
     relativeTo: .title
   )
   
+  public static let title3 = Font.custom(
+    AppFonts.dmSerifDisplayRegular.rawValue,
+    size: 20,
+    relativeTo: .title
+  )
+  
   // MARK: - Body (Quicksand)
   public static let body = Font.custom(
     AppFonts.quicksandRegular.rawValue,
