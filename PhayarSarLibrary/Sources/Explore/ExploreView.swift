@@ -2,8 +2,10 @@ import DesignKit
 import EnvironmentKit
 import Inject
 import SwiftUI
+import SwiftUIX
 
 public struct ExploreView: View {
+  @Environment(\.userInterfaceIdiom) var uii
   @EnvironmentObject var navigator: AppNavigatorModel
   @ObserveInjection var inject
 
@@ -13,53 +15,58 @@ public struct ExploreView: View {
     NavigationStack(path: self.$navigator.path) {
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 16) {
-          if #unavailable(iOS 26) {
-            ExploreNavView()
-            
-            QuickActionsView()
-          }
+          customNavAndQuickActionsForPhone()
         }
         .padding(.horizontal)
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       .scrollContentBackground(.hidden)
       .background(AppColor.background)
-      .navTitle_iOS26()
+      .customNavTitle(isIpad: uii == .pad)
       .toolbar {
-        if #available(iOS 26, *) {
-          ToolbarItem(placement: .topBarLeading) {
-            Menu {
-              Button {} label: {
-                Label("Bookmark", systemImage: "bookmark.fill")
-              }
-              
-              Button {} label: {
-                Label("Statistics", systemImage: "chart.bar.fill")
-              }
-              
-              Button {} label: {
-                Label("Downloads", systemImage: "square.and.arrow.down.fill")
-              }
-
-              Divider()
-
-              Section {
+        if uii == .phone {
+          if #available(iOS 26, *) {
+            ToolbarItem(placement: .topBarLeading) {
+              Menu {
                 Button {} label: {
-                  Label("Scroll to top", systemImage: "arrow.up.circle.fill")
+                  Label("Bookmark", systemImage: "bookmark.fill")
                 }
-              } header: {
-                Text("Quick actions")
+                
+                Button {} label: {
+                  Label("Statistics", systemImage: "chart.bar.fill")
+                }
+                
+                Button {} label: {
+                  Label("Downloads", systemImage: "square.and.arrow.down.fill")
+                }
+                
+                Divider()
+                
+                Section {
+                  Button {} label: {
+                    Label("Scroll to top", systemImage: "arrow.up.circle.fill")
+                  }
+                } header: {
+                  Text("Quick actions")
+                }
+              } label: {
+                Image(systemName: "line.3.horizontal")
+                  .fontWeight(.bold)
               }
-            } label: {
-              Image(systemName: "line.3.horizontal")
-                .fontWeight(.bold)
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+              Button {} label: {
+                Text("Sign in")
+              }
             }
           }
-
-          ToolbarItem(placement: .topBarTrailing) {
-            Button {} label: {
-              Text("Sign in")
+        } else {
+          ToolbarItemGroup(placement: .topBarTrailing) {
+            Button("Search", systemImage: "magnifyingglass") {
+              
             }
+            .fontWeight(.semibold)
           }
         }
       }
@@ -82,17 +89,32 @@ public struct ExploreView: View {
       }
     }
   }
+  
+  @ViewBuilder
+  private func customNavAndQuickActionsForPhone() -> some View {
+    if #unavailable(iOS 26) {
+      if uii == .phone {
+        ExploreNavView()
+        
+        QuickActionsView()
+      }
+    }
+  }
 }
 
 private extension View {
-  @ViewBuilder func navTitle_iOS26() -> some View {
-    if #available(iOS 26, *) {
+  @ViewBuilder func customNavTitle(isIpad: Bool) -> some View {
+    if isIpad {
       self.navigationTitle("PhayarSar")
-    } else if #available(iOS 18, *) {
-      self
-        .toolbarVisibility(.hidden, for: .navigationBar)
     } else {
-      self.navigationBarHidden(true)
+      if #available(iOS 26, *) {
+        self.navigationTitle("PhayarSar")
+      } else if #available(iOS 18, *) {
+        self
+          .toolbarVisibility(.hidden, for: .navigationBar)
+      } else {
+        self.navigationBarHidden(true)
+      }
     }
   }
 }

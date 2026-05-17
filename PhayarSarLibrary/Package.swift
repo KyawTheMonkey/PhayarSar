@@ -28,7 +28,8 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0")
+    .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0"),
+    .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.3.0")
   ],
   targets: [
     // MARK: - Helpers
@@ -69,7 +70,7 @@ let package = Package(
 
     .target(
       name: "Explore",
-      dependencies: ["DesignKit", "EnvironmentKit"]
+      dependencies: ["DesignKit", "EnvironmentKit", "SwiftUIX"]
     )
   ]
 )
