@@ -14,5 +14,17 @@
   "search_tab": {
     "En": "Search",
     "Mm": "ရှာဖွေ"
+  },
+  "bookmark_tab": {
+    "En": "Bookmark",
+    "Mm": "မှတ်စု"
+  },
+  "statistics_tab": {
+    "En": "Statistics",
+    "Mm": "မှတ်တမ်း"
+  },
+  "downloads_tab": {
+    "En": "Downloads",
+    "Mm": "ဒေါင်းလုဒ်"
   }
 }
