@@ -23,6 +23,10 @@ let package = Package(
       targets: ["EnvironmentKit"]
     ),
     .library(
+      name: "ComponentKit",
+      targets: ["ComponentKit"]
+    ),
+    .library(
       name: "Explore",
       targets: ["Explore"]
     )
