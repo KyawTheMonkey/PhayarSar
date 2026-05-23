@@ -69,12 +69,16 @@ let package = Package(
       name: "EnvironmentKit",
       dependencies: ["LocalisationKit", "UtilKit", "Inject"]
     ),
+    .target(
+      name: "ComponentKit",
+      dependencies: ["EnvironmentKit"]
+    ),
 
     // MARK: - Features
 
     .target(
       name: "Explore",
-      dependencies: ["DesignKit", "EnvironmentKit", "SwiftUIX"]
+      dependencies: ["ComponentKit", "EnvironmentKit", "SwiftUIX"]
     )
   ]
 )
