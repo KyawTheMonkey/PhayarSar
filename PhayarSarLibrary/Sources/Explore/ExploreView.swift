@@ -16,6 +16,8 @@ public struct ExploreView: View {
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 16) {
           customNavAndQuickActionsForPhone()
+          
+          
         }
         .padding(.horizontal)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -57,7 +59,10 @@ public struct ExploreView: View {
             
             ToolbarItem(placement: .topBarTrailing) {
               Button {} label: {
-                Text("Sign in")
+                HStack {
+                  Image(systemName: "person.fill")
+                  Text("Sign in")
+                }
               }
             }
           }
@@ -88,6 +93,11 @@ public struct ExploreView: View {
           .ignoresSafeArea()
       }
     }
+  }
+  
+  @ViewBuilder
+  private func CarouselGrid() -> some View {
+    
   }
   
   @ViewBuilder
