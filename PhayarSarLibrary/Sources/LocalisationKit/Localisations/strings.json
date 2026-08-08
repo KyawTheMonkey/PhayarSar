@@ -1,30 +1,22 @@
 {
-  "explore_tab": {
-    "En": "Explore",
-    "Mm": "လေ့လာ"
+  "home_tab": {
+    "En": "Home",
+    "Mm": "ပင်မ"
   },
-  "plan_tab": {
-    "En": "Plan",
-    "Mm": "အဓိဌာန်"
+  "meditation_tab": {
+      "En": "Meditation",
+      "Mm": "တရားထိုင်"
+  },
+  "beads_tab": {
+    "En": "Beads",
+    "Mm": "ပုတီးစိပ်"
+  },
+  "plans_tab": {
+      "En": "Plans",
+      "Mm": "အဓိဌာန်"
   },
   "settings_tab": {
     "En": "Settings",
     "Mm": "စက်တင်"
-  },
-  "search_tab": {
-    "En": "Search",
-    "Mm": "ရှာဖွေ"
-  },
-  "bookmark_tab": {
-    "En": "Bookmark",
-    "Mm": "မှတ်စု"
-  },
-  "statistics_tab": {
-    "En": "Statistics",
-    "Mm": "မှတ်တမ်း"
-  },
-  "downloads_tab": {
-    "En": "Downloads",
-    "Mm": "ဒေါင်းလုဒ်"
   }
 }

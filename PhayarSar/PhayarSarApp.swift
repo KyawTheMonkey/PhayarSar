@@ -18,7 +18,7 @@ var langDict: [String: [String: String]] = [:]
 struct PhayarSarApp: App {
     var body: some Scene {
         WindowGroup {
-            Text("Hi")
+          AppTabView()
         }
     }
 }

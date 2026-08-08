@@ -49,6 +49,7 @@
 		C82039FA2B1CE1C7000EEF61 /* PhayarSarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039F92B1CE1C7000EEF61 /* PhayarSarModel.swift */; };
 		C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */; };
 		C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C62D32C965007C1E01 /* Array+chunked.swift */; };
+		C82CE4EC3026D1D3005F78D5 /* AppTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */; };
 		C83961B22B4053E900E189D9 /* View+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B12B4053E900E189D9 /* View+Preview.swift */; };
 		C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B52B40578200E189D9 /* SafeAreaInsets.swift */; };
 		C83E27F02B2DDAB20038EDF1 /* LocalizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */; };
@@ -214,6 +215,7 @@
 		C82039F92B1CE1C7000EEF61 /* PhayarSarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarModel.swift; sourceTree = "<group>"; };
 		C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Decode.swift"; sourceTree = "<group>"; };
 		C828F5C62D32C965007C1E01 /* Array+chunked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+chunked.swift"; sourceTree = "<group>"; };
+		C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTabView.swift; sourceTree = "<group>"; };
 		C82D77C52FA1CD2E0069FE44 /* PhayarSarLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = PhayarSarLibrary; sourceTree = "<group>"; };
 		C83961B12B4053E900E189D9 /* View+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Preview.swift"; sourceTree = "<group>"; };
 		C83961B52B40578200E189D9 /* SafeAreaInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaInsets.swift; sourceTree = "<group>"; };
@@ -428,6 +430,7 @@
 				C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */,
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
 				C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */,
+				C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */,
 				C815D6C92B4B140700BFB79C /* CoreData */,
 				C81E927E2B2DCDAD00F4ED9E /* Models */,
 				C81E927B2B2DC94C00F4ED9E /* Managers */,
@@ -870,6 +873,7 @@
 				C8AAE01A2B2D7B5F00BE54CA /* AppLanguage.swift in Sources */,
 				C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */,
 				C82039AE2B1CABE4000EEF61 /* PhayarSarApp.swift in Sources */,
+				C82CE4EC3026D1D3005F78D5 /* AppTabView.swift in Sources */,
 				C8A661D02B55795600F2A553 /* NavigationBarColor.swift in Sources */,
 				C8FCD1342BA462D900AB5BD3 /* LocalizedAlert.swift in Sources */,
 				C84E69202B4C42FA006231CD /* NSObject+Extension.swift in Sources */,

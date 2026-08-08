@@ -1,37 +1,27 @@
-import SwiftUI
 import LocalisationKit
+import SwiftUI
  
 @MainActor
 public enum AppTab: @MainActor Identifiable, Hashable, CaseIterable, Codable {
-  case explore
-  case plan
+  case home
+  case meditation
+  case beads
+  case plans
   case settings
-  case search
-  case bookmark
-  case statistics
-  case downloads
   
   public var id: Int {
     switch self {
-    case .explore:
+    case .home:
       return 0
-    case .plan:
+    case .meditation:
       return 1
-    case .settings:
+    case .beads:
       return 2
-    case .search:
+    case .plans:
       return 3
-    case .bookmark:
+    case .settings:
       return 4
-    case .statistics:
-      return 5
-    case .downloads:
-      return 6
     }
-  }
-  
-  public static func allTabs() -> [AppTab] {
-    return [.explore, .plan, .settings]
   }
   
   @ViewBuilder
@@ -43,60 +33,43 @@ public enum AppTab: @MainActor Identifiable, Hashable, CaseIterable, Codable {
     .fontWeight(.medium)
   }
   
-  var title: String {
+  public var title: String {
     switch self {
-    case .explore:
-      L10n.exploreTab
-    case .plan:
-      L10n.planTab
-    case .settings:
-      L10n.settingsTab
-    case .search:
-      L10n.searchTab
-    case .bookmark:
-      L10n.bookmarkTab
-    case .statistics:
-      L10n.statisticsTab
-    case .downloads:
-      L10n.downloadsTab
+    case .home: return L10n.homeTab
+    case .meditation: return L10n.meditationTab
+    case .beads: return L10n.beadsTab
+    case .plans: return L10n.plansTab
+    case .settings: return L10n.settingsTab
     }
   }
   
   var iconName: String {
     switch self {
-    case .explore:
+    case .home:
       return "square.stack"
-    case .plan:
+    case .meditation:
+      return "figure.mind.and.body"
+    case .beads:
+      return "circle.hexagonpath"
+    case .plans:
       return "calendar.badge.clock"
     case .settings:
       return "gear"
-    case .search:
-      return "magnifyingglass"
-    case .bookmark:
-      return "bookmark"
-    case .statistics:
-      return "chart.bar"
-    case .downloads:
-      return "square.and.arrow.down"
     }
   }
   
   var iconNameSelected: String {
     switch self {
-    case .explore:
+    case .home:
       return "square.stack.fill"
-    case .plan:
+    case .meditation:
+      return "figure.mind.and.body"
+    case .beads:
+      return "circle.hexagonpath"
+    case .plans:
       return "calendar.badge.clock"
     case .settings:
       return "gear"
-    case .search:
-      return "magnifyingglass"
-    case .bookmark:
-      return "bookmark.fill"
-    case .statistics:
-      return "chart.bar.fill"
-    case .downloads:
-      return "square.and.arrow.down.fill"
     }
   }
 }
