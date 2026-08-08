@@ -25,15 +25,10 @@ let package = Package(
     .library(
       name: "ComponentKit",
       targets: ["ComponentKit"]
-    ),
-    .library(
-      name: "Explore",
-      targets: ["Explore"]
     )
   ],
   dependencies: [
-    .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0"),
-    .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.3.0")
+    .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0")
   ],
   targets: [
     // MARK: - Helpers
@@ -75,10 +70,5 @@ let package = Package(
     ),
 
     // MARK: - Features
-
-    .target(
-      name: "Explore",
-      dependencies: ["ComponentKit", "EnvironmentKit", "SwiftUIX"]
-    )
   ]
 )

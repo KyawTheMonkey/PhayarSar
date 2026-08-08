@@ -10,7 +10,6 @@
 		653454BB2BEBDF24004FC8EE /* MyanmarSyllable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653454BA2BEBDF24004FC8EE /* MyanmarSyllable.swift */; };
 		653454C02BEBE2BE004FC8EE /* PhayarSarRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653454BF2BEBE2BE004FC8EE /* PhayarSarRepository.swift */; };
 		C80287442B4940ED00F165DF /* CommonPrayerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */; };
-		C80287472B4A5F3600F165DF /* PrayingProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287462B4A5F3600F165DF /* PrayingProgressView.swift */; };
 		C80287492B4A866E00F165DF /* ScrollingSpeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287482B4A866E00F165DF /* ScrollingSpeed.swift */; };
 		C8032B682C063BE4008C4A7E /* LocalizedPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8032B672C063BE4008C4A7E /* LocalizedPicker.swift */; };
 		C8032B6A2C063F16008C4A7E /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8032B692C063F16008C4A7E /* AppTheme.swift */; };
@@ -19,19 +18,13 @@
 		C815D6D02B4B158F00BFB79C /* PrayerConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C815D6CF2B4B158F00BFB79C /* PrayerConfiguration.swift */; };
 		C81792452BF904F500DC741E /* AnimationCompletionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792442BF904F500DC741E /* AnimationCompletionObserver.swift */; };
 		C81792472BF9DD5200DC741E /* DeviceShakeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792462BF9DD5200DC741E /* DeviceShakeObserver.swift */; };
-		C817924A2BF9E22500DC741E /* PrayerSpellingErrorReportScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792492BF9E22500DC741E /* PrayerSpellingErrorReportScreen.swift */; };
-		C817924D2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C817924C2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift */; };
 		C81792502BF9ED4B00DC741E /* SpellingErrorCommentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C817924F2BF9ED4B00DC741E /* SpellingErrorCommentModel.swift */; };
 		C81792522BFB8E2700DC741E /* AskForReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792512BFB8E2700DC741E /* AskForReview.swift */; };
 		C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = C817925D2BFB979E00DC741E /* FirebaseRemoteConfig */; };
 		C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C817925F2BFB979E00DC741E /* FirebaseRemoteConfigSwift */; };
 		C81792622BFBA74F00DC741E /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792612BFBA74F00DC741E /* RemoteConfigManager.swift */; };
-		C81792652BFBB36E00DC741E /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792642BFBB36E00DC741E /* LaunchScreen.swift */; };
 		C81792682BFBB8FB00DC741E /* WhatIsNewFRCModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792672BFBB8FB00DC741E /* WhatIsNewFRCModel.swift */; };
 		C817926A2BFBBB1A00DC741E /* Decodable+localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81792692BFBBB1A00DC741E /* Decodable+localization.swift */; };
-		C81CF2512B53E66100E1B726 /* ReadingModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81CF2502B53E66100E1B726 /* ReadingModeView.swift */; };
-		C81CF2532B53F74B00E1B726 /* ModeSelectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81CF2522B53F74B00E1B726 /* ModeSelectedView.swift */; };
-		C81CF2552B53FA6C00E1B726 /* PlayerModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81CF2542B53FA6C00E1B726 /* PlayerModeView.swift */; };
 		C81CF2572B53FCA000E1B726 /* PrayingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81CF2562B53FCA000E1B726 /* PrayingMode.swift */; };
 		C81E82872B6B58EE00A59147 /* အာဋာနာဋိယသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C81E82862B6B58EE00A59147 /* အာဋာနာဋိယသုတ်.json */; };
 		C81E82892B6B5E3900A59147 /* အင်္ဂုလိမာလသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C81E82882B6B5E3900A59147 /* အင်္ဂုလိမာလသုတ်.json */; };
@@ -39,8 +32,6 @@
 		C81E828D2B6B61CC00A59147 /* ပုဗ္ဗဏှသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C81E828C2B6B61CC00A59147 /* ပုဗ္ဗဏှသုတ်.json */; };
 		C81E828F2B6B767800A59147 /* ပဋ္ဌာန်းအကျဥ်း.json in Resources */ = {isa = PBXBuildFile; fileRef = C81E828E2B6B767800A59147 /* ပဋ္ဌာန်းအကျဥ်း.json */; };
 		C81E82912B6BB04100A59147 /* ပဋ္ဌာန်းအကျယ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C81E82902B6BB04100A59147 /* ပဋ္ဌာန်းအကျယ်.json */; };
-		C81E829B2B6BFEBB00A59147 /* WorshipPlanScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81E829A2B6BFEBB00A59147 /* WorshipPlanScreen.swift */; };
-		C81E829D2B6CAC8300A59147 /* AllPrayerPickerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81E829C2B6CAC8300A59147 /* AllPrayerPickerScreen.swift */; };
 		C81E927D2B2DCD0200F4ED9E /* UserPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81E927C2B2DCD0200F4ED9E /* UserPreferences.swift */; };
 		C82039AE2B1CABE4000EEF61 /* PhayarSarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */; };
 		C82039B22B1CABE6000EEF61 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C82039B12B1CABE6000EEF61 /* Assets.xcassets */; };
@@ -48,21 +39,15 @@
 		C82039BF2B1CABE6000EEF61 /* PhayarSarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039BE2B1CABE6000EEF61 /* PhayarSarTests.swift */; };
 		C82039C92B1CABE6000EEF61 /* PhayarSarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039C82B1CABE6000EEF61 /* PhayarSarUITests.swift */; };
 		C82039CB2B1CABE6000EEF61 /* PhayarSarUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039CA2B1CABE6000EEF61 /* PhayarSarUITestsLaunchTests.swift */; };
-		C82039DA2B1CC30A000EEF61 /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039D92B1CC30A000EEF61 /* OnboardingScreen.swift */; };
 		C82039E02B1CC4B7000EEF61 /* Quicksand-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C82039DD2B1CC4B7000EEF61 /* Quicksand-Regular.ttf */; };
 		C82039E12B1CC4B7000EEF61 /* Quicksand-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C82039DE2B1CC4B7000EEF61 /* Quicksand-SemiBold.ttf */; };
 		C82039E22B1CC4B7000EEF61 /* Quicksand-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C82039DF2B1CC4B7000EEF61 /* Quicksand-Bold.ttf */; };
 		C82039E42B1CC4D6000EEF61 /* DMSerifDisplay-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C82039E32B1CC4D6000EEF61 /* DMSerifDisplay-Regular.ttf */; };
 		C82039E92B1CC653000EEF61 /* Font+CustomFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039E82B1CC653000EEF61 /* Font+CustomFonts.swift */; };
 		C82039EB2B1CCB6D000EEF61 /* Color+CustomColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039EA2B1CCB6D000EEF61 /* Color+CustomColors.swift */; };
-		C82039EF2B1CCCAF000EEF61 /* AppBtnFilled.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039EE2B1CCCAF000EEF61 /* AppBtnFilled.swift */; };
-		C82039F22B1CCF13000EEF61 /* SwiftUIBackports in Frameworks */ = {isa = PBXBuildFile; productRef = C82039F12B1CCF13000EEF61 /* SwiftUIBackports */; };
 		C82039F72B1CDB4F000EEF61 /* NatPint.json in Resources */ = {isa = PBXBuildFile; fileRef = C82039F62B1CDB4F000EEF61 /* NatPint.json */; };
 		C82039FA2B1CE1C7000EEF61 /* PhayarSarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039F92B1CE1C7000EEF61 /* PhayarSarModel.swift */; };
 		C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */; };
-		C82595BA2D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82595B92D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift */; };
-		C828F5C12D3264AB007C1E01 /* DailyPrayingTimeChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */; };
-		C828F5C32D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */; };
 		C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C62D32C965007C1E01 /* Array+chunked.swift */; };
 		C83961B22B4053E900E189D9 /* View+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B12B4053E900E189D9 /* View+Preview.swift */; };
 		C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B52B40578200E189D9 /* SafeAreaInsets.swift */; };
@@ -73,20 +58,11 @@
 		C84240BC2B2DD29300A2B234 /* Language.json in Resources */ = {isa = PBXBuildFile; fileRef = C84240BB2B2DD29300A2B234 /* Language.json */; };
 		C84240BE2B2DD31700A2B234 /* LocalizedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84240BD2B2DD31700A2B234 /* LocalizedComponents.swift */; };
 		C84240C02B2DD34900A2B234 /* LocalizedKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84240BF2B2DD34900A2B234 /* LocalizedKey.swift */; };
-		C84626B52B222B6B000931AE /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84626B42B222B6B000931AE /* HomeScreen.swift */; };
 		C849BF3C2B9C5AF3004F771F /* Delay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849BF3B2B9C5AF3004F771F /* Delay.swift */; };
-		C849BF3F2B9C751A004F771F /* WorshipPlanDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849BF3E2B9C751A004F771F /* WorshipPlanDetailScreen.swift */; };
-		C849BF412B9C76A0004F771F /* SelectedWorshipDaysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849BF402B9C76A0004F771F /* SelectedWorshipDaysView.swift */; };
-		C849BF462B9CB481004F771F /* WorshipPlanPrayingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849BF452B9CB481004F771F /* WorshipPlanPrayingScreen.swift */; };
 		C84E69202B4C42FA006231CD /* NSObject+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84E691F2B4C42FA006231CD /* NSObject+Extension.swift */; };
-		C84E69222B4C4530006231CD /* DemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84E69212B4C4530006231CD /* DemoView.swift */; };
 		C84E69242B4C4776006231CD /* PrayerAlignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84E69232B4C4776006231CD /* PrayerAlignment.swift */; };
-		C84E69262B4C4D89006231CD /* CommonPrayerVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84E69252B4C4D89006231CD /* CommonPrayerVM.swift */; };
-		C84E69482B530E0B006231CD /* PrayerModeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84E69472B530E0B006231CD /* PrayerModeScreen.swift */; };
 		C84F4A862C01B9B100B5A502 /* AppVersionNo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F4A852C01B9B100B5A502 /* AppVersionNo.swift */; };
-		C84F4A892C01BB2500B5A502 /* WhatIsNewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F4A882C01BB2500B5A502 /* WhatIsNewScreen.swift */; };
 		C84F4A8D2C02138500B5A502 /* ShimmeringEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F4A8C2C02138500B5A502 /* ShimmeringEffect.swift */; };
-		C84F4A902C02E5AB00B5A502 /* ForceUpdateScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F4A8F2C02E5AB00B5A502 /* ForceUpdateScreen.swift */; };
 		C84F4A972C03146900B5A502 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = C84F4A962C03146900B5A502 /* FirebaseMessaging */; };
 		C84F4A9F2C03197700B5A502 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F4A9E2C03197700B5A502 /* NotificationService.swift */; };
 		C84F4AA32C03197700B5A502 /* PhayarSarNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C84F4A9C2C03197700B5A502 /* PhayarSarNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -95,18 +71,8 @@
 		C851EB0F2BA5C68E0021275F /* မဟာသမယသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C851EB0E2BA5C68E0021275F /* မဟာသမယသုတ်.json */; };
 		C851EB112BA5CA250021275F /* ဂုဏ်တော်ကွန်ချာ.json in Resources */ = {isa = PBXBuildFile; fileRef = C851EB102BA5CA250021275F /* ဂုဏ်တော်ကွန်ချာ.json */; };
 		C851EB132BA5CBC30021275F /* မစ္ဆရာဇသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C851EB122BA5CBC30021275F /* မစ္ဆရာဇသုတ်.json */; };
-		C851EB152BA5DC3F0021275F /* SwiftPackagesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C851EB142BA5DC3F0021275F /* SwiftPackagesScreen.swift */; };
-		C851EB172BA5E2290021275F /* ReferencedWebsitesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C851EB162BA5E2290021275F /* ReferencedWebsitesScreen.swift */; };
-		C86AAA422B9228D800D899B2 /* PageControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA412B9228D800D899B2 /* PageControlView.swift */; };
-		C86AAA4B2B92DEAB00D899B2 /* WorshipPlanRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */; };
-		C87385702D33AA4A00CEF2EB /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C873856F2D33AA4A00CEF2EB /* Checkbox.swift */; };
-		C87385742D33BB6F00CEF2EB /* Line.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87385732D33BB6F00CEF2EB /* Line.swift */; };
 		C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5352FA2FA0900FA0FED /* DesignKit */; };
 		C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */ = {isa = PBXBuildFile; productRef = C874B5372FA2FA0900FA0FED /* UtilKit */; };
-		C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */; };
-		C874B53C2FA3024800FA0FED /* AppContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53B2FA3024800FA0FED /* AppContentView.swift */; };
-		C874B53E2FA3025F00FA0FED /* AppMainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */; };
-		C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */; };
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
 		C88DECBB2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */; };
@@ -114,24 +80,16 @@
 		C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A661CD2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift */; };
 		C8A661D02B55795600F2A553 /* NavigationBarColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A661CF2B55795600F2A553 /* NavigationBarColor.swift */; };
 		C8A661D42B55847200F2A553 /* PangLong.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8A661D32B55846C00F2A553 /* PangLong.ttf */; };
-		C8A73FED2B6F794E00216C89 /* AppleCardHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A73FEC2B6F794E00216C89 /* AppleCardHolder.swift */; };
-		C8AAE0182B2D784900BE54CA /* ChooseLanguageScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AAE0172B2D784900BE54CA /* ChooseLanguageScreen.swift */; };
 		C8AAE01A2B2D7B5F00BE54CA /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AAE0192B2D7B5F00BE54CA /* AppLanguage.swift */; };
 		C8AAE01E2B2DB84200BE54CA /* Optional.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AAE01D2B2DB84200BE54CA /* Optional.swift */; };
-		C8AE59252B6E368C00ABB8F3 /* StraightLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE59242B6E368C00ABB8F3 /* StraightLine.swift */; };
 		C8AE59282B6E36C900ABB8F3 /* WorshipPlanSteps.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE59272B6E36C900ABB8F3 /* WorshipPlanSteps.swift */; };
 		C8AE592A2B6E36D700ABB8F3 /* DaysOfWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE59292B6E36D700ABB8F3 /* DaysOfWeek.swift */; };
 		C8AE592C2B6E36F900ABB8F3 /* WorshipPlanConfigStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE592B2B6E36F900ABB8F3 /* WorshipPlanConfigStep.swift */; };
 		C8AE592E2B6E38BE00ABB8F3 /* WorshipPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE592D2B6E38BE00ABB8F3 /* WorshipPlan.swift */; };
-		C8AE59302B6E471B00ABB8F3 /* RollingText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE592F2B6E471B00ABB8F3 /* RollingText.swift */; };
 		C8BBB3652B482C0100F3828C /* LocalizedToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8BBB3642B482C0100F3828C /* LocalizedToggle.swift */; };
-		C8BBB3682B48534400F3828C /* CommonPrayerParagraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8BBB3672B48534400F3828C /* CommonPrayerParagraphView.swift */; };
 		C8BBB36E2B48713000F3828C /* Measure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8BBB36D2B48713000F3828C /* Measure.swift */; };
 		C8BBB3702B49108F00F3828C /* SpotlightScrollManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8BBB36F2B49108F00F3828C /* SpotlightScrollManager.swift */; };
-		C8CA45BD2B41251E00240DA7 /* CommonPrayerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CA45BC2B41251E00240DA7 /* CommonPrayerScreen.swift */; };
 		C8CA45BF2B41295300240DA7 /* LocalizedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CA45BE2B41295300240DA7 /* LocalizedLabel.swift */; };
-		C8CA45C52B4136CC00240DA7 /* AboutPrayerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CA45C42B4136CC00240DA7 /* AboutPrayerScreen.swift */; };
-		C8CA45C82B413ADD00240DA7 /* ThemesAndSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CA45C72B413ADD00240DA7 /* ThemesAndSettingsScreen.swift */; };
 		C8CA45CA2B41415200240DA7 /* BtnCloseCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CA45C92B41415200240DA7 /* BtnCloseCircle.swift */; };
 		C8CA45D22B41468100240DA7 /* MyanmarSquare.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8CA45D12B41468100240DA7 /* MyanmarSquare.ttf */; };
 		C8CA45D62B4146F400240DA7 /* YoeYar-One.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8CA45D52B4146F400240DA7 /* YoeYar-One.ttf */; };
@@ -151,8 +109,6 @@
 		C8CEF9FB2B68043300EF9B9E /* မေတ္တာသုတ်လာမ္မေတ္တာပွား.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FA2B68043300EF9B9E /* မေတ္တာသုတ်လာမ္မေတ္တာပွား.json */; };
 		C8CEF9FD2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FC2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json */; };
 		C8CEF9FF2B68061500EF9B9E /* အမျှဝေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FE2B68061500EF9B9E /* အမျှဝေ.json */; };
-		C8D403092B68A94F00448EDC /* MorphinDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D403082B68A94F00448EDC /* MorphinDemoView.swift */; };
-		C8D4030F2B68FA7600448EDC /* PrayerCollectionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4030E2B68FA7600448EDC /* PrayerCollectionsScreen.swift */; };
 		C8D403112B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403102B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json */; };
 		C8D403132B6A031600448EDC /* မင်္ဂလသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403122B6A031600448EDC /* မင်္ဂလသုတ်.json */; };
 		C8D403152B6A076900448EDC /* ရတနသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403142B6A076900448EDC /* ရတနသုတ်.json */; };
@@ -162,28 +118,15 @@
 		C8D4031D2B6B493100448EDC /* ဝဋ္ဋသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D4031C2B6B493100448EDC /* ဝဋ္ဋသုတ်.json */; };
 		C8D4031F2B6B4AAA00448EDC /* ဓဇဂ္ဂသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D4031E2B6B4AAA00448EDC /* ဓဇဂ္ဂသုတ်.json */; };
 		C8D6527F2B2E02DB00BB6C42 /* PositionObservingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D6527E2B2E02DB00BB6C42 /* PositionObservingView.swift */; };
-		C8D652852B2E0BDB00BB6C42 /* TabScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D652842B2E0BDB00BB6C42 /* TabScreen.swift */; };
-		C8D652882B2E0F1D00BB6C42 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D652872B2E0F1D00BB6C42 /* SettingsScreen.swift */; };
 		C8D652962B2EA6BD00BB6C42 /* AppColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D652952B2EA6BD00BB6C42 /* AppColor.swift */; };
-		C8D6529B2B2EA76500BB6C42 /* ChooseColorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */; };
 		C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */; };
 		C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */; };
-		C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */ = {isa = PBXBuildFile; productRef = C8D730B82B46F74900D19D57 /* CompactSlider */; };
 		C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */; };
-		C8EF0F1F2FA3A25C00543BCA /* Explore in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0F1E2FA3A25C00543BCA /* Explore */; };
 		C8EF0F212FA3A47500543BCA /* EnvironmentKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0F202FA3A47500543BCA /* EnvironmentKit */; };
 		C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F339392B938D7A00C1730B /* String+Date.swift */; };
-		C8F3393D2B94301600C1730B /* WorshipPlanListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */; };
-		C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */; };
-		C8F339432B9433E900C1730B /* SwipeActions in Frameworks */ = {isa = PBXBuildFile; productRef = C8F339422B9433E900C1730B /* SwipeActions */; };
-		C8F339462B94374300C1730B /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = C8F339452B94374300C1730B /* AlertToast */; };
 		C8FCD1342BA462D900AB5BD3 /* LocalizedAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1332BA462D900AB5BD3 /* LocalizedAlert.swift */; };
 		C8FCD1362BA482C400AB5BD3 /* DailyPrayingTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1352BA482C400AB5BD3 /* DailyPrayingTime.swift */; };
-		C8FCD1382BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1372BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift */; };
-		C8FCD13A2BA4A3A900AB5BD3 /* PrayingDurationChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1392BA4A3A900AB5BD3 /* PrayingDurationChartView.swift */; };
-		C8FCD1422BA4AF0300AB5BD3 /* SwiftUICharts in Frameworks */ = {isa = PBXBuildFile; productRef = C8FCD1412BA4AF0300AB5BD3 /* SwiftUICharts */; };
 		C8FCD1462BA54F9D00AB5BD3 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1452BA54F9D00AB5BD3 /* Date.swift */; };
-		C8FCD1482BA58D5300AB5BD3 /* HomeSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1472BA58D5300AB5BD3 /* HomeSearchScreen.swift */; };
 		EA578F0C2BF996EF00366ADC /* AfterAppearViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA578F0B2BF996EF00366ADC /* AfterAppearViewModifier.swift */; };
 /* End PBXBuildFile section */
 
@@ -229,7 +172,6 @@
 		653454BA2BEBDF24004FC8EE /* MyanmarSyllable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarSyllable.swift; sourceTree = "<group>"; };
 		653454BF2BEBE2BE004FC8EE /* PhayarSarRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarRepository.swift; sourceTree = "<group>"; };
 		C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPrayerProtocol.swift; sourceTree = "<group>"; };
-		C80287462B4A5F3600F165DF /* PrayingProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayingProgressView.swift; sourceTree = "<group>"; };
 		C80287482B4A866E00F165DF /* ScrollingSpeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollingSpeed.swift; sourceTree = "<group>"; };
 		C8032B652C063330008C4A7E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C8032B672C063BE4008C4A7E /* LocalizedPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedPicker.swift; sourceTree = "<group>"; };
@@ -239,17 +181,11 @@
 		C815D6CF2B4B158F00BFB79C /* PrayerConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerConfiguration.swift; sourceTree = "<group>"; };
 		C81792442BF904F500DC741E /* AnimationCompletionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationCompletionObserver.swift; sourceTree = "<group>"; };
 		C81792462BF9DD5200DC741E /* DeviceShakeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceShakeObserver.swift; sourceTree = "<group>"; };
-		C81792492BF9E22500DC741E /* PrayerSpellingErrorReportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerSpellingErrorReportScreen.swift; sourceTree = "<group>"; };
-		C817924C2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellingErrorCommentScreen.swift; sourceTree = "<group>"; };
 		C817924F2BF9ED4B00DC741E /* SpellingErrorCommentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellingErrorCommentModel.swift; sourceTree = "<group>"; };
 		C81792512BFB8E2700DC741E /* AskForReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskForReview.swift; sourceTree = "<group>"; };
 		C81792612BFBA74F00DC741E /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
-		C81792642BFBB36E00DC741E /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreen.swift; sourceTree = "<group>"; };
 		C81792672BFBB8FB00DC741E /* WhatIsNewFRCModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatIsNewFRCModel.swift; sourceTree = "<group>"; };
 		C81792692BFBBB1A00DC741E /* Decodable+localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Decodable+localization.swift"; sourceTree = "<group>"; };
-		C81CF2502B53E66100E1B726 /* ReadingModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingModeView.swift; sourceTree = "<group>"; };
-		C81CF2522B53F74B00E1B726 /* ModeSelectedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectedView.swift; sourceTree = "<group>"; };
-		C81CF2542B53FA6C00E1B726 /* PlayerModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerModeView.swift; sourceTree = "<group>"; };
 		C81CF2562B53FCA000E1B726 /* PrayingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayingMode.swift; sourceTree = "<group>"; };
 		C81E82862B6B58EE00A59147 /* အာဋာနာဋိယသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "အာဋာနာဋိယသုတ်.json"; sourceTree = "<group>"; };
 		C81E82882B6B5E3900A59147 /* အင်္ဂုလိမာလသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "အင်္ဂုလိမာလသုတ်.json"; sourceTree = "<group>"; };
@@ -257,8 +193,6 @@
 		C81E828C2B6B61CC00A59147 /* ပုဗ္ဗဏှသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ပုဗ္ဗဏှသုတ်.json"; sourceTree = "<group>"; };
 		C81E828E2B6B767800A59147 /* ပဋ္ဌာန်းအကျဥ်း.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ပဋ္ဌာန်းအကျဥ်း.json"; sourceTree = "<group>"; };
 		C81E82902B6BB04100A59147 /* ပဋ္ဌာန်းအကျယ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ပဋ္ဌာန်းအကျယ်.json"; sourceTree = "<group>"; };
-		C81E829A2B6BFEBB00A59147 /* WorshipPlanScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanScreen.swift; sourceTree = "<group>"; };
-		C81E829C2B6CAC8300A59147 /* AllPrayerPickerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllPrayerPickerScreen.swift; sourceTree = "<group>"; };
 		C81E927C2B2DCD0200F4ED9E /* UserPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferences.swift; sourceTree = "<group>"; };
 		C82039AA2B1CABE4000EEF61 /* PhayarSar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhayarSar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarApp.swift; sourceTree = "<group>"; };
@@ -269,7 +203,6 @@
 		C82039C42B1CABE6000EEF61 /* PhayarSarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhayarSarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C82039C82B1CABE6000EEF61 /* PhayarSarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarUITests.swift; sourceTree = "<group>"; };
 		C82039CA2B1CABE6000EEF61 /* PhayarSarUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		C82039D92B1CC30A000EEF61 /* OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
 		C82039DD2B1CC4B7000EEF61 /* Quicksand-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Quicksand-Regular.ttf"; sourceTree = "<group>"; };
 		C82039DE2B1CC4B7000EEF61 /* Quicksand-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Quicksand-SemiBold.ttf"; sourceTree = "<group>"; };
 		C82039DF2B1CC4B7000EEF61 /* Quicksand-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Quicksand-Bold.ttf"; sourceTree = "<group>"; };
@@ -277,13 +210,9 @@
 		C82039E52B1CC508000EEF61 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C82039E82B1CC653000EEF61 /* Font+CustomFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+CustomFonts.swift"; sourceTree = "<group>"; };
 		C82039EA2B1CCB6D000EEF61 /* Color+CustomColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+CustomColors.swift"; sourceTree = "<group>"; };
-		C82039EE2B1CCCAF000EEF61 /* AppBtnFilled.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBtnFilled.swift; sourceTree = "<group>"; };
 		C82039F62B1CDB4F000EEF61 /* NatPint.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = NatPint.json; sourceTree = "<group>"; };
 		C82039F92B1CE1C7000EEF61 /* PhayarSarModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarModel.swift; sourceTree = "<group>"; };
 		C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Decode.swift"; sourceTree = "<group>"; };
-		C82595B92D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearlyPrayingTimeChartView.swift; sourceTree = "<group>"; };
-		C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrayingTimeChartView.swift; sourceTree = "<group>"; };
-		C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyPrayingTimeChartView.swift; sourceTree = "<group>"; };
 		C828F5C62D32C965007C1E01 /* Array+chunked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+chunked.swift"; sourceTree = "<group>"; };
 		C82D77C52FA1CD2E0069FE44 /* PhayarSarLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = PhayarSarLibrary; sourceTree = "<group>"; };
 		C83961B12B4053E900E189D9 /* View+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Preview.swift"; sourceTree = "<group>"; };
@@ -295,20 +224,11 @@
 		C84240BB2B2DD29300A2B234 /* Language.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Language.json; sourceTree = "<group>"; };
 		C84240BD2B2DD31700A2B234 /* LocalizedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedComponents.swift; sourceTree = "<group>"; };
 		C84240BF2B2DD34900A2B234 /* LocalizedKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedKey.swift; sourceTree = "<group>"; };
-		C84626B42B222B6B000931AE /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
 		C849BF3B2B9C5AF3004F771F /* Delay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Delay.swift; sourceTree = "<group>"; };
-		C849BF3E2B9C751A004F771F /* WorshipPlanDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanDetailScreen.swift; sourceTree = "<group>"; };
-		C849BF402B9C76A0004F771F /* SelectedWorshipDaysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedWorshipDaysView.swift; sourceTree = "<group>"; };
-		C849BF452B9CB481004F771F /* WorshipPlanPrayingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanPrayingScreen.swift; sourceTree = "<group>"; };
 		C84E691F2B4C42FA006231CD /* NSObject+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSObject+Extension.swift"; sourceTree = "<group>"; };
-		C84E69212B4C4530006231CD /* DemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoView.swift; sourceTree = "<group>"; };
 		C84E69232B4C4776006231CD /* PrayerAlignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerAlignment.swift; sourceTree = "<group>"; };
-		C84E69252B4C4D89006231CD /* CommonPrayerVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPrayerVM.swift; sourceTree = "<group>"; };
-		C84E69472B530E0B006231CD /* PrayerModeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerModeScreen.swift; sourceTree = "<group>"; };
 		C84F4A852C01B9B100B5A502 /* AppVersionNo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionNo.swift; sourceTree = "<group>"; };
-		C84F4A882C01BB2500B5A502 /* WhatIsNewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatIsNewScreen.swift; sourceTree = "<group>"; };
 		C84F4A8C2C02138500B5A502 /* ShimmeringEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmeringEffect.swift; sourceTree = "<group>"; };
-		C84F4A8F2C02E5AB00B5A502 /* ForceUpdateScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForceUpdateScreen.swift; sourceTree = "<group>"; };
 		C84F4A942C03132600B5A502 /* PhayarSar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PhayarSar.entitlements; sourceTree = "<group>"; };
 		C84F4A9C2C03197700B5A502 /* PhayarSarNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PhayarSarNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C84F4A9E2C03197700B5A502 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
@@ -318,15 +238,6 @@
 		C851EB0E2BA5C68E0021275F /* မဟာသမယသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "မဟာသမယသုတ်.json"; sourceTree = "<group>"; };
 		C851EB102BA5CA250021275F /* ဂုဏ်တော်ကွန်ချာ.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ဂုဏ်တော်ကွန်ချာ.json"; sourceTree = "<group>"; };
 		C851EB122BA5CBC30021275F /* မစ္ဆရာဇသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "မစ္ဆရာဇသုတ်.json"; sourceTree = "<group>"; };
-		C851EB142BA5DC3F0021275F /* SwiftPackagesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftPackagesScreen.swift; sourceTree = "<group>"; };
-		C851EB162BA5E2290021275F /* ReferencedWebsitesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferencedWebsitesScreen.swift; sourceTree = "<group>"; };
-		C86AAA412B9228D800D899B2 /* PageControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageControlView.swift; sourceTree = "<group>"; };
-		C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanRepository.swift; sourceTree = "<group>"; };
-		C873856F2D33AA4A00CEF2EB /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
-		C87385732D33BB6F00CEF2EB /* Line.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Line.swift; sourceTree = "<group>"; };
-		C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarAppV2.swift; sourceTree = "<group>"; };
-		C874B53B2FA3024800FA0FED /* AppContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContentView.swift; sourceTree = "<group>"; };
-		C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMainTabView.swift; sourceTree = "<group>"; };
 		C88DECB62B9DF94700A96B29 /* TextType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextType.swift; sourceTree = "<group>"; };
 		C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberText.swift; sourceTree = "<group>"; };
 		C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimateNumberTextFomatter.swift; sourceTree = "<group>"; };
@@ -334,24 +245,16 @@
 		C8A661CD2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptToSoftwareKeyboard.swift; sourceTree = "<group>"; };
 		C8A661CF2B55795600F2A553 /* NavigationBarColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarColor.swift; sourceTree = "<group>"; };
 		C8A661D32B55846C00F2A553 /* PangLong.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = PangLong.ttf; sourceTree = "<group>"; };
-		C8A73FEC2B6F794E00216C89 /* AppleCardHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCardHolder.swift; sourceTree = "<group>"; };
-		C8AAE0172B2D784900BE54CA /* ChooseLanguageScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseLanguageScreen.swift; sourceTree = "<group>"; };
 		C8AAE0192B2D7B5F00BE54CA /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		C8AAE01D2B2DB84200BE54CA /* Optional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Optional.swift; sourceTree = "<group>"; };
-		C8AE59242B6E368C00ABB8F3 /* StraightLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StraightLine.swift; sourceTree = "<group>"; };
 		C8AE59272B6E36C900ABB8F3 /* WorshipPlanSteps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanSteps.swift; sourceTree = "<group>"; };
 		C8AE59292B6E36D700ABB8F3 /* DaysOfWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysOfWeek.swift; sourceTree = "<group>"; };
 		C8AE592B2B6E36F900ABB8F3 /* WorshipPlanConfigStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanConfigStep.swift; sourceTree = "<group>"; };
 		C8AE592D2B6E38BE00ABB8F3 /* WorshipPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlan.swift; sourceTree = "<group>"; };
-		C8AE592F2B6E471B00ABB8F3 /* RollingText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollingText.swift; sourceTree = "<group>"; };
 		C8BBB3642B482C0100F3828C /* LocalizedToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedToggle.swift; sourceTree = "<group>"; };
-		C8BBB3672B48534400F3828C /* CommonPrayerParagraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPrayerParagraphView.swift; sourceTree = "<group>"; };
 		C8BBB36D2B48713000F3828C /* Measure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measure.swift; sourceTree = "<group>"; };
 		C8BBB36F2B49108F00F3828C /* SpotlightScrollManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightScrollManager.swift; sourceTree = "<group>"; };
-		C8CA45BC2B41251E00240DA7 /* CommonPrayerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPrayerScreen.swift; sourceTree = "<group>"; };
 		C8CA45BE2B41295300240DA7 /* LocalizedLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedLabel.swift; sourceTree = "<group>"; };
-		C8CA45C42B4136CC00240DA7 /* AboutPrayerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPrayerScreen.swift; sourceTree = "<group>"; };
-		C8CA45C72B413ADD00240DA7 /* ThemesAndSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesAndSettingsScreen.swift; sourceTree = "<group>"; };
 		C8CA45C92B41415200240DA7 /* BtnCloseCircle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BtnCloseCircle.swift; sourceTree = "<group>"; };
 		C8CA45D12B41468100240DA7 /* MyanmarSquare.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarSquare.ttf; sourceTree = "<group>"; };
 		C8CA45D52B4146F400240DA7 /* YoeYar-One.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YoeYar-One.ttf"; sourceTree = "<group>"; };
@@ -372,8 +275,6 @@
 		C8CEF9FA2B68043300EF9B9E /* မေတ္တာသုတ်လာမ္မေတ္တာပွား.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "မေတ္တာသုတ်လာမ္မေတ္တာပွား.json"; sourceTree = "<group>"; };
 		C8CEF9FC2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ဆယ်မျက်နှာမ္မေတ္တာပွား.json"; sourceTree = "<group>"; };
 		C8CEF9FE2B68061500EF9B9E /* အမျှဝေ.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "အမျှဝေ.json"; sourceTree = "<group>"; };
-		C8D403082B68A94F00448EDC /* MorphinDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorphinDemoView.swift; sourceTree = "<group>"; };
-		C8D4030E2B68FA7600448EDC /* PrayerCollectionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerCollectionsScreen.swift; sourceTree = "<group>"; };
 		C8D403102B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "သမ္ဗုဒ္ဓေ.json"; sourceTree = "<group>"; };
 		C8D403122B6A031600448EDC /* မင်္ဂလသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "မင်္ဂလသုတ်.json"; sourceTree = "<group>"; };
 		C8D403142B6A076900448EDC /* ရတနသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ရတနသုတ်.json"; sourceTree = "<group>"; };
@@ -383,21 +284,13 @@
 		C8D4031C2B6B493100448EDC /* ဝဋ္ဋသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ဝဋ္ဋသုတ်.json"; sourceTree = "<group>"; };
 		C8D4031E2B6B4AAA00448EDC /* ဓဇဂ္ဂသုတ်.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "ဓဇဂ္ဂသုတ်.json"; sourceTree = "<group>"; };
 		C8D6527E2B2E02DB00BB6C42 /* PositionObservingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionObservingView.swift; sourceTree = "<group>"; };
-		C8D652842B2E0BDB00BB6C42 /* TabScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabScreen.swift; sourceTree = "<group>"; };
-		C8D652872B2E0F1D00BB6C42 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		C8D652952B2EA6BD00BB6C42 /* AppColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColor.swift; sourceTree = "<group>"; };
-		C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColorScreen.swift; sourceTree = "<group>"; };
 		C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCornerView.swift; sourceTree = "<group>"; };
 		C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowContentViewModifier.swift; sourceTree = "<group>"; };
 		C8F339392B938D7A00C1730B /* String+Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Date.swift"; sourceTree = "<group>"; };
-		C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanListScreen.swift; sourceTree = "<group>"; };
-		C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorshipPlanCardView.swift; sourceTree = "<group>"; };
 		C8FCD1332BA462D900AB5BD3 /* LocalizedAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlert.swift; sourceTree = "<group>"; };
 		C8FCD1352BA482C400AB5BD3 /* DailyPrayingTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrayingTime.swift; sourceTree = "<group>"; };
-		C8FCD1372BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrayingTimeRepository.swift; sourceTree = "<group>"; };
-		C8FCD1392BA4A3A900AB5BD3 /* PrayingDurationChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayingDurationChartView.swift; sourceTree = "<group>"; };
 		C8FCD1452BA54F9D00AB5BD3 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
-		C8FCD1472BA58D5300AB5BD3 /* HomeSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSearchScreen.swift; sourceTree = "<group>"; };
 		EA578F0B2BF996EF00366ADC /* AfterAppearViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AfterAppearViewModifier.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -406,19 +299,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C887FDFA2C043D18007A6A25 /* SwiftUIIntrospect in Frameworks */,
 				C84F4A972C03146900B5A502 /* FirebaseMessaging in Frameworks */,
-				C82039F22B1CCF13000EEF61 /* SwiftUIBackports in Frameworks */,
-				C8F339432B9433E900C1730B /* SwipeActions in Frameworks */,
 				C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */,
 				C8EF0F212FA3A47500543BCA /* EnvironmentKit in Frameworks */,
-				C8D730B92B46F74900D19D57 /* CompactSlider in Frameworks */,
 				C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */,
 				C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */,
-				C8F339462B94374300C1730B /* AlertToast in Frameworks */,
-				C8EF0F1F2FA3A25C00543BCA /* Explore in Frameworks */,
 				C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */,
-				C8FCD1422BA4AF0300AB5BD3 /* SwiftUICharts in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -474,22 +360,6 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
-		C81792482BF9E21500DC741E /* PrayerSpellingErrorReport */ = {
-			isa = PBXGroup;
-			children = (
-				C81792492BF9E22500DC741E /* PrayerSpellingErrorReportScreen.swift */,
-			);
-			path = PrayerSpellingErrorReport;
-			sourceTree = "<group>";
-		};
-		C817924B2BF9ECA600DC741E /* SpellingErrorComment */ = {
-			isa = PBXGroup;
-			children = (
-				C817924C2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift */,
-			);
-			path = SpellingErrorComment;
-			sourceTree = "<group>";
-		};
 		C817924E2BF9ED3C00DC741E /* SpellingErrorReport */ = {
 			isa = PBXGroup;
 			children = (
@@ -498,40 +368,12 @@
 			path = SpellingErrorReport;
 			sourceTree = "<group>";
 		};
-		C81792632BFBB36500DC741E /* LaunchScreen */ = {
-			isa = PBXGroup;
-			children = (
-				C81792642BFBB36E00DC741E /* LaunchScreen.swift */,
-			);
-			path = LaunchScreen;
-			sourceTree = "<group>";
-		};
 		C81792662BFBB8F100DC741E /* Firebase */ = {
 			isa = PBXGroup;
 			children = (
 				C81792672BFBB8FB00DC741E /* WhatIsNewFRCModel.swift */,
 			);
 			path = Firebase;
-			sourceTree = "<group>";
-		};
-		C81CF2582B5445B700E1B726 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C81CF2502B53E66100E1B726 /* ReadingModeView.swift */,
-				C81CF2542B53FA6C00E1B726 /* PlayerModeView.swift */,
-				C81CF2522B53F74B00E1B726 /* ModeSelectedView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		C81E82992B6BFEB200A59147 /* WorshipPlan */ = {
-			isa = PBXGroup;
-			children = (
-				C81E829A2B6BFEBB00A59147 /* WorshipPlanScreen.swift */,
-				C86AAA4A2B92DEAB00D899B2 /* WorshipPlanRepository.swift */,
-				C81E829C2B6CAC8300A59147 /* AllPrayerPickerScreen.swift */,
-			);
-			path = WorshipPlan;
 			sourceTree = "<group>";
 		};
 		C81E927B2B2DC94C00F4ED9E /* Managers */ = {
@@ -585,16 +427,11 @@
 			children = (
 				C83E439C2D2B83D00082BC5A /* GoogleService-Info.plist */,
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
-				C874B53B2FA3024800FA0FED /* AppContentView.swift */,
-				C874B53D2FA3025F00FA0FED /* AppMainTabView.swift */,
-				C874B5392FA3020700FA0FED /* PhayarSarAppV2.swift */,
 				C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */,
 				C815D6C92B4B140700BFB79C /* CoreData */,
 				C81E927E2B2DCDAD00F4ED9E /* Models */,
 				C81E927B2B2DC94C00F4ED9E /* Managers */,
-				C82039ED2B1CCCA1000EEF61 /* Components */,
 				C82039E62B1CC63D000EEF61 /* Utils */,
-				C82039D72B1CC2E9000EEF61 /* Features */,
 				C82039DB2B1CC48C000EEF61 /* Resources */,
 				C82039E52B1CC508000EEF61 /* Info.plist */,
 				C82039B32B1CABE6000EEF61 /* Preview Content */,
@@ -625,41 +462,6 @@
 				C82039CA2B1CABE6000EEF61 /* PhayarSarUITestsLaunchTests.swift */,
 			);
 			path = PhayarSarUITests;
-			sourceTree = "<group>";
-		};
-		C82039D72B1CC2E9000EEF61 /* Features */ = {
-			isa = PBXGroup;
-			children = (
-				C84F4A8E2C02E5A300B5A502 /* ForceUpdate */,
-				C84F4A872C01BB1B00B5A502 /* WhatIsNew */,
-				C81792632BFBB36500DC741E /* LaunchScreen */,
-				C817924B2BF9ECA600DC741E /* SpellingErrorComment */,
-				C81792482BF9E21500DC741E /* PrayerSpellingErrorReport */,
-				C849BF442B9CB439004F771F /* WorshipPlanPraying */,
-				C849BF3D2B9C7511004F771F /* WorshipPlanDetail */,
-				C8F3393B2B94300B00C1730B /* WorshipPlanList */,
-				C81E82992B6BFEB200A59147 /* WorshipPlan */,
-				C8D4030D2B68FA6300448EDC /* PrayerCollections */,
-				C84E69462B530DFD006231CD /* PrayerMode */,
-				C8CA45C62B413AD300240DA7 /* ThemesAndSettings */,
-				C8CA45C32B4136BD00240DA7 /* AboutPrayer */,
-				C8CA45BB2B4124F600240DA7 /* CommonPrayer */,
-				C8D652972B2EA75400BB6C42 /* ChooseColor */,
-				C8D652822B2E0BC200BB6C42 /* Tab */,
-				C8AAE0162B2D783D00BE54CA /* ChooseLangauge */,
-				C82039D82B1CC2F3000EEF61 /* Onboarding */,
-				C84626B32B222B57000931AE /* Home */,
-				C8D652862B2E0F1400BB6C42 /* Settings */,
-			);
-			path = Features;
-			sourceTree = "<group>";
-		};
-		C82039D82B1CC2F3000EEF61 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				C82039D92B1CC30A000EEF61 /* OnboardingScreen.swift */,
-			);
-			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		C82039DB2B1CC48C000EEF61 /* Resources */ = {
@@ -766,19 +568,6 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
-		C82039ED2B1CCCA1000EEF61 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				C87385732D33BB6F00CEF2EB /* Line.swift */,
-				C82039EE2B1CCCAF000EEF61 /* AppBtnFilled.swift */,
-				C8AE59242B6E368C00ABB8F3 /* StraightLine.swift */,
-				C8AE592F2B6E471B00ABB8F3 /* RollingText.swift */,
-				C86AAA412B9228D800D899B2 /* PageControlView.swift */,
-				C873856F2D33AA4A00CEF2EB /* Checkbox.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
 		C83E27EE2B2DDAA60038EDF1 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
@@ -793,59 +582,6 @@
 				C8032B672C063BE4008C4A7E /* LocalizedPicker.swift */,
 			);
 			path = Localization;
-			sourceTree = "<group>";
-		};
-		C84626B32B222B57000931AE /* Home */ = {
-			isa = PBXGroup;
-			children = (
-				C8F3393E2B94316000C1730B /* Views */,
-				C84626B42B222B6B000931AE /* HomeScreen.swift */,
-				C8FCD1472BA58D5300AB5BD3 /* HomeSearchScreen.swift */,
-				C8FCD1372BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift */,
-				C8A73FEC2B6F794E00216C89 /* AppleCardHolder.swift */,
-			);
-			path = Home;
-			sourceTree = "<group>";
-		};
-		C849BF3D2B9C7511004F771F /* WorshipPlanDetail */ = {
-			isa = PBXGroup;
-			children = (
-				C849BF3E2B9C751A004F771F /* WorshipPlanDetailScreen.swift */,
-			);
-			path = WorshipPlanDetail;
-			sourceTree = "<group>";
-		};
-		C849BF442B9CB439004F771F /* WorshipPlanPraying */ = {
-			isa = PBXGroup;
-			children = (
-				C849BF452B9CB481004F771F /* WorshipPlanPrayingScreen.swift */,
-			);
-			path = WorshipPlanPraying;
-			sourceTree = "<group>";
-		};
-		C84E69462B530DFD006231CD /* PrayerMode */ = {
-			isa = PBXGroup;
-			children = (
-				C81CF2582B5445B700E1B726 /* Views */,
-				C84E69472B530E0B006231CD /* PrayerModeScreen.swift */,
-			);
-			path = PrayerMode;
-			sourceTree = "<group>";
-		};
-		C84F4A872C01BB1B00B5A502 /* WhatIsNew */ = {
-			isa = PBXGroup;
-			children = (
-				C84F4A882C01BB2500B5A502 /* WhatIsNewScreen.swift */,
-			);
-			path = WhatIsNew;
-			sourceTree = "<group>";
-		};
-		C84F4A8E2C02E5A300B5A502 /* ForceUpdate */ = {
-			isa = PBXGroup;
-			children = (
-				C84F4A8F2C02E5AB00B5A502 /* ForceUpdateScreen.swift */,
-			);
-			path = ForceUpdate;
 			sourceTree = "<group>";
 		};
 		C84F4A952C03146900B5A502 /* Frameworks */ = {
@@ -884,14 +620,6 @@
 			path = PhayarSar;
 			sourceTree = "<group>";
 		};
-		C8AAE0162B2D783D00BE54CA /* ChooseLangauge */ = {
-			isa = PBXGroup;
-			children = (
-				C8AAE0172B2D784900BE54CA /* ChooseLanguageScreen.swift */,
-			);
-			path = ChooseLangauge;
-			sourceTree = "<group>";
-		};
 		C8AE59262B6E36B500ABB8F3 /* Worshipplan */ = {
 			isa = PBXGroup;
 			children = (
@@ -900,98 +628,6 @@
 				C8AE592B2B6E36F900ABB8F3 /* WorshipPlanConfigStep.swift */,
 			);
 			path = Worshipplan;
-			sourceTree = "<group>";
-		};
-		C8BBB3662B48532B00F3828C /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C8BBB3672B48534400F3828C /* CommonPrayerParagraphView.swift */,
-				C80287462B4A5F3600F165DF /* PrayingProgressView.swift */,
-				C8D403082B68A94F00448EDC /* MorphinDemoView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		C8CA45BB2B4124F600240DA7 /* CommonPrayer */ = {
-			isa = PBXGroup;
-			children = (
-				C8BBB3662B48532B00F3828C /* Views */,
-				C8CA45BC2B41251E00240DA7 /* CommonPrayerScreen.swift */,
-				C84E69252B4C4D89006231CD /* CommonPrayerVM.swift */,
-			);
-			path = CommonPrayer;
-			sourceTree = "<group>";
-		};
-		C8CA45C32B4136BD00240DA7 /* AboutPrayer */ = {
-			isa = PBXGroup;
-			children = (
-				C8CA45C42B4136CC00240DA7 /* AboutPrayerScreen.swift */,
-			);
-			path = AboutPrayer;
-			sourceTree = "<group>";
-		};
-		C8CA45C62B413AD300240DA7 /* ThemesAndSettings */ = {
-			isa = PBXGroup;
-			children = (
-				C8CA45C72B413ADD00240DA7 /* ThemesAndSettingsScreen.swift */,
-				C84E69212B4C4530006231CD /* DemoView.swift */,
-			);
-			path = ThemesAndSettings;
-			sourceTree = "<group>";
-		};
-		C8D4030D2B68FA6300448EDC /* PrayerCollections */ = {
-			isa = PBXGroup;
-			children = (
-				C8D4030E2B68FA7600448EDC /* PrayerCollectionsScreen.swift */,
-			);
-			path = PrayerCollections;
-			sourceTree = "<group>";
-		};
-		C8D652822B2E0BC200BB6C42 /* Tab */ = {
-			isa = PBXGroup;
-			children = (
-				C8D652842B2E0BDB00BB6C42 /* TabScreen.swift */,
-			);
-			path = Tab;
-			sourceTree = "<group>";
-		};
-		C8D652862B2E0F1400BB6C42 /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-				C8D652872B2E0F1D00BB6C42 /* SettingsScreen.swift */,
-				C851EB142BA5DC3F0021275F /* SwiftPackagesScreen.swift */,
-				C851EB162BA5E2290021275F /* ReferencedWebsitesScreen.swift */,
-			);
-			path = Settings;
-			sourceTree = "<group>";
-		};
-		C8D652972B2EA75400BB6C42 /* ChooseColor */ = {
-			isa = PBXGroup;
-			children = (
-				C8D6529A2B2EA76500BB6C42 /* ChooseColorScreen.swift */,
-			);
-			path = ChooseColor;
-			sourceTree = "<group>";
-		};
-		C8F3393B2B94300B00C1730B /* WorshipPlanList */ = {
-			isa = PBXGroup;
-			children = (
-				C8F3393C2B94301600C1730B /* WorshipPlanListScreen.swift */,
-			);
-			path = WorshipPlanList;
-			sourceTree = "<group>";
-		};
-		C8F3393E2B94316000C1730B /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C828F5C02D3264AB007C1E01 /* DailyPrayingTimeChartView.swift */,
-				C8F3393F2B94317500C1730B /* WorshipPlanCardView.swift */,
-				C849BF402B9C76A0004F771F /* SelectedWorshipDaysView.swift */,
-				C8FCD1392BA4A3A900AB5BD3 /* PrayingDurationChartView.swift */,
-				C828F5C22D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift */,
-				C82595B92D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1013,19 +649,12 @@
 			);
 			name = PhayarSar;
 			packageProductDependencies = (
-				C82039F12B1CCF13000EEF61 /* SwiftUIBackports */,
-				C8D730B82B46F74900D19D57 /* CompactSlider */,
-				C8F339422B9433E900C1730B /* SwipeActions */,
-				C8F339452B94374300C1730B /* AlertToast */,
-				C8FCD1412BA4AF0300AB5BD3 /* SwiftUICharts */,
 				C817925D2BFB979E00DC741E /* FirebaseRemoteConfig */,
 				C817925F2BFB979E00DC741E /* FirebaseRemoteConfigSwift */,
 				C84F4A962C03146900B5A502 /* FirebaseMessaging */,
-				C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */,
 				C874B5352FA2FA0900FA0FED /* DesignKit */,
 				C874B5372FA2FA0900FA0FED /* UtilKit */,
 				C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */,
-				C8EF0F1E2FA3A25C00543BCA /* Explore */,
 				C8EF0F202FA3A47500543BCA /* EnvironmentKit */,
 			);
 			productName = PhayarSar;
@@ -1121,13 +750,7 @@
 			);
 			mainGroup = C82039A12B1CABE4000EEF61;
 			packageReferences = (
-				C82039F02B1CCF13000EEF61 /* XCRemoteSwiftPackageReference "SwiftUIBackports" */,
-				C8D730B72B46F74900D19D57 /* XCRemoteSwiftPackageReference "CompactSlider" */,
-				C8F339412B9433E900C1730B /* XCRemoteSwiftPackageReference "SwipeActions" */,
-				C8F339442B94374300C1730B /* XCRemoteSwiftPackageReference "AlertToast" */,
-				C8FCD1402BA4AF0300AB5BD3 /* XCRemoteSwiftPackageReference "SwiftUICharts" */,
 				C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				C887FDF82C043D18007A6A25 /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
 				C874B5342FA2FA0900FA0FED /* XCLocalSwiftPackageReference "PhayarSarLibrary" */,
 			);
 			productRefGroup = C82039AB2B1CABE4000EEF61 /* Products */;
@@ -1223,120 +846,70 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C81792652BFBB36E00DC741E /* LaunchScreen.swift in Sources */,
-				C81E829D2B6CAC8300A59147 /* AllPrayerPickerScreen.swift in Sources */,
 				C8AE592E2B6E38BE00ABB8F3 /* WorshipPlan.swift in Sources */,
 				C83E27F02B2DDAB20038EDF1 /* LocalizedText.swift in Sources */,
-				C87385702D33AA4A00CEF2EB /* Checkbox.swift in Sources */,
 				C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */,
 				C815D6CB2B4B141600BFB79C /* CoreDataStack.swift in Sources */,
-				C8D403092B68A94F00448EDC /* MorphinDemoView.swift in Sources */,
 				C8BBB36E2B48713000F3828C /* Measure.swift in Sources */,
 				C82039E92B1CC653000EEF61 /* Font+CustomFonts.swift in Sources */,
-				C8A73FED2B6F794E00216C89 /* AppleCardHolder.swift in Sources */,
-				C8CA45C82B413ADD00240DA7 /* ThemesAndSettingsScreen.swift in Sources */,
-				C86AAA422B9228D800D899B2 /* PageControlView.swift in Sources */,
 				C88DECBB2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift in Sources */,
 				C84240BE2B2DD31700A2B234 /* LocalizedComponents.swift in Sources */,
 				C8FCD1362BA482C400AB5BD3 /* DailyPrayingTime.swift in Sources */,
-				C81CF2532B53F74B00E1B726 /* ModeSelectedView.swift in Sources */,
 				C8BBB3652B482C0100F3828C /* LocalizedToggle.swift in Sources */,
-				C8F3393D2B94301600C1730B /* WorshipPlanListScreen.swift in Sources */,
 				C81792622BFBA74F00DC741E /* RemoteConfigManager.swift in Sources */,
 				C8A342522B3E70C800B24F7C /* HapticKit.swift in Sources */,
 				C8BBB3702B49108F00F3828C /* SpotlightScrollManager.swift in Sources */,
 				C84F4A862C01B9B100B5A502 /* AppVersionNo.swift in Sources */,
-				C8CA45BD2B41251E00240DA7 /* CommonPrayerScreen.swift in Sources */,
-				C84F4A902C02E5AB00B5A502 /* ForceUpdateScreen.swift in Sources */,
 				C81792502BF9ED4B00DC741E /* SpellingErrorCommentModel.swift in Sources */,
-				C851EB152BA5DC3F0021275F /* SwiftPackagesScreen.swift in Sources */,
 				C80287442B4940ED00F165DF /* CommonPrayerProtocol.swift in Sources */,
-				C851EB172BA5E2290021275F /* ReferencedWebsitesScreen.swift in Sources */,
-				C817924A2BF9E22500DC741E /* PrayerSpellingErrorReportScreen.swift in Sources */,
-				C84E69482B530E0B006231CD /* PrayerModeScreen.swift in Sources */,
 				C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */,
 				C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */,
-				C81E829B2B6BFEBB00A59147 /* WorshipPlanScreen.swift in Sources */,
 				C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */,
-				C8CA45C52B4136CC00240DA7 /* AboutPrayerScreen.swift in Sources */,
-				C8AE59302B6E471B00ABB8F3 /* RollingText.swift in Sources */,
-				C80287472B4A5F3600F165DF /* PrayingProgressView.swift in Sources */,
 				C8AAE01E2B2DB84200BE54CA /* Optional.swift in Sources */,
 				C817926A2BFBBB1A00DC741E /* Decodable+localization.swift in Sources */,
-				C84E69262B4C4D89006231CD /* CommonPrayerVM.swift in Sources */,
 				C8AAE01A2B2D7B5F00BE54CA /* AppLanguage.swift in Sources */,
 				C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */,
 				C82039AE2B1CABE4000EEF61 /* PhayarSarApp.swift in Sources */,
 				C8A661D02B55795600F2A553 /* NavigationBarColor.swift in Sources */,
 				C8FCD1342BA462D900AB5BD3 /* LocalizedAlert.swift in Sources */,
-				C849BF3F2B9C751A004F771F /* WorshipPlanDetailScreen.swift in Sources */,
 				C84E69202B4C42FA006231CD /* NSObject+Extension.swift in Sources */,
-				C8D4030F2B68FA7600448EDC /* PrayerCollectionsScreen.swift in Sources */,
 				C82039EB2B1CCB6D000EEF61 /* Color+CustomColors.swift in Sources */,
 				C83E27F22B2DDACC0038EDF1 /* LocalizedNavTitle.swift in Sources */,
-				C874B53A2FA3020700FA0FED /* PhayarSarAppV2.swift in Sources */,
 				C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */,
-				C874B53C2FA3024800FA0FED /* AppContentView.swift in Sources */,
 				C81792452BF904F500DC741E /* AnimationCompletionObserver.swift in Sources */,
 				C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */,
 				C81792522BFB8E2700DC741E /* AskForReview.swift in Sources */,
 				C8AE592C2B6E36F900ABB8F3 /* WorshipPlanConfigStep.swift in Sources */,
 				C84F4A8D2C02138500B5A502 /* ShimmeringEffect.swift in Sources */,
 				C80287492B4A866E00F165DF /* ScrollingSpeed.swift in Sources */,
-				C84626B52B222B6B000931AE /* HomeScreen.swift in Sources */,
-				C8FCD1382BA484EE00AB5BD3 /* DailyPrayingTimeRepository.swift in Sources */,
-				C87385742D33BB6F00CEF2EB /* Line.swift in Sources */,
-				C8D6529B2B2EA76500BB6C42 /* ChooseColorScreen.swift in Sources */,
-				C82595BA2D32D7C500EFF6BF /* YearlyPrayingTimeChartView.swift in Sources */,
 				C81E927D2B2DCD0200F4ED9E /* UserPreferences.swift in Sources */,
 				C81792682BFBB8FB00DC741E /* WhatIsNewFRCModel.swift in Sources */,
-				C8FCD1482BA58D5300AB5BD3 /* HomeSearchScreen.swift in Sources */,
 				C83961B22B4053E900E189D9 /* View+Preview.swift in Sources */,
 				C8D6527F2B2E02DB00BB6C42 /* PositionObservingView.swift in Sources */,
 				C8CA45CA2B41415200240DA7 /* BtnCloseCircle.swift in Sources */,
 				C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */,
 				C815D6D02B4B158F00BFB79C /* PrayerConfiguration.swift in Sources */,
-				C84E69222B4C4530006231CD /* DemoView.swift in Sources */,
 				C8CA45E62B4152AC00240DA7 /* PageColor.swift in Sources */,
 				C81792472BF9DD5200DC741E /* DeviceShakeObserver.swift in Sources */,
 				C8D652962B2EA6BD00BB6C42 /* AppColor.swift in Sources */,
 				C8CA45E42B414A4D00240DA7 /* MyanmarFont.swift in Sources */,
-				C8D652882B2E0F1D00BB6C42 /* SettingsScreen.swift in Sources */,
 				653454BB2BEBDF24004FC8EE /* MyanmarSyllable.swift in Sources */,
 				C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */,
 				C82039FA2B1CE1C7000EEF61 /* PhayarSarModel.swift in Sources */,
-				C817924D2BF9ECBA00DC741E /* SpellingErrorCommentScreen.swift in Sources */,
 				C8032B682C063BE4008C4A7E /* LocalizedPicker.swift in Sources */,
 				C81CF2572B53FCA000E1B726 /* PrayingMode.swift in Sources */,
-				C828F5C12D3264AB007C1E01 /* DailyPrayingTimeChartView.swift in Sources */,
-				C86AAA4B2B92DEAB00D899B2 /* WorshipPlanRepository.swift in Sources */,
 				C84240C02B2DD34900A2B234 /* LocalizedKey.swift in Sources */,
 				C8CA45BF2B41295300240DA7 /* LocalizedLabel.swift in Sources */,
 				C815D6CE2B4B142900BFB79C /* PhayarSar.xcdatamodeld in Sources */,
-				C8D652852B2E0BDB00BB6C42 /* TabScreen.swift in Sources */,
 				C8032B6A2C063F16008C4A7E /* AppTheme.swift in Sources */,
-				C81CF2512B53E66100E1B726 /* ReadingModeView.swift in Sources */,
-				C81CF2552B53FA6C00E1B726 /* PlayerModeView.swift in Sources */,
-				C8F339402B94317500C1730B /* WorshipPlanCardView.swift in Sources */,
-				C82039EF2B1CCCAF000EEF61 /* AppBtnFilled.swift in Sources */,
-				C849BF462B9CB481004F771F /* WorshipPlanPrayingScreen.swift in Sources */,
-				C874B53E2FA3025F00FA0FED /* AppMainTabView.swift in Sources */,
 				EA578F0C2BF996EF00366ADC /* AfterAppearViewModifier.swift in Sources */,
-				C84F4A892C01BB2500B5A502 /* WhatIsNewScreen.swift in Sources */,
 				C8AE59282B6E36C900ABB8F3 /* WorshipPlanSteps.swift in Sources */,
-				C8AE59252B6E368C00ABB8F3 /* StraightLine.swift in Sources */,
-				C8BBB3682B48534400F3828C /* CommonPrayerParagraphView.swift in Sources */,
 				C8AE592A2B6E36D700ABB8F3 /* DaysOfWeek.swift in Sources */,
 				653454C02BEBE2BE004FC8EE /* PhayarSarRepository.swift in Sources */,
-				C82039DA2B1CC30A000EEF61 /* OnboardingScreen.swift in Sources */,
 				C84E69242B4C4776006231CD /* PrayerAlignment.swift in Sources */,
 				C849BF3C2B9C5AF3004F771F /* Delay.swift in Sources */,
 				C8FCD1462BA54F9D00AB5BD3 /* Date.swift in Sources */,
-				C8AAE0182B2D784900BE54CA /* ChooseLanguageScreen.swift in Sources */,
 				C83E27F42B2DDC9B0038EDF1 /* LocalizedButton.swift in Sources */,
-				C8FCD13A2BA4A3A900AB5BD3 /* PrayingDurationChartView.swift in Sources */,
-				C849BF412B9C76A0004F771F /* SelectedWorshipDaysView.swift in Sources */,
-				C828F5C32D32C482007C1E01 /* MonthlyPrayingTimeChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1773,54 +1346,6 @@
 				minimumVersion = 10.26.0;
 			};
 		};
-		C82039F02B1CCF13000EEF61 /* XCRemoteSwiftPackageReference "SwiftUIBackports" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/shaps80/SwiftUIBackports.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.8.0;
-			};
-		};
-		C887FDF82C043D18007A6A25 /* XCRemoteSwiftPackageReference "swiftui-introspect" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/siteline/swiftui-introspect.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.3.0;
-			};
-		};
-		C8D730B72B46F74900D19D57 /* XCRemoteSwiftPackageReference "CompactSlider" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/buh/CompactSlider.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.5;
-			};
-		};
-		C8F339412B9433E900C1730B /* XCRemoteSwiftPackageReference "SwipeActions" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/aheze/SwipeActions.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.0;
-			};
-		};
-		C8F339442B94374300C1730B /* XCRemoteSwiftPackageReference "AlertToast" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/elai950/AlertToast.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.3.9;
-			};
-		};
-		C8FCD1402BA4AF0300AB5BD3 /* XCRemoteSwiftPackageReference "SwiftUICharts" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/willdale/SwiftUICharts.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.10.2;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1833,11 +1358,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseRemoteConfigSwift;
-		};
-		C82039F12B1CCF13000EEF61 /* SwiftUIBackports */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C82039F02B1CCF13000EEF61 /* XCRemoteSwiftPackageReference "SwiftUIBackports" */;
-			productName = SwiftUIBackports;
 		};
 		C84F4A962C03146900B5A502 /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1852,42 +1372,13 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = UtilKit;
 		};
-		C887FDF92C043D18007A6A25 /* SwiftUIIntrospect */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C887FDF82C043D18007A6A25 /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
-			productName = SwiftUIIntrospect;
-		};
-		C8D730B82B46F74900D19D57 /* CompactSlider */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C8D730B72B46F74900D19D57 /* XCRemoteSwiftPackageReference "CompactSlider" */;
-			productName = CompactSlider;
-		};
 		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LocalisationKit;
 		};
-		C8EF0F1E2FA3A25C00543BCA /* Explore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Explore;
-		};
 		C8EF0F202FA3A47500543BCA /* EnvironmentKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = EnvironmentKit;
-		};
-		C8F339422B9433E900C1730B /* SwipeActions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C8F339412B9433E900C1730B /* XCRemoteSwiftPackageReference "SwipeActions" */;
-			productName = SwipeActions;
-		};
-		C8F339452B94374300C1730B /* AlertToast */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C8F339442B94374300C1730B /* XCRemoteSwiftPackageReference "AlertToast" */;
-			productName = AlertToast;
-		};
-		C8FCD1412BA4AF0300AB5BD3 /* SwiftUICharts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C8FCD1402BA4AF0300AB5BD3 /* XCRemoteSwiftPackageReference "SwiftUICharts" */;
-			productName = SwiftUICharts;
 		};
 /* End XCSwiftPackageProductDependency section */
 

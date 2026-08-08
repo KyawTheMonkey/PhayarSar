@@ -10,10 +10,10 @@ import SwiftUI
 @MainActor extension View {
     func previewEnvironment() -> some View {
         self
-            .environmentObject(UserPreferences())
-            .environmentObject(WorshipPlanRepository())
-            .environmentObject(DailyPrayingTimeRepository())
-            .environmentObject(RemoteConfigManager())
-            .environment(\.managedObjectContext, CoreDataStack.shared.viewContext)
+//            .environmentObject(UserPreferences())
+//            .environmentObject(WorshipPlanRepository())
+//            .environmentObject(DailyPrayingTimeRepository())
+//            .environmentObject(RemoteConfigManager())
+//            .environment(\.managedObjectContext, CoreDataStack.shared.viewContext)
     }
 }
