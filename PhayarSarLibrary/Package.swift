@@ -25,6 +25,10 @@ let package = Package(
     .library(
       name: "ComponentKit",
       targets: ["ComponentKit"]
+    ),
+    .library(
+      name: "HomeKit",
+      targets: ["HomeKit"]
     )
   ],
   dependencies: [
@@ -70,5 +74,9 @@ let package = Package(
     ),
 
     // MARK: - Features
+    .target(
+      name: "HomeKit",
+      dependencies: ["EnvironmentKit"]
+    )
   ]
 )

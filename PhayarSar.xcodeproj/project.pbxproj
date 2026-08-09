@@ -50,6 +50,7 @@
 		C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */; };
 		C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C62D32C965007C1E01 /* Array+chunked.swift */; };
 		C82CE4EC3026D1D3005F78D5 /* AppTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */; };
+		C830D0F030284B4800500533 /* HomeKit in Frameworks */ = {isa = PBXBuildFile; productRef = C830D0EF30284B4800500533 /* HomeKit */; };
 		C83961B22B4053E900E189D9 /* View+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B12B4053E900E189D9 /* View+Preview.swift */; };
 		C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B52B40578200E189D9 /* SafeAreaInsets.swift */; };
 		C83E27F02B2DDAB20038EDF1 /* LocalizedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83E27EF2B2DDAB20038EDF1 /* LocalizedText.swift */; };
@@ -301,6 +302,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C830D0F030284B4800500533 /* HomeKit in Frameworks */,
 				C84F4A972C03146900B5A502 /* FirebaseMessaging in Frameworks */,
 				C874B5382FA2FA0900FA0FED /* UtilKit in Frameworks */,
 				C8EF0F212FA3A47500543BCA /* EnvironmentKit in Frameworks */,
@@ -659,6 +661,7 @@
 				C874B5372FA2FA0900FA0FED /* UtilKit */,
 				C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */,
 				C8EF0F202FA3A47500543BCA /* EnvironmentKit */,
+				C830D0EF30284B4800500533 /* HomeKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1362,6 +1365,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseRemoteConfigSwift;
+		};
+		C830D0EF30284B4800500533 /* HomeKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HomeKit;
 		};
 		C84F4A962C03146900B5A502 /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;

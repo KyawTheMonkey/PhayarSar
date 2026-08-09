@@ -7,6 +7,7 @@
 
 import DesignKit
 import EnvironmentKit
+import HomeKit
 import SwiftUI
 
 struct AppTabView: View {
@@ -46,7 +47,7 @@ struct AppTabView: View {
     } detail: {
       if let selectedTab {
         NavigationStack {
-          Text(selectedTab.title)
+          content(for: selectedTab)
             .navigationTitle(selectedTab.title)
         }
       } else {
@@ -65,7 +66,7 @@ struct AppTabView: View {
     ) {
       ForEach(AppTab.allCases) { tab in
         NavigationStack {
-          Text(tab.title)
+          content(for: tab)
             .navigationTitle(tab.title)
         }
         .tabItem {
@@ -75,6 +76,16 @@ struct AppTabView: View {
       }
     }
     .tint(DesignKit.AppColor.primary)
+  }
+
+  @ViewBuilder
+  private func content(for tab: AppTab) -> some View {
+    switch tab {
+    case .home:
+      HomeScreen()
+    default:
+      Text(tab.title)
+    }
   }
 }
 
