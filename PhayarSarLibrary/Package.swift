@@ -29,7 +29,11 @@ let package = Package(
     .library(
       name: "HomeKit",
       targets: ["HomeKit"]
-    )
+    ),
+    .library(
+      name: "PrayersKit",
+      targets: ["PrayersKit"]
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0")
@@ -76,6 +80,10 @@ let package = Package(
     // MARK: - Features
     .target(
       name: "HomeKit",
+      dependencies: ["EnvironmentKit", "DesignKit"]
+    ),
+    .target(
+      name: "PrayersKit",
       dependencies: ["EnvironmentKit", "DesignKit"]
     )
   ]

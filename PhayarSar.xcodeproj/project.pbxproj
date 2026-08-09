@@ -111,6 +111,7 @@
 		C8CEF9FB2B68043300EF9B9E /* မေတ္တာသုတ်လာမ္မေတ္တာပွား.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FA2B68043300EF9B9E /* မေတ္တာသုတ်လာမ္မေတ္တာပွား.json */; };
 		C8CEF9FD2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FC2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json */; };
 		C8CEF9FF2B68061500EF9B9E /* အမျှဝေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FE2B68061500EF9B9E /* အမျှဝေ.json */; };
+		C8D166463028D20600FA4895 /* PrayersKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8D166453028D20600FA4895 /* PrayersKit */; };
 		C8D403112B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403102B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json */; };
 		C8D403132B6A031600448EDC /* မင်္ဂလသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403122B6A031600448EDC /* မင်္ဂလသုတ်.json */; };
 		C8D403152B6A076900448EDC /* ရတနသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403142B6A076900448EDC /* ရတနသုတ်.json */; };
@@ -309,6 +310,7 @@
 				C81792602BFB979E00DC741E /* FirebaseRemoteConfigSwift in Frameworks */,
 				C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */,
 				C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */,
+				C8D166463028D20600FA4895 /* PrayersKit in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -662,6 +664,7 @@
 				C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */,
 				C8EF0F202FA3A47500543BCA /* EnvironmentKit */,
 				C830D0EF30284B4800500533 /* HomeKit */,
+				C8D166453028D20600FA4895 /* PrayersKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1382,6 +1385,10 @@
 		C874B5372FA2FA0900FA0FED /* UtilKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UtilKit;
+		};
+		C8D166453028D20600FA4895 /* PrayersKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PrayersKit;
 		};
 		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;
