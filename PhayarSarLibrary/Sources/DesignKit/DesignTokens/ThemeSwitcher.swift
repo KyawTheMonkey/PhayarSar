@@ -1,5 +1,11 @@
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#else
+import AppKit
+#endif
+
 @MainActor
 public final class ThemeSwitcher: ObservableObject, @unchecked Sendable {
   public static let shared = ThemeSwitcher()
@@ -50,6 +56,7 @@ enum ThemeOverride {
 
 extension Color {
   static func dynamic(light: Color, dark: Color) -> Color {
+    #if canImport(UIKit)
     Color(UIColor { trait in
       switch ThemeOverride.current {
       case .light:   return UIColor(light)
@@ -57,6 +64,17 @@ extension Color {
       case .system: return trait.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
       }
     })
+    #else
+    Color(NSColor(name: nil) { appearance in
+      switch ThemeOverride.current {
+      case .light:   return NSColor(light)
+      case .dark:    return NSColor(dark)
+      case .system:
+        let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        return isDark ? NSColor(dark) : NSColor(light)
+      }
+    })
+    #endif
   }
 }
 

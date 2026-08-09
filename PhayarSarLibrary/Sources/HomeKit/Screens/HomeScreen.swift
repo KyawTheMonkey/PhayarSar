@@ -5,18 +5,36 @@ import SwiftUI
 import UtilKit
 
 public struct HomeScreen: View {
+  
+  enum Segment: Int, Hashable, CaseIterable {
+    case prayers
+    case audio
+    
+    var displayText: String {
+      switch self {
+      case .prayers: return "Prayers"
+      case .audio: return "Audios"
+      }
+    }
+  }
+  
   @ObserveInjection private var injectionObserver
+  @State private var activeSegment: Segment = .prayers
 
   public init() {}
 
   public var body: some View {
-    List {
-      Section("Continue") {
-        OngoingPrayerView()
-        .listRowBackground(AppColor.surface)
+    ScrollView {
+      LazyVStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
+        AppListSection("Continue") {
+          OngoingPrayerView()
+        }
+
+        HomeSegmentView(activeSegment: $activeSegment)
+          .appHorizontalInset()
       }
+      .padding(.vertical)
     }
-    .scrollContentBackground(.hidden)
     .background(AppBackgroundGradient())
     .safeAreaInset(edge: .top, content: {
       HomeNavView()
@@ -77,5 +95,11 @@ struct HomeNavView: View {
       }
     }
     .padding(.horizontal)
+  }
+}
+
+#Preview {
+  NavigationStack {
+    HomeScreen()
   }
 }

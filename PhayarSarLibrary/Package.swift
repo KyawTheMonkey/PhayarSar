@@ -76,7 +76,7 @@ let package = Package(
     // MARK: - Features
     .target(
       name: "HomeKit",
-      dependencies: ["EnvironmentKit"]
+      dependencies: ["EnvironmentKit", "DesignKit"]
     )
   ]
 )

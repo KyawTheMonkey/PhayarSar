@@ -178,7 +178,7 @@ fileprivate enum Palette {
   }
 
   enum Surface {
-    static let light = Color.white.opacity(0.55)
+    static let light = Color.white
     static let dark = Color.white.opacity(0.07)
   }
 
