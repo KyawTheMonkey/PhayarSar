@@ -6,160 +6,134 @@ public enum AppColor {
   // MARK: - Brand
 
   public static let primary = Color.dynamic(
-    light: Palette.Green.primary,
-    dark: Palette.Green.primaryDark
+    light: Palette.Accent.light,
+    dark: Palette.Accent.dark
   )
-  
-  public static let secondary = Color.dynamic(
-    light: Palette.Green.secondary,
-    dark: Palette.Green.secondaryDark
+
+  /// Soft, low-emphasis tint of `primary` — for tinted backgrounds behind
+  /// brand-colored content (e.g. secondary buttons, badges, highlights).
+  public static let primarySoft = Color.dynamic(
+    light: Palette.AccentSoft.light,
+    dark: Palette.AccentSoft.dark
   )
-  
-  public static let accent = Color.dynamic(
-    light: Palette.Green.tertiary,
-    dark: Palette.Green.tertiaryDark
-  )
-  
+
   // MARK: - Backgrounds
 
   public static let background = Color.dynamic(
-    light: Palette.Neutral.lighter,
-    dark: Palette.Base.whiteDark
+    light: Palette.Canvas.light,
+    dark: Palette.Canvas.dark
   )
-  
+
+  /// Translucent panel color, meant to be layered on top of `background`.
   public static let surface = Color.dynamic(
-    light: Palette.Green.lighterAlt,
-    dark: Palette.Green.lighterAltDark
+    light: Palette.Surface.light,
+    dark: Palette.Surface.dark
   )
-  
-  public static let card = Color.dynamic(
-    light: Palette.Base.white,
-    dark: Palette.Neutral.darkDark
-  )
-  
+
+  public static let card = surface
+
   // MARK: - Text
 
   public static let textPrimary = Color.dynamic(
-    light: Palette.Neutral.primary,
-    dark: Palette.Neutral.primaryDark
+    light: Palette.TextColor.primaryLight,
+    dark: Palette.TextColor.primaryDark
   )
-  
+
   public static let textSecondary = Color.dynamic(
-    light: Palette.Neutral.secondary,
-    dark: Palette.Neutral.secondaryDark
+    light: Palette.TextColor.secondaryLight,
+    dark: Palette.TextColor.secondaryDark
   )
-  
+
+  public static let textTertiary = Color.dynamic(
+    light: Palette.TextColor.tertiaryLight,
+    dark: Palette.TextColor.tertiaryDark
+  )
+
   public static let textInverse = Color.dynamic(
     light: Color.white,
-    dark: Palette.Neutral.primary
+    dark: Palette.TextColor.primaryLight
   )
-  
+
   // MARK: - Borders
 
   public static let border = Color.dynamic(
-    light: Palette.Neutral.quaternary,
-    dark: Palette.Neutral.quaternaryDark
+    light: Palette.Separator.light,
+    dark: Palette.Separator.dark
   )
-  
-  public static let divider = Color.dynamic(
-    light: Palette.Neutral.light,
-    dark: Palette.Neutral.lightDark
-  )
-  
+
+  public static let divider = border
+
   // MARK: - States
 
-  public static let success = primary
-  
+  public static let success = Color.dynamic(
+    light: Color.green,
+    dark: Color.green.opacity(0.85)
+  )
+
   public static let warning = Color.dynamic(
     light: Color.orange,
     dark: Color.orange.opacity(0.85)
   )
-  
+
   public static let error = Color.dynamic(
     light: Color.red,
     dark: Color.red.opacity(0.85)
   )
-  
+
   // MARK: - Buttons
 
   public static let buttonPrimaryBackground = primary
-  
+
   public static let buttonPrimaryText = Color.dynamic(
     light: Color.white,
     dark: Color.white
   )
-  
-  public static let buttonSecondaryBackground = Color.dynamic(
-    light: Palette.Green.lighter,
-    dark: Palette.Green.lightDark
-  )
-  
+
+  public static let buttonSecondaryBackground = primarySoft
+
   public static let buttonSecondaryText = primary
-  
-  public static let searchBarBackground = Color.dynamic(
-    light: Palette.Neutral.primaryAltDark,
-    dark: Color(white: 0.25)
-  )
+
+  public static let searchBarBackground = surface
 }
 
+/// Primitive values mirror the color sets in `Assets.xcassets`
+/// (AccentColor, AccentSoft, Canvas, Separator, Surface, TextPrimary,
+/// TextSecondary, TextTertiary) — do not use these directly, go through
+/// `AppColor`.
 fileprivate enum Palette {
-  enum Green {
-    // Light
-    static let primary = Color(hex: "#31663e")
-    static let lighterAlt = Color(hex: "#f4f9f5")
-    static let lighter = Color(hex: "#d3e7d8")
-    static let light = Color(hex: "#b0d1b9")
-    static let tertiary = Color(hex: "#70a37d")
-    static let secondary = Color(hex: "#41784f")
-    static let darkAlt = Color(hex: "#2c5c38")
-    static let dark = Color(hex: "#254e2f")
-    static let darker = Color(hex: "#1b3923")
-    
-    // Dark (REAL TOKENS)
-    static let primaryDark = Color(hex: "#469158")
-    static let lighterAltDark = Color(hex: "#030603")
-    static let lighterDark = Color(hex: "#0b170e")
-    static let lightDark = Color(hex: "#152c1a")
-    static let tertiaryDark = Color(hex: "#6FCF97")
-    static let secondaryDark = Color(hex: "#3d804d")
-    static let darkAltDark = Color(hex: "#539c64")
-    static let darkDark = Color(hex: "#68ac78")
-    static let darkerDark = Color(hex: "#89c296")
+  enum Accent {
+    static let light = Color(hex: "#8A2D3B")
+    static let dark = Color(hex: "#C4636F")
   }
-  
-  enum Neutral {
-    // Light
-    static let lighterAlt = Color(hex: "#f8f2ec")
-    static let lighter = Color(hex: "#f4eee8")
-    static let light = Color(hex: "#eae4de")
-    static let quaternaryAlt = Color(hex: "#dad5cf")
-    static let quaternary = Color(hex: "#d0cbc6")
-    static let tertiaryAlt = Color(hex: "#c8c3be")
-    static let tertiary = Color(hex: "#bab2aa")
-    static let secondary = Color(hex: "#a39a91")
-    static let primaryAlt = Color(hex: "#8d8379")
-    static let primary = Color(hex: "#332d26")
-    static let dark = Color(hex: "#60574d")
-    
-    // Dark
-    static let lighterAltDark = Color(hex: "#0f0f0f")
-    static let lighterDark = Color(hex: "#0f0f0f")
-    static let lightDark = Color(hex: "#0e0e0e")
-    static let quaternaryAltDark = Color(hex: "#0d0d0d")
-    static let quaternaryDark = Color(hex: "#0c0c0c")
-    static let tertiaryAltDark = Color(hex: "#0c0c0c")
-    static let tertiaryDark = Color(hex: "#fdfffa")
-    static let secondaryDark = Color(hex: "#c9c9c9")
-    static let primaryAltDark = Color(hex: "#fdfffc")
-    static let primaryDark = Color(hex: "#fcfff7")
-    static let darkDark = Color(hex: "#2e2d2c")
+
+  enum AccentSoft {
+    static let light = Color(hex: "#F1DEE1")
+    static let dark = Color(hex: "#3B1E22")
   }
-  
-  enum Base {
-    static let black = Color(hex: "#494139")
-    static let white = Color(hex: "#fff9f2")
-    
-    static let blackDark = Color(hex: "#fffffe")
-    static let whiteDark = Color(hex: "#0f0f0f")
+
+  enum Canvas {
+    static let light = Color(hex: "#F8F1EF")
+    static let dark = Color(hex: "#1E1516")
+  }
+
+  enum Surface {
+    static let light = Color.white.opacity(0.55)
+    static let dark = Color.white.opacity(0.07)
+  }
+
+  enum Separator {
+    static let light = Color(hex: "#2A2420", alpha: 0.12)
+    static let dark = Color(hex: "#F2EEE8", alpha: 0.14)
+  }
+
+  enum TextColor {
+    static let primaryLight = Color(hex: "#2A2420")
+    static let primaryDark = Color(hex: "#F2EEE8")
+
+    static let secondaryLight = Color(hex: "#6F6660")
+    static let secondaryDark = Color(hex: "#B5ACA3")
+
+    static let tertiaryLight = Color(hex: "#9C948C")
+    static let tertiaryDark = Color(hex: "#7C736A")
   }
 }

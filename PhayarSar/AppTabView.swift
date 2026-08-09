@@ -5,6 +5,7 @@
 //  Created by Kyaw Zay Ya Lin Tun on 08/08/2026.
 //
 
+import DesignKit
 import EnvironmentKit
 import SwiftUI
 
@@ -25,11 +26,14 @@ struct AppTabView: View {
   }
 
   var body: some View {
-    if useSplitView {
-      splitView
-    } else {
-      tabStackView
+    Group {
+      if useSplitView {
+        splitView
+      } else {
+        tabStackView
+      }
     }
+    .tint(DesignKit.AppColor.primary)
   }
 
   private var splitView: some View {
@@ -70,6 +74,7 @@ struct AppTabView: View {
         .tag(tab)
       }
     }
+    .tint(DesignKit.AppColor.primary)
   }
 }
 
