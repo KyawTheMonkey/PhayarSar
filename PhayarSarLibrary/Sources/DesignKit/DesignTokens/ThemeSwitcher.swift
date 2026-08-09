@@ -59,3 +59,27 @@ extension Color {
     })
   }
 }
+
+// MARK: - Screen background gradient
+
+/// Soft top-to-bottom glow used as the screen background. Pairs with
+/// translucent .appSurface cards (see `GlassCard`) for depth instead of
+/// a flat fill. Adapts automatically to light/dark mode.
+public struct AppBackgroundGradient: View {
+  @Environment(\.colorScheme) private var colorScheme
+  
+  public init() {}
+  
+  public var body: some View {
+    LinearGradient(colors: [AppColor.primarySoft, AppColor.background], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.48))
+      .ignoresSafeArea()
+  }
+}
+
+extension View {
+  /// Applies the app's calm gradient background behind this view.
+  public func appBackground() -> some View {
+    self.background(AppBackgroundGradient())
+  }
+}
+
