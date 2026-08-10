@@ -18,5 +18,29 @@
   "settings_tab": {
     "En": "Settings",
     "Mm": "စက်တင်"
+  },
+  "precepts": {
+    "en": "Precepts",
+    "mm": "သီလနှင့် ကန်တော့ချိုး"
+  },
+  "virtues": {
+    "en": "Virtues",
+    "mm": "ဂုဏ်တော်များ"
+  },
+  "parittas": {
+    "en": "Parittas",
+    "mm": "ပရိတ်တော်များ"
+  },
+  "protective": {
+    "en": "Protection",
+    "mm": "အထူးပရိတ်များ"
+  },
+  "discourses": {
+    "en": "Dhamma",
+    "mm": "ဓမ္မစကြာနှင့် ပဋ္ဌာန်း"
+  },
+  "metta": {
+    "en": "Metta",
+    "mm": "မေတ္တာပွား"
   }
 }
