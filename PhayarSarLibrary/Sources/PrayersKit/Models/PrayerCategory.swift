@@ -1,7 +1,7 @@
 import Foundation
 import LocalisationKit
 
-enum PrayerCategory: Int, Hashable, CaseIterable {
+public enum PrayerCategory: Int, Hashable, CaseIterable {
   case precepts
   case virtues
   case parittas
@@ -9,7 +9,7 @@ enum PrayerCategory: Int, Hashable, CaseIterable {
   case discourses
   case metta
   
-  var displayText: String {
+  public var displayText: String {
     switch self {
     case .precepts:
       return L10n.precepts

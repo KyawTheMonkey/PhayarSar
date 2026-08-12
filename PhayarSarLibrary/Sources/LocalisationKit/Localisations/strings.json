@@ -20,27 +20,27 @@
     "Mm": "စက်တင်"
   },
   "precepts": {
-    "en": "Precepts",
-    "mm": "သီလနှင့် ကန်တော့ချိုး"
+    "En": "Precepts",
+    "Mm": "သီလနှင့် ကန်တော့ချိုး"
   },
   "virtues": {
-    "en": "Virtues",
-    "mm": "ဂုဏ်တော်များ"
+    "En": "Virtues",
+    "Mm": "ဂုဏ်တော်များ"
   },
   "parittas": {
-    "en": "Parittas",
-    "mm": "ပရိတ်တော်များ"
+    "En": "Parittas",
+    "Mm": "ပရိတ်တော်များ"
   },
   "protective": {
-    "en": "Protection",
-    "mm": "အထူးပရိတ်များ"
+    "En": "Protection",
+    "Mm": "အထူးပရိတ်များ"
   },
   "discourses": {
-    "en": "Dhamma",
-    "mm": "ဓမ္မစကြာနှင့် ပဋ္ဌာန်း"
+    "En": "Dhamma",
+    "Mm": "ဓမ္မစကြာနှင့် ပဋ္ဌာန်း"
   },
   "metta": {
-    "en": "Metta",
-    "mm": "မေတ္တာပွား"
+    "En": "Metta",
+    "Mm": "မေတ္တာပွား"
   }
 }

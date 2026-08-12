@@ -19,7 +19,7 @@ public struct HomeScreen: View {
   }
   
   @ObserveInjection private var injectionObserver
-  @State private var activeSegment: Segment = .prayers
+  @StateObject private var viewModel = HomeViewModel()
 
   public init() {}
 
@@ -30,10 +30,20 @@ public struct HomeScreen: View {
           OngoingPrayerView()
         }
 
-        HomeSegmentView(activeSegment: $activeSegment)
+        HomeSegmentView(activeSegment: $viewModel.activeSegment)
           .appHorizontalInset()
+        
+        switch viewModel.activeSegment {
+        case .prayers:
+          PrayersContent()
+        case .audio:
+          Text("Empty")
+        }
       }
       .padding(.vertical)
+    }
+    .onAppear {
+      viewModel.onAppear()
     }
     .background(AppBackgroundGradient())
     .safeAreaInset(edge: .top, content: {
@@ -41,6 +51,20 @@ public struct HomeScreen: View {
     })
     .hideNavBar()
     .enableInjection()
+  }
+  
+  @ViewBuilder
+  private func PrayersContent() -> some View {
+    ForEach(viewModel.prayers, id: \.category) { (category, prayers) in
+      AppListSection(category.displayText) {
+        ForEach(prayers) { prayer in
+          VStack(alignment: .leading) {
+            Text(prayer.title)
+            Divider()
+          }
+        }
+      }
+    }
   }
 }
 

@@ -80,11 +80,12 @@ let package = Package(
     // MARK: - Features
     .target(
       name: "HomeKit",
-      dependencies: ["EnvironmentKit", "DesignKit"]
+      dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit"]
     ),
     .target(
       name: "PrayersKit",
-      dependencies: ["EnvironmentKit", "DesignKit"]
+      dependencies: ["EnvironmentKit", "DesignKit"],
+      resources: [.process("Prayers")]
     )
   ]
 )
