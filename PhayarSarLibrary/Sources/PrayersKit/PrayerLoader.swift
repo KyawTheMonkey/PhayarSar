@@ -89,10 +89,14 @@ public final class PrayerLoader: @unchecked Sendable {
 
   /// Every prayer file in the bundle, sorted. These are the valid arguments to
   /// ``prayer(named:)``.
+  ///
+  /// Excludes `manifest.json` — it sits in the same flattened resource root but
+  /// describes the catalog rather than a prayer. See ``PrayerCatalog``.
   public func availablePrayerNames() -> [String] {
     let urls = bundle.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
     return urls
       .map { $0.deletingPathExtension().lastPathComponent }
+      .filter { $0 != PrayerCatalog.manifestResourceName }
       .sorted()
   }
 

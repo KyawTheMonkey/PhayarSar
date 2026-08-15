@@ -55,9 +55,9 @@ public struct HomeScreen: View {
   
   @ViewBuilder
   private func PrayersContent() -> some View {
-    ForEach(viewModel.prayers, id: \.category) { (category, prayers) in
-      AppListSection(category.displayText) {
-        ForEach(prayers) { prayer in
+    ForEach(viewModel.sections) { section in
+      AppListSection(section.category.displayText) {
+        ForEach(section.prayers) { prayer in
           VStack(alignment: .leading) {
             Text(prayer.title)
             Divider()
