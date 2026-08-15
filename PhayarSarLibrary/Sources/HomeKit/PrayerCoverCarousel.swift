@@ -8,58 +8,79 @@ enum PrayerCoverMetrics {
   /// Square, and roughly half the width of a phone, so the hero reads as
   /// artwork rather than as an oversized list thumbnail.
   static let size: CGFloat = 176
-  static let cornerRadius: CGFloat = 28
+  /// Album-art corners rather than the app's usual soft ones — the gallery is
+  /// meant to read as sleeves standing in a rack.
+  static let cornerRadius: CGFloat = 12
 
-  /// How far around the sphere one cover sits from the next.
+  /// The angle every cover off the centre stands at.
   ///
-  /// This, not any scale or offset, is what sets the whole look. Larger turns
-  /// the sphere into a barrel with few covers on it; smaller flattens it back
-  /// towards a plain row. At 36° there are ten covers around the full
-  /// circumference, of which the front five are facing the reader.
-  static let degreesPerCover: Double = 36
+  /// Fixed, not progressive — this is what makes Cover Flow look like Cover Flow
+  /// rather than like a curve. A cover turns from flat to this over the single
+  /// step it takes to leave the middle, and then holds it however far back in
+  /// the stack it goes. The result reads as two flat walls either side of one
+  /// cover facing you, which is exactly what the iTunes gallery is.
+  static let flankAngle: Double = 64
 
-  /// Radius of the sphere, in points — how far behind the screen its centre sits.
+  /// Gap from the centred cover's middle to the first turned cover's middle.
   ///
-  /// Derived rather than chosen. For the covers to sit against each other on the
-  /// surface, the chord spanning ``degreesPerCover`` has to be one cover wide,
-  /// which pins the radius to `size / 2·sin(halfAngle)`. Picking a radius freely
-  /// would leave them either overlapping on the surface or floating apart on it.
-  static var radius: CGFloat {
-    size / (2 * CGFloat(sin(Angle(degrees: degreesPerCover / 2).radians)))
-  }
+  /// Set so the flanking cover clears the centred one instead of tucking under
+  /// it: a turned cover is about 66pt wide on screen, so at this distance its
+  /// near edge stops a little short of the centred cover's, leaving the front
+  /// of the gallery reading as one sleeve rather than three fused together.
+  static let centreGap: CGFloat = 134
+
+  /// Step between one turned cover and the next, once both are in the wall.
+  ///
+  /// Still smaller than ``centreGap`` — the wall is meant to stack — but wide
+  /// enough that each sleeve shows a clear band of itself rather than only the
+  /// sliver its neighbour doesn't cover. A turned cover is about 66pt wide on
+  /// screen, so this leaves roughly a third of each one overlapped.
+  static let flankStep: CGFloat = 44
+
+  /// How much of its size a cover keeps once it has turned into the wall, and
+  /// how much more it loses for each place further back.
+  static let flankScale: CGFloat = 0.86
+  static let depthFalloff: Double = 0.93
 
   /// How far the strip scrolls to bring the next cover to the front.
-  ///
-  /// The chord again, so that a cover's position in the layout and its position
-  /// on the sphere are the same point. They needn't agree — the surface is drawn
-  /// by transforms that layout knows nothing about — but where they don't, taps
-  /// land somewhere other than where the cover appears.
-  static var pitch: CGFloat {
-    radius * CGFloat(sin(Angle(degrees: degreesPerCover).radians))
-  }
+  static let pitch: CGFloat = 120
 
-  /// Layout gap, backed out of ``pitch`` so the strip scrolls one chord per cover.
+  /// Layout gap, backed out of ``pitch``. Deeply negative: the covers overlap
+  /// heavily on screen, so they have to overlap in the layout too or the strip
+  /// would scroll far further than it looks like it should.
   static var spacing: CGFloat { pitch - size }
 
-  /// How near the camera sits. Higher foreshortens harder; at 1 the near edge of
-  /// a turned cover flares enough to read as a fisheye.
-  static let perspective: CGFloat = 0.9
+  /// How near the camera sits for a cover's own turn. Only ever applied to an
+  /// in-place rotation — no depth translation, so nothing can cross the camera
+  /// plane and stop drawing.
+  static let perspective: CGFloat = 0.55
 
-  /// Turn past which a cover starts fading out, and the turn at which it is gone.
+  /// How much of its opacity a cover keeps once it has turned into the wall,
+  /// and how much more it gives up for each place further back.
   ///
-  /// A cover reaching 90° is edge-on, and past it has swung round to the back of
-  /// the sphere where it would be seen inside-out. Fading it away over the last
-  /// stretch means it thins to nothing as it turns away, rather than vanishing
-  /// mid-surface.
-  static let fadeStartAngle: Double = 55
-  static let hiddenAngle: Double = 90
+  /// The fade starts at the very first cover off centre, rather than holding a
+  /// few at full strength. On iTunes' black background the flanking covers
+  /// recede by going dark; on a light background the equivalent is going pale,
+  /// and it has to start immediately — held at full opacity, a row of
+  /// overlapping covers in one flat colour merges into a single silhouette with
+  /// no depth in it at all.
+  static let flankOpacity: Double = 0.5
+  static let opacityFalloff: Double = 0.7
 
-  /// Room above and below the covers inside the scroll view.
-  ///
-  /// Carries the drop shadow, and the extra height perspective gives the near
-  /// edge of a turned cover. A `ScrollView` clips to its bounds, so whatever
-  /// isn't budgeted here gets sliced off.
-  static let verticalInset: CGFloat = 36
+  /// Past this many covers out, there is nothing left worth drawing.
+  static let hiddenCovers: Double = 5
+
+  /// Height of the mirrored reflection under each cover, as a fraction of the
+  /// cover. The floor is half the iTunes look.
+  static let reflectionFraction: CGFloat = 0.35
+
+  static var reflectionHeight: CGFloat { size * reflectionFraction }
+
+  /// Room above the covers, for the flare perspective gives a turned cover's
+  /// near edge, and below them for the reflection. A `ScrollView` clips to its
+  /// bounds, so whatever isn't budgeted here gets sliced off.
+  static let topInset: CGFloat = 20
+  static var bottomInset: CGFloat { reflectionHeight + 12 }
 
   /// How many times the catalog is repeated to build the looping strip: one
   /// run of padding cells before, the real run, one run after.
@@ -72,21 +93,57 @@ enum PrayerCoverMetrics {
   static let copies = 3
 
   /// Total height the carousel occupies in the hero.
-  static var height: CGFloat { size + verticalInset * 2 }
+  static var height: CGFloat { size + topInset + bottomInset }
 }
 
 // MARK: - Cover
 
-/// One prayer's cover art.
+/// One prayer's cover art, standing on its own reflection.
 ///
-/// A plain grey rectangle until real artwork exists. The shadow is what makes
-/// it sit on the background as an object rather than as a gap in the layout.
+/// A plain grey square until real artwork exists. The reflection hangs below the
+/// cover as an overlay rather than sitting under it in a stack, so the view's
+/// layout box stays the cover alone — which keeps the carousel's rotations
+/// pivoting about the middle of the art and not about the middle of art plus
+/// floor.
 struct PrayerCover: View {
   var body: some View {
+    face
+      .overlay(alignment: .bottom) {
+        reflection
+          .offset(y: PrayerCoverMetrics.reflectionHeight)
+          .allowsHitTesting(false)
+      }
+  }
+
+  private var face: some View {
     RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous)
       .fill(AppColor.grey300)
+      // The covers in the wall overlap by design, and until there is real
+      // artwork they are all the same flat grey — so without a lit edge to
+      // separate one from the next the whole stack reads as a single shape.
+      .overlay(
+        RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous)
+          .strokeBorder(.white.opacity(0.55), lineWidth: 1)
+      )
       .frame(width: PrayerCoverMetrics.size, height: PrayerCoverMetrics.size)
-      .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 10)
+  }
+
+  /// The cover flipped top to bottom, cropped to the near part of it, and faded
+  /// out downwards — the floor the gallery stands on.
+  private var reflection: some View {
+    face
+      .scaleEffect(x: 1, y: -1)
+      // Taken from the top of the flipped copy, which is the bottom edge of the
+      // cover: a reflection continues from where the object meets the floor.
+      .frame(height: PrayerCoverMetrics.reflectionHeight, alignment: .top)
+      .clipped()
+      .mask(
+        LinearGradient(
+          colors: [.black.opacity(0.4), .clear],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+      )
   }
 }
 
@@ -182,9 +239,21 @@ private struct PagingCovers: View {
 
   var body: some View {
     GeometryReader { proxy in
-      // Half a container minus half a cover, so the first and last prayers can
-      // reach the centre instead of stopping against the edge.
-      let endInset = max(0, (proxy.size.width - PrayerCoverMetrics.size) / 2)
+      // Where the middle of the carousel falls on screen. Read in `.global`,
+      // and each cover reads its own position in `.global` too, so the
+      // difference between them needs no coordinate space to be resolved and
+      // no two measurements to agree about their origin. Getting that wrong is
+      // invisible in the maths and obvious on screen: every cover ends up
+      // reporting the same constant error, and the whole gallery slides off to
+      // one side.
+      let viewportCentreX = proxy.frame(in: .global).midX
+      let containerWidth = proxy.size.width
+
+      // Half a container minus half a cover. This is what centres the covers:
+      // it leaves a content region exactly one cover wide, so the aligned cover
+      // lands in the middle of the screen — and it lets the first and last
+      // prayers reach the middle too, rather than stopping against an edge.
+      let endInset = max(0, (containerWidth - PrayerCoverMetrics.size) / 2)
 
       ScrollViewReader { scroller in
         ScrollView(.horizontal) {
@@ -200,32 +269,43 @@ private struct PagingCovers: View {
               PrayerCover()
                 // `visualEffect` rather than `scrollTransition`, because this
                 // needs real geometry. A transition phase is normalised to the
-                // visible region — it says "most of the way out", not "173pt
+                // visible region — it says "most of the way out", not "167pt
                 // from the middle" — and an angle around a sphere can't be
-                // built from that. The proxy gives the actual distance.
+                // built from that.
+                //
+                // The distance comes from the named coordinate space on the
+                // scroll view below, the same way `ScrollOffsetReader` measures
+                // elsewhere in the app: a cover's `midX` in that space is its
+                // position across the viewport, so subtracting the viewport's
+                // half-width gives a signed distance from the middle in points.
                 .visualEffect { content, proxy in
-                  let travel = distanceFromCentre(proxy)
-                  let turn = PrayerCoverMetrics.degreesPerCover
-                    * Double(travel / PrayerCoverMetrics.pitch)
+                  // `containerWidth` is 0 until the first layout pass, and a
+                  // cover measured against nothing would be placed as though it
+                  // were far out in the wall — turned away and faded off. Left
+                  // flat until there is something real to measure against.
+                  let travel = containerWidth > 0
+                    ? proxy.frame(in: .global).midX - viewportCentreX
+                    : 0
+
+                  let place = CoverFlowPlacement(
+                    coversFromCentre: Double(travel / PrayerCoverMetrics.pitch)
+                  )
 
                   return content
-                    // Every cover is stacked onto the sphere's front point...
-                    .offset(x: -travel)
-                    // ...and then swung back out to where it belongs on the
-                    // surface. `anchorZ` puts the pivot a radius behind the
-                    // screen, so this one rotation carries the whole thing: the
-                    // cover arcs sideways along the surface, recedes as it goes,
-                    // shrinks under perspective because it is genuinely further
-                    // away, and turns to stay flat against the sphere — none of
-                    // it faked with separate scale or offset ramps.
+                    .scaleEffect(place.scale)
                     .rotation3DEffect(
-                      .degrees(turn),
+                      .degrees(place.turn),
                       axis: (x: 0, y: 1, z: 0),
-                      anchor: .center,
-                      anchorZ: -PrayerCoverMetrics.radius,
                       perspective: PrayerCoverMetrics.perspective
                     )
-                    .opacity(facingOpacity(atDegrees: turn))
+                    // Moved from where the strip laid it out to where the
+                    // gallery actually stands it. Subtracting `travel` is what
+                    // makes this absolute rather than relative: whatever the
+                    // scroll view believes about alignment, the cover with
+                    // nothing between it and the middle is drawn *at* the
+                    // middle.
+                    .offset(x: place.x - travel)
+                    .opacity(place.opacity)
                 }
                 // Writing to the `scrollPosition` binding is what moves the
                 // scroll view, so selecting a neighbour and tapping one are the
@@ -246,13 +326,18 @@ private struct PagingCovers: View {
             }
           }
           .scrollTargetLayout()
-          .padding(.vertical, PrayerCoverMetrics.verticalInset)
+          .padding(.top, PrayerCoverMetrics.topInset)
+          .padding(.bottom, PrayerCoverMetrics.bottomInset)
         }
         .safeAreaPadding(.horizontal, endInset)
         .scrollTargetBehavior(.viewAligned)
-        // `.center`, because the aligned item is the one in the middle here,
-        // not the one at the leading edge.
-        .scrollPosition(id: $scrolledCell, anchor: .center)
+        // No `anchor:`. The inset above already leaves a content region one
+        // cover wide, so aligning a cover to the *start* of that region is what
+        // puts it in the middle of the screen. Asking for `.center` as well
+        // centres a second time, over the full width instead of the inset one —
+        // which pushed the whole carousel half a screen minus half a cover to
+        // the right, and parked the active cover against the right edge.
+        .scrollPosition(id: $scrolledCell)
         .scrollIndicators(.hidden)
         .onAppear { anchorToOpeningPrayer(scroller) }
         .onChange(of: scrolledCell) { _, cell in settle(on: cell) }
@@ -299,20 +384,27 @@ private struct PagingCovers: View {
     }
   }
 
-  /// Puts the opening prayer in the centre.
+  /// Scrolls to the opening prayer once the strip is on screen.
   ///
-  /// Belt and braces over `scrollPosition(id:)`'s own initial positioning: that
-  /// reports where the scroll view *is*, so any failure to honour the opening
-  /// cell doesn't just leave the carousel in the wrong place, it feeds the wrong
-  /// prayer back into the screen. Scrolling explicitly is the one instruction
-  /// that can't be misread, and `openingCell` survives any write-back because it
-  /// is a stored `let` rather than the binding.
+  /// This has to be done explicitly. Seeding `scrolledCell` in `init` looks like
+  /// it should be enough, but `scrollPosition(id:)` acts on *changes* to its
+  /// binding — a value that was already there when the scroll view first laid
+  /// out moves nothing. The strip stayed at its content start with the opening
+  /// prayer's cover nowhere near it, and because nothing changed, `settle` never
+  /// ran to correct the rest of the screen either: the title went on naming a
+  /// prayer the carousel wasn't showing, and the wall only existed on one side
+  /// because the covers before cell zero don't exist.
+  ///
+  /// One-shot. `onAppear` fires again on the way back from a pushed screen, and
+  /// re-anchoring then would throw away wherever the reader had paged to.
   private func anchorToOpeningPrayer(_ scroller: ScrollViewProxy) {
     guard !hasAnchored else { return }
     hasAnchored = true
 
     scroller.scrollTo(openingCell, anchor: .center)
 
+    // Repairs the binding if the first layout pass reported some other cell
+    // back through it before this ran.
     if scrolledCell != openingCell {
       scrolledCell = openingCell
     }
@@ -369,41 +461,55 @@ private struct PrayerContentTransition: ViewModifier {
   }
 }
 
-/// Where a cover sits on the curved surface the carousel is imagined to wrap
-/// around, worked out from how far it is from the centre.
+/// Where a cover stands in the gallery, given how many covers it is from the
+/// one facing the reader.
 ///
-/// `phase.value` runs -1 (a page before centre) → 0 (centred) → 1 (a page
-/// after). It is clamped either side, so a cover three pages out is posed like
-/// one a single page out rather than turning ever further until it is edge-on.
+/// Two regimes, which is the whole shape of Cover Flow. Over the first cover's
+/// worth of travel a cover swings from flat to ``PrayerCoverMetrics/flankAngle``
+/// and slides out by ``PrayerCoverMetrics/centreGap``. After that it is part of
+/// the wall: the angle stops changing and it only steps back by
+/// ``PrayerCoverMetrics/flankStep`` at a time, shrinking a little as it goes.
 ///
-/// A plain struct rather than methods on the view: `scrollTransition`'s closure
-/// is nonisolated, while anything declared on a `View` picks up `@MainActor`
-/// from the conformance — so as methods these would be actor-isolation
-/// violations on a path that runs for every cover, every frame of a swipe.
-private struct CoverPose {
+/// A plain struct rather than methods on the view: `visualEffect`'s closure is
+/// nonisolated, while anything declared on a `View` picks up `@MainActor` from
+/// the conformance — so as methods these would be actor-isolation violations on
+/// a path that runs for every cover, every frame of a drag.
+private struct CoverFlowPlacement {
+  /// Position across the screen, in points from the middle.
+  let x: CGFloat
   let scale: CGFloat
-  let opacity: CGFloat
-  /// Rotation about the vertical axis. Signed, so a cover on the right turns
-  /// its left edge towards the reader and one on the left turns its right —
-  /// both facing in towards the centre, the way they would on a barrel.
-  let yaw: Double
-  /// Lean within the screen plane, matching the slope of the arc at that point.
-  let roll: Double
-  /// Drop below the centre line.
-  let dip: CGFloat
+  /// Rotation about the vertical axis. Signed, so each wall faces inwards.
+  let turn: Double
+  let opacity: Double
 
-  init(distanceFromCentre phase: Double) {
-    let signed = max(-1, min(1, phase))
-    let distance = abs(signed)
+  init(coversFromCentre distance: Double) {
+    let side: Double = distance < 0 ? -1 : 1
+    let magnitude = abs(distance)
 
-    scale = 1 - (1 - PrayerCoverMetrics.sideScale) * distance
-    opacity = 1 - (1 - PrayerCoverMetrics.sideOpacity) * distance
-    yaw = PrayerCoverMetrics.maxYaw * signed
-    roll = PrayerCoverMetrics.maxRoll * signed
+    // Splits the travel into "still leaving the middle" and "already in the
+    // wall", which are the two regimes above.
+    let leaving = min(magnitude, 1)
+    let stacked = max(magnitude - 1, 0)
 
-    // Squared rather than linear. Height on a circle falls off as 1 - cos, so
-    // covers leave the centre almost level and drop away faster the further out
-    // they get. A linear dip reads as a ramp; this reads as a curve.
-    dip = PrayerCoverMetrics.arcDepth * distance * distance
+    x = CGFloat(side) * (
+      PrayerCoverMetrics.centreGap * CGFloat(leaving)
+        + PrayerCoverMetrics.flankStep * CGFloat(stacked)
+    )
+
+    // Negative, so each wall opens *away* from the middle. A flanking sleeve
+    // swings its inner edge back behind the centred cover and brings its outer
+    // edge forward, which is what makes the two walls fan outwards and the
+    // front cover sit proud of them. The opposite sign turns the inner edges
+    // towards the reader instead, and the gallery reads as closing in on the
+    // middle rather than opening out of it.
+    turn = -PrayerCoverMetrics.flankAngle * side * leaving
+
+    let shrunk = 1 - (1 - Double(PrayerCoverMetrics.flankScale)) * leaving
+    scale = CGFloat(shrunk * pow(PrayerCoverMetrics.depthFalloff, stacked))
+
+    let paled = 1 - (1 - PrayerCoverMetrics.flankOpacity) * leaving
+    opacity = magnitude >= PrayerCoverMetrics.hiddenCovers
+      ? 0
+      : paled * pow(PrayerCoverMetrics.opacityFalloff, stacked)
   }
 }
