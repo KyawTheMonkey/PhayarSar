@@ -95,6 +95,21 @@ public enum AppColor {
   
   public static let searchBarBackground = surface
   
+  // MARK: - Reading page
+
+  /// The paper colours a prayer can be read on.
+  ///
+  /// Deliberately *not* `Color.dynamic`: these are a reading preference, not a
+  /// theme. Someone who picks the black page wants it black in daylight too,
+  /// and a "page colour" that changed with the system appearance would make the
+  /// setting meaningless.
+  public enum Page {
+    public static let classic = Palette.PageColor.classic
+    public static let yellow = Palette.PageColor.yellow
+    public static let grey = Palette.PageColor.grey
+    public static let black = Palette.PageColor.black
+  }
+
   // MARK: - Grey
   public static let grey50 = Color.dynamic(
     light: Palette.Grey.grey50Light,
@@ -142,6 +157,16 @@ public enum AppColor {
 /// TextSecondary, TextTertiary) — do not use these directly, go through
 /// `AppColor`.
 fileprivate enum Palette {
+  /// Fixed paper colours — see `AppColor.Page` for why these have no
+  /// light/dark pair. The two light pages are warm rather than pure white, to
+  /// sit with the rest of the palette; the two dark ones carry light text.
+  enum PageColor {
+    static let classic = Color(hex: "#FBF7F0")
+    static let yellow = Color(hex: "#F5E9C8")
+    static let grey = Color(hex: "#2C2A28")
+    static let black = Color(hex: "#000000")
+  }
+
   enum Grey {
     static let grey50Light = Color(hex: "#FAFAF9")
     static let grey100Light = Color(hex: "#F0EEEB")

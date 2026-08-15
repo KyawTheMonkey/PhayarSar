@@ -91,6 +91,74 @@
     "En": "Start",
     "Mm": "စတင်ဖတ်ရန်"
   },
+  "prayer_settings": {
+    "En": "Reading settings",
+    "Mm": "ဖတ်ရှုမှု ချိန်ညှိချက်"
+  },
+  "text_size": {
+    "En": "Text size",
+    "Mm": "စာလုံးအရွယ်အစား"
+  },
+  "text_alignment": {
+    "En": "Alignment",
+    "Mm": "စာသားနေရာချမှု"
+  },
+  "background_color": {
+    "En": "Background",
+    "Mm": "နောက်ခံအရောင်"
+  },
+  "letter_spacing": {
+    "En": "Letter spacing",
+    "Mm": "စာလုံးအကွာအဝေး"
+  },
+  "line_spacing": {
+    "En": "Line spacing",
+    "Mm": "စာကြောင်းအကွာအဝေး"
+  },
+  "verse_spacing": {
+    "En": "Verse spacing",
+    "Mm": "စာပိုဒ်အကွာအဝေး"
+  },
+  "pronunciation": {
+    "En": "Pronunciation",
+    "Mm": "အသံထွက်"
+  },
+  "shown": {
+    "En": "Shown",
+    "Mm": "ပြထားသည်"
+  },
+  "hidden": {
+    "En": "Hidden",
+    "Mm": "ဖျောက်ထားသည်"
+  },
+  "align_left": {
+    "En": "Left",
+    "Mm": "ဘယ်ဘက်"
+  },
+  "align_center": {
+    "En": "Center",
+    "Mm": "အလယ်"
+  },
+  "align_right": {
+    "En": "Right",
+    "Mm": "ညာဘက်"
+  },
+  "page_classic": {
+    "En": "Classic",
+    "Mm": "ပုံမှန်"
+  },
+  "page_yellow": {
+    "En": "Yellow",
+    "Mm": "အဝါ"
+  },
+  "page_grey": {
+    "En": "Grey",
+    "Mm": "မီးခိုး"
+  },
+  "page_black": {
+    "En": "Black",
+    "Mm": "အနက်"
+  },
   "prayer_not_found": {
     "En": "This prayer is no longer available.",
     "Mm": "ဤဘုရားစာကို ရှာမတွေ့ပါ။"

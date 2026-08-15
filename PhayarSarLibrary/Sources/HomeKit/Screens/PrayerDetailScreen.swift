@@ -3,6 +3,7 @@ import Inject
 import LocalisationKit
 import PrayersKit
 import SwiftUI
+import UtilKit
 
 /// Layout constants for `PrayerDetailScreen`.
 private enum PrayerDetailMetrics {
@@ -14,10 +15,48 @@ private enum PrayerDetailMetrics {
   /// Gap between the cover and the title block beneath it.
   static let heroSpacing: CGFloat = 20
 
-  /// Diameter of a quick action's tinted icon circle. Kept under the row's own
-  /// height so the circle sits inside the line of text rather than setting the
-  /// row's rhythm.
-  static let actionIconDiameter: CGFloat = 32
+  /// Width reserved for a quick action's leading icon. The glyphs vary in width
+  /// — a calendar is far wider than a chevron — so they get a fixed column and
+  /// the labels beside them stay aligned down the card.
+  static let rowIconColumnWidth: CGFloat = 24
+
+  /// Space above and below a quick action's content. The rows own their own
+  /// vertical rhythm — the section is handed zero vertical content insets — so
+  /// between two rows this reads as 14 above and 14 below the divider, and at
+  /// the card's edges as a single 14.
+  static let rowVerticalPadding: CGFloat = 14
+
+  /// Diameter of the page-colour swatch on the background spec. Sized to the
+  /// cap height of `AppFont.statValue` beside it, so the two read as one line
+  /// rather than as a dot next to some text.
+  static let swatchDiameter: CGFloat = 18
+
+  /// Gutter between spec columns.
+  static let specColumnSpacing: CGFloat = 12
+
+  /// Gap between spec rows. Wider than the gutter so the grid reads down in
+  /// columns rather than across in a block.
+  static let specRowSpacing: CGFloat = 20
+
+  /// The width a spec column wants to be. The count is chosen by rounding to
+  /// whatever lands nearest this, not by fitting as many as clear some floor —
+  /// a floor lets the last column that fits stretch to nearly twice the minimum
+  /// before another one earns its place, which is how a 442pt card ends up
+  /// showing two 215pt columns instead of three 139pt ones.
+  static let idealSpecColumnWidth: CGFloat = 165
+
+  /// Two columns even on the narrowest phone — a single column would just be
+  /// the list layout again.
+  static let minSpecColumns = 2
+
+  /// Past four the specs stop reading as pairs of related settings and start
+  /// reading as a strip of loose numbers.
+  static let maxSpecColumns = 4
+
+  /// Fixed box around a spec's glyph. The glyphs differ in width by nearly 2×,
+  /// so without a shared box the labels beside them would start at a different
+  /// x in every cell.
+  static let specIconBoxWidth: CGFloat = 16
 
   static let ctaCornerRadius: CGFloat = 16
 
@@ -59,6 +98,9 @@ public struct PrayerDetailScreen: View {
     #if os(iOS)
     .navigationBarTitleDisplayMode(.inline)
     #endif
+    // The reading CTA owns the bottom of this screen; the tab bar under it
+    // would compete for the same thumb. Restored on pop by the modifier itself.
+    .hideTabBar()
     .appBackground()
     .enableInjection()
   }
@@ -76,6 +118,7 @@ public struct PrayerDetailScreen: View {
         }
 
         QuickActions()
+        ReadingSettings(prayer)
       }
       .padding(.top, 8)
       .padding(.bottom, AppListSectionMetrics.recommendedSectionSpacing)
@@ -146,15 +189,42 @@ public struct PrayerDetailScreen: View {
 
   @ViewBuilder
   private func QuickActions() -> some View {
-    AppListSection(L10n.quickActions) {
+    // Zero vertical insets: `QuickActionRow` pads its own rows, so the section
+    // adding more would double the gap at the first and last row.
+    AppListSection(
+      L10n.quickActions,
+      contentInsets: EdgeInsets(
+        top: 0,
+        leading: AppListSectionMetrics.contentInsets.leading,
+        bottom: 0,
+        trailing: AppListSectionMetrics.contentInsets.trailing
+      )
+    ) {
       ForEach(Array(quickActions.enumerated()), id: \.offset) { index, action in
         if index > 0 {
           Divider()
-            .padding(.vertical, 8)
         }
 
         QuickActionRow(icon: action.icon, title: action.title) {}
       }
+    }
+  }
+
+  // MARK: - Reading settings
+
+  /// What this prayer is currently set to be read with.
+  ///
+  /// A two-column grid of specs rather than the labelled rows the sections
+  /// above use — this is a spec sheet, not a menu. Nothing here is tappable
+  /// ("Theme & settings" above is where these get changed), so rows that looked
+  /// like the tappable ones would be promising something they don't do.
+  ///
+  /// The numbers are unitless on purpose: they are the reader's own scale, and
+  /// labelling them "pt" would imply a precision the sliders don't have.
+  @ViewBuilder
+  private func ReadingSettings(_ prayer: Prayer) -> some View {
+    AppListSection(L10n.prayerSettings) {
+      PrayerSpecGrid(settings: PrayerSettings.settings(for: prayer.id))
     }
   }
 
@@ -286,7 +356,234 @@ private struct MetaChip: View {
   }
 }
 
-/// One quick action: a tinted icon, its label, and a disclosure chevron.
+/// Width available to the spec grid, for deciding how many columns fit.
+private struct SpecGridWidthKey: PreferenceKey {
+  static var defaultValue: CGFloat { 0 }
+
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = max(value, nextValue())
+  }
+}
+
+/// The reading settings laid out as a spec grid, in as many columns as the
+/// card is wide enough for.
+private struct PrayerSpecGrid: View {
+  let settings: PrayerSettings
+
+  /// Measured rather than taken from `horizontalSizeClass`. On iPad this screen
+  /// sits in a split view's detail column, so the window being regular width
+  /// says nothing about how much room this card actually got — and on macOS the
+  /// size class is regular at every window size, including tiny ones.
+  @State private var width: CGFloat = 0
+
+  private var columnCount: Int {
+    guard width > 0 else { return PrayerDetailMetrics.minSpecColumns }
+
+    // n columns occupy n * ideal + (n - 1) * spacing, so this is that solved
+    // for n and rounded to the nearest whole column rather than floored.
+    let spacing = PrayerDetailMetrics.specColumnSpacing
+    let ideal = (width + spacing) / (PrayerDetailMetrics.idealSpecColumnWidth + spacing)
+
+    return min(
+      max(Int(ideal.rounded()), PrayerDetailMetrics.minSpecColumns),
+      PrayerDetailMetrics.maxSpecColumns
+    )
+  }
+
+  private var columns: [GridItem] {
+    Array(
+      repeating: GridItem(
+        .flexible(),
+        spacing: PrayerDetailMetrics.specColumnSpacing,
+        alignment: .topLeading
+      ),
+      count: columnCount
+    )
+  }
+
+  var body: some View {
+    LazyVGrid(
+      columns: columns,
+      alignment: .leading,
+      spacing: PrayerDetailMetrics.specRowSpacing
+    ) {
+      SpecCell(
+        icon: .textSize,
+        label: L10n.textSize,
+        value: "\(settings.textSize)"
+      )
+
+      // The glyph tracks the value rather than naming the spec, so this one can
+      // be read without reading.
+      SpecCell(
+        icon: .alignment(settings.alignment.systemImage),
+        label: L10n.textAlignment,
+        value: settings.alignment.displayText
+      )
+
+      SpecCell(
+        icon: .background,
+        label: L10n.backgroundColor,
+        value: settings.background.displayText,
+        swatch: settings.background.color
+      )
+
+      SpecCell(
+        icon: .letterSpacing,
+        label: L10n.letterSpacing,
+        value: settings.letterSpacing.settingValueText
+      )
+
+      SpecCell(
+        icon: .lineSpacing,
+        label: L10n.lineSpacing,
+        value: settings.lineSpacing.settingValueText
+      )
+
+      SpecCell(
+        icon: .verseSpacing,
+        label: L10n.verseSpacing,
+        value: settings.verseSpacing.settingValueText
+      )
+
+      SpecCell(
+        icon: .pronunciation,
+        label: L10n.pronunciation,
+        value: settings.showsPronunciation ? L10n.shown : L10n.hidden
+      )
+    }
+    // Safe from feeding back into itself: the grid's width comes from the card
+    // around it, not from its contents, so changing the column count can't
+    // change the number being measured.
+    .background {
+      GeometryReader { proxy in
+        Color.clear.preference(key: SpecGridWidthKey.self, value: proxy.size.width)
+      }
+    }
+    .onPreferenceChange(SpecGridWidthKey.self) { width = $0 }
+  }
+}
+
+/// A spec's glyph, with the point size it needs in order to carry the same
+/// visual weight as the others.
+///
+/// SF Symbols are optically matched to *text* at a given point size, not to each
+/// other. Rendered at a common size and measured by ink coverage,
+/// `circle.lefthalf.filled` — a solid disc — carries 1.34× the ink of the median
+/// glyph in this set, while the two spacing arrows are hairlines at 0.88×. Left
+/// at one size the disc reads as a bullet and the arrows nearly disappear, so
+/// each glyph gets the size that normalises it against the rest.
+private struct SpecIcon {
+  let systemName: String
+  let size: CGFloat
+
+  private init(_ systemName: String, _ size: CGFloat) {
+    self.systemName = systemName
+    self.size = size
+  }
+
+  static let textSize = SpecIcon("textformat.size", 13)
+  static let background = SpecIcon("circle.lefthalf.filled", 11)
+  static let letterSpacing = SpecIcon("arrow.left.and.right", 15)
+  static let lineSpacing = SpecIcon("arrow.up.and.down", 15)
+  static let verseSpacing = SpecIcon("text.quote", 12)
+  static let pronunciation = SpecIcon("waveform", 13)
+
+  /// The three alignment glyphs measure identically, so which one the setting
+  /// resolves to makes no difference to the size.
+  static func alignment(_ systemName: String) -> SpecIcon {
+    SpecIcon(systemName, 13)
+  }
+}
+
+/// One reading setting, as a spec: the value it is set to, and the name of the
+/// thing it sets.
+///
+/// Caption first — the glyph and the name of the setting, in one quiet line —
+/// then the value beneath it in the cell's only strong weight.
+///
+/// The value is pushed to the *bottom* of the cell rather than sitting a fixed
+/// gap under the caption. Grid rows take the height of their tallest cell, so
+/// with the caption on top a label that wraps to two lines in Burmese would
+/// otherwise leave its own value sitting lower than its neighbour's. Bottom-
+/// aligning puts every value in a row on one line, whatever happened above it.
+private struct SpecCell: View {
+  let icon: SpecIcon
+  let value: String
+  let label: String
+  /// Shown before the value on the background spec. The page colours are the
+  /// one setting whose name ("Grey", "Classic") is worth less than seeing it.
+  var swatch: Color?
+
+  init(icon: SpecIcon, label: String, value: String, swatch: Color? = nil) {
+    self.icon = icon
+    self.label = label
+    self.value = value
+    self.swatch = swatch
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(alignment: .firstTextBaseline, spacing: 5) {
+        Image(systemName: icon.systemName)
+          .font(.system(size: icon.size, weight: .medium))
+          // Centred in a shared box so the labels all start at the same x,
+          // whatever the glyph's own width.
+          .frame(width: PrayerDetailMetrics.specIconBoxWidth)
+
+        Text(label)
+          .font(AppFont.caption)
+          // Burmese labels run longer than the English ones and a column is
+          // narrow; without this they'd truncate rather than wrap.
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      .foregroundStyle(AppColor.textTertiary)
+
+      // Carries the minimum gap as well as doing the bottom-aligning, so a
+      // one-line caption still clears its value.
+      Spacer(minLength: 4)
+
+      HStack(spacing: 6) {
+        if let swatch {
+          Circle()
+            .fill(swatch)
+            .frame(
+              width: PrayerDetailMetrics.swatchDiameter,
+              height: PrayerDetailMetrics.swatchDiameter
+            )
+            // Both the classic page and the black one would otherwise vanish
+            // into the card behind them, depending on the appearance.
+            .overlay(Circle().strokeBorder(AppColor.border, lineWidth: 1))
+        }
+
+        Text(value)
+          .font(AppFont.statValue)
+          .foregroundStyle(AppColor.textPrimary)
+          .lineLimit(1)
+          // Rather than truncate: "Classic" nearly fills a narrow column at this
+          // size already, and the Burmese values are longer still — a clipped
+          // value defeats the point of the cell.
+          .minimumScaleFactor(0.7)
+      }
+    }
+    // `maxHeight` is what lets the `Spacer` above do anything: without it the
+    // cell shrinks to its content and never fills the row it was given.
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    // Read as "Text size, 28" rather than as separate stops.
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("\(label), \(value)")
+  }
+}
+
+extension Double {
+  /// A reader setting as it appears in the summary: `15`, not `15.0`, but
+  /// `2.5` kept intact if a slider ever lands between two whole numbers.
+  fileprivate var settingValueText: String {
+    self == rounded() ? String(Int(self)) : String(format: "%.1f", self)
+  }
+}
+
+/// One quick action: an icon, its label, and a disclosure chevron.
 private struct QuickActionRow: View {
   let icon: String
   let title: String
@@ -296,13 +593,11 @@ private struct QuickActionRow: View {
     Button(action: action) {
       HStack(spacing: 12) {
         Image(systemName: icon)
-          .font(.system(size: 15, weight: .semibold))
+          .font(.system(size: 17, weight: .medium))
           .foregroundStyle(AppColor.primary)
-          .frame(
-            width: PrayerDetailMetrics.actionIconDiameter,
-            height: PrayerDetailMetrics.actionIconDiameter
-          )
-          .background(AppColor.primarySoft, in: Circle())
+          // Fixed width, so the labels still line up down the card even though
+          // the glyphs behind them differ in width.
+          .frame(width: PrayerDetailMetrics.rowIconColumnWidth, alignment: .leading)
 
         Text(title)
           .font(AppFont.body)
@@ -313,8 +608,10 @@ private struct QuickActionRow: View {
           .font(AppFont.caption)
           .foregroundStyle(AppColor.textTertiary)
       }
-      // Without this the label only covers the icon and text, leaving the gap
-      // before the chevron dead.
+      .padding(.vertical, PrayerDetailMetrics.rowVerticalPadding)
+      // After the padding, so the tap target covers the row's full height —
+      // and without it the label would only cover the icon and text, leaving
+      // the gap before the chevron dead.
       .contentShape(Rectangle())
     }
     // Rows highlight rather than shrink: scaling something this wide reads as

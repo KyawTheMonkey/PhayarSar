@@ -51,7 +51,12 @@ public enum AppFont {
   )
   
   // MARK: - Body & UI (Inter)
-  
+  public static let statValue = Font.custom(
+    AppFonts.interBold.rawValue,
+    size: 17,
+    relativeTo: .body
+  )
+
   /// Inter 400 · 17pt — reading/body copy
   public static let body = Font.custom(
     AppFonts.interRegular.rawValue,
@@ -160,6 +165,11 @@ public enum AppUIFont {
   }
 
   // MARK: - Body & UI (Inter)
+
+  /// Inter 600 · 20pt — the value on a stat or spec tile
+  public static var statValue: UIFont {
+    scaledFont(AppFonts.interSemiBold.rawValue, size: 20, relativeTo: .title3)
+  }
 
   /// Inter 400 · 17pt — reading/body copy
   public static var body: UIFont {
