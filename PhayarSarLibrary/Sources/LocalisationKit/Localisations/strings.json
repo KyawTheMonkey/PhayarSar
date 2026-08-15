@@ -186,5 +186,25 @@
   "version": {
     "En": "Version",
     "Mm": "ဗားရှင်း"
+  },
+  "nissaya_pali": {
+    "En": "Pali",
+    "Mm": "ပါဠိတော်"
+  },
+  "nissaya_meaning": {
+    "En": "Meaning",
+    "Mm": "အနက်"
+  },
+  "nissaya_no_meaning": {
+    "En": "No translation yet",
+    "Mm": "ဘာသာပြန် မရှိသေးပါ"
+  },
+  "previous_verse": {
+    "En": "Previous verse",
+    "Mm": "ယခင်ပိုဒ်"
+  },
+  "next_verse": {
+    "En": "Next verse",
+    "Mm": "နောက်ပိုဒ်"
   }
 }

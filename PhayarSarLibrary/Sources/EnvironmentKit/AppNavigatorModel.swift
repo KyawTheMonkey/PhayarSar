@@ -115,6 +115,9 @@ public enum RouterDestination: Hashable, Codable {
   case prayerDetail(prayerID: String)
   /// The reading screen itself, pushed from the detail screen's "Start".
   case prayer(prayerID: String)
+  /// The study screen — each verse against its translation, pushed from the
+  /// detail screen's "Nissaya" quick action.
+  case nissaya(prayerID: String)
 }
 
 /// Every modally presented screen. Same rules as ``RouterDestination``.

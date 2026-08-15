@@ -109,21 +109,27 @@ public enum AppFont {
   )
   
   // MARK: - Special (Myanmar)
-  
-  public static func jasmine(relativeTo style: Font.TextStyle = .body) -> Font {
-    Font.custom(AppFonts.jasmineUnicode.rawValue, size: 17, relativeTo: style)
+  //
+  // These take a `size` as well as a text style, unlike the scale above, and
+  // mirror `AppUIFont`'s Myanmar faces one for one. `relativeTo` only picks
+  // which text style the result tracks for Dynamic Type — it does not change
+  // the base size — so a screen that wants Burmese at anything other than 17pt
+  // has to say so here.
+
+  public static func jasmine(size: CGFloat = 17, relativeTo style: Font.TextStyle = .body) -> Font {
+    Font.custom(AppFonts.jasmineUnicode.rawValue, size: size, relativeTo: style)
   }
-  
-  public static func panlong(relativeTo style: Font.TextStyle = .body) -> Font {
-    Font.custom(AppFonts.pangLong.rawValue, size: 17, relativeTo: style)
+
+  public static func panlong(size: CGFloat = 17, relativeTo style: Font.TextStyle = .body) -> Font {
+    Font.custom(AppFonts.pangLong.rawValue, size: size, relativeTo: style)
   }
-  
-  public static func mSquare(relativeTo style: Font.TextStyle = .body) -> Font {
-    Font.custom(AppFonts.myanmarSquare.rawValue, size: 17, relativeTo: style)
+
+  public static func mSquare(size: CGFloat = 17, relativeTo style: Font.TextStyle = .body) -> Font {
+    Font.custom(AppFonts.myanmarSquare.rawValue, size: size, relativeTo: style)
   }
-  
-  public static func yoeYar(relativeTo style: Font.TextStyle = .body) -> Font {
-    Font.custom(AppFonts.yoeYarOne.rawValue, size: 17, relativeTo: style)
+
+  public static func yoeYar(size: CGFloat = 17, relativeTo style: Font.TextStyle = .body) -> Font {
+    Font.custom(AppFonts.yoeYarOne.rawValue, size: size, relativeTo: style)
   }
 }
 

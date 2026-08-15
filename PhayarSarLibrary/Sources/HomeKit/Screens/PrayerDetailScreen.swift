@@ -162,7 +162,9 @@ public struct PrayerDetailScreen: View {
 
           // No transition: the four rows are the same whichever prayer is
           // showing, so replacing them would be motion with nothing behind it.
-          QuickActions()
+          // The prayer is still passed in — the rows look identical, but the
+          // routes behind them have to follow the carousel.
+          QuickActions(prayer)
 
           ReadingSettings(prayer)
             .prayerContentTransition(id: prayer.id)
@@ -214,19 +216,26 @@ public struct PrayerDetailScreen: View {
   /// both act on the prayer itself; the two below it are about the app's
   /// handling of it.
   ///
-  /// No destinations yet: `RouterDestination` and `SheetDestination` don't
-  /// carry these screens, so the rows are wired but land nowhere until they do.
-  private var quickActions: [(icon: String, title: String)] {
+  /// A `nil` destination is a row that is drawn and tappable but lands nowhere
+  /// — `RouterDestination` doesn't carry those screens yet. They stay in the
+  /// list rather than being hidden so the section keeps its shape as each one
+  /// is built.
+  ///
+  /// Takes the prayer rather than reading ``selectedID``, so a row can only
+  /// ever route to the prayer whose card is actually on screen.
+  private func quickActions(
+    for prayer: Prayer
+  ) -> [(icon: String, title: String, destination: RouterDestination?)] {
     [
-      ("calendar.badge.plus", L10n.addToPlan),
-      ("character.book.closed", L10n.nissaya),
-      ("paintpalette", L10n.themeAndSettings),
-      ("exclamationmark.bubble", L10n.reportError)
+      ("calendar.badge.plus", L10n.addToPlan, nil),
+      ("character.book.closed", L10n.nissaya, .nissaya(prayerID: prayer.id)),
+      ("paintpalette", L10n.themeAndSettings, nil),
+      ("exclamationmark.bubble", L10n.reportError, nil)
     ]
   }
 
   @ViewBuilder
-  private func QuickActions() -> some View {
+  private func QuickActions(_ prayer: Prayer) -> some View {
     // Zero vertical insets: `QuickActionRow` pads its own rows, so the section
     // adding more would double the gap at the first and last row.
     AppListSection(
@@ -238,12 +247,15 @@ public struct PrayerDetailScreen: View {
         trailing: AppListSectionMetrics.contentInsets.trailing
       )
     ) {
-      ForEach(Array(quickActions.enumerated()), id: \.offset) { index, action in
+      ForEach(Array(quickActions(for: prayer).enumerated()), id: \.offset) { index, action in
         if index > 0 {
           Divider()
         }
 
-        QuickActionRow(icon: action.icon, title: action.title) {}
+        QuickActionRow(icon: action.icon, title: action.title) {
+          guard let destination = action.destination else { return }
+          navigator.navigate(to: destination)
+        }
       }
     }
   }

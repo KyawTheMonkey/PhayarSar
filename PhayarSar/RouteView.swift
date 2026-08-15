@@ -27,6 +27,8 @@ struct RouteView: View {
       PrayerDetailScreen(prayerID: prayerID)
     case let .prayer(prayerID):
       PrayerScreen(prayerID: prayerID)
+    case let .nissaya(prayerID):
+      NissayaScreen(prayerID: prayerID)
     }
   }
 }
