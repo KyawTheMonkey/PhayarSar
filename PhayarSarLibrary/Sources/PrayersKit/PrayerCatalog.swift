@@ -55,6 +55,7 @@ public final class PrayerCatalog: @unchecked Sendable {
   private let bundle: Bundle
   private var cached: [PrayerSection]?
   private var idIndex: [Prayer.ID: Prayer]?
+  private var ordered: [Prayer]?
   private let cacheQueue = DispatchQueue(label: "com.phayarsar.prayers.catalog")
 
   /// Reads the manifest from the PrayersKit resource bundle.
@@ -85,6 +86,26 @@ public final class PrayerCatalog: @unchecked Sendable {
     let sections = loadSections()
     cacheQueue.sync { cached = sections }
     return sections
+  }
+
+  /// Every prayer in catalog order, flattened across sections.
+  ///
+  /// The same order the home list scrolls in, which is what makes it the right
+  /// order to page through: "next" always means the next prayer the user would
+  /// have scrolled to, even where that crosses into the following category.
+  ///
+  /// Costs no extra decoding. ``sections()`` decodes and caches every prayer on
+  /// its first call, so by the time any screen can ask for a neighbour, that
+  /// neighbour is already resident — this is a flatten over values that are
+  /// held anyway, not a fetch.
+  public func orderedPrayers() -> [Prayer] {
+    if let ordered = cacheQueue.sync(execute: { ordered }) {
+      return ordered
+    }
+
+    let flattened = sections().flatMap(\.prayers)
+    cacheQueue.sync { ordered = flattened }
+    return flattened
   }
 
   /// Looks a prayer up by ``Prayer/id``.

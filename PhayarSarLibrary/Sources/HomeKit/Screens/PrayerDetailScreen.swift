@@ -7,13 +7,10 @@ import UtilKit
 
 /// Layout constants for `PrayerDetailScreen`.
 private enum PrayerDetailMetrics {
-  /// Cover art. Square and roughly half the width of a phone, so the hero reads
-  /// as artwork rather than as an oversized list thumbnail.
-  static let coverSize: CGFloat = 176
-  static let coverCornerRadius: CGFloat = 28
-
-  /// Gap between the cover and the title block beneath it.
-  static let heroSpacing: CGFloat = 20
+  /// Gap between the carousel and the title block beneath it. Tighter than it
+  /// looks — `PrayerCoverMetrics.verticalInset` already sits inside the
+  /// carousel's own height.
+  static let heroSpacing: CGFloat = 8
 
   /// Width reserved for a quick action's leading icon. The glyphs vary in width
   /// — a calendar is far wider than a chevron — so they get a fixed column and
@@ -77,12 +74,40 @@ private enum PrayerDetailMetrics {
 public struct PrayerDetailScreen: View {
   @ObserveInjection private var injectionObserver
 
+  /// The catalog in order, so the carousel can page through it.
+  ///
+  /// Cheap to hold whole: `PrayerCatalog` has decoded and cached every prayer
+  /// by the time this screen can open, and the array is a reference to that
+  /// storage. The neighbours either side of the current prayer are therefore
+  /// already in memory — there is nothing to prefetch.
+  private let prayers: [Prayer]
+
+  /// Whether the id the route carried names a prayer this build ships. Only the
+  /// *opening* id can fail this; every id after it comes from the carousel.
+  private let isKnownPrayer: Bool
+
+  /// The prayer the route asked for, kept as a `let` so it survives whatever
+  /// the carousel writes to ``selectedID`` while it is finding its place.
+  private let openingID: Prayer.ID
+
+  /// Which prayer the screen is currently showing. The carousel writes to it,
+  /// and everything else on the screen reads from it.
+  @State private var selectedID: Prayer.ID
+
   /// Resolved from the id the route carried rather than passed in whole — see
   /// `RouterDestination`, whose payloads are ids so that routes stay `Codable`.
-  private let prayer: Prayer?
-
   public init(prayerID: String) {
-    self.prayer = PrayerCatalog.shared.prayer(id: prayerID)
+    self.prayers = PrayerCatalog.shared.orderedPrayers()
+    self.isKnownPrayer = PrayerCatalog.shared.prayer(id: prayerID) != nil
+    self.openingID = prayerID
+    _selectedID = State(initialValue: prayerID)
+  }
+
+  private var prayer: Prayer? {
+    guard isKnownPrayer else { return nil }
+    // A dictionary lookup rather than a scan of `prayers` — this is read on
+    // every `body` evaluation.
+    return PrayerCatalog.shared.prayer(id: selectedID)
   }
 
   public var body: some View {
@@ -110,15 +135,40 @@ public struct PrayerDetailScreen: View {
   @ViewBuilder
   private func PrayerContent(_ prayer: Prayer) -> some View {
     ScrollView {
-      VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
-        Hero(prayer)
+      VStack(spacing: 0) {
+        // Outside the animated stack below. The carousel is what *drives* the
+        // change, and its covers already scale under the finger — letting the
+        // content swap's curve reach them too would fight that.
+        PrayerCoverCarousel(
+          prayers: prayers,
+          openingID: openingID,
+          selectedID: $selectedID
+        )
 
-        if !prayer.about.isEmpty {
-          PrayerAboutSection(about: prayer.about)
+        VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
+          TitleBlock(prayer)
+            .prayerContentTransition(id: prayer.id)
+
+          if !prayer.about.isEmpty {
+            PrayerAboutSection(about: prayer.about)
+              // The identity here does double duty: it runs the transition, and
+              // it stops the section being reused across a swipe and carrying
+              // its expanded state over — which would open the next prayer
+              // already unfolded, reading "Show less" over text nobody expanded.
+              .prayerContentTransition(id: prayer.id)
+          }
+
+          // No transition: the four rows are the same whichever prayer is
+          // showing, so replacing them would be motion with nothing behind it.
+          QuickActions()
+
+          ReadingSettings(prayer)
+            .prayerContentTransition(id: prayer.id)
         }
-
-        QuickActions()
-        ReadingSettings(prayer)
+        .padding(.top, PrayerDetailMetrics.heroSpacing)
+        // Drives the transitions above, and carries the sections that aren't
+        // transitioning as the ones that are change height around them.
+        .animation(.prayerContentSwap, value: prayer.id)
       }
       .padding(.top, 8)
       .padding(.bottom, AppListSectionMetrics.recommendedSectionSpacing)
@@ -128,42 +178,28 @@ public struct PrayerDetailScreen: View {
     }
   }
 
-  // MARK: - Hero
+  // MARK: - Title block
 
   @ViewBuilder
-  private func Hero(_ prayer: Prayer) -> some View {
-    VStack(spacing: PrayerDetailMetrics.heroSpacing) {
-      RoundedRectangle(
-        cornerRadius: PrayerDetailMetrics.coverCornerRadius,
-        style: .continuous
-      )
-      .fill(AppColor.grey300)
-      .frame(
-        width: PrayerDetailMetrics.coverSize,
-        height: PrayerDetailMetrics.coverSize
-      )
-      .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 10)
-      .accessibilityHidden(true)
+  private func TitleBlock(_ prayer: Prayer) -> some View {
+    VStack(spacing: 12) {
+      Text(prayer.title)
+        .font(AppFont.title)
+        .foregroundStyle(AppColor.textPrimary)
+        .multilineTextAlignment(.center)
 
-      VStack(spacing: 12) {
-        Text(prayer.title)
-          .font(AppFont.title)
-          .foregroundStyle(AppColor.textPrimary)
-          .multilineTextAlignment(.center)
+      HStack(spacing: 8) {
+        MetaChip(
+          icon: "clock",
+          text: "\(prayer.estimatedMinutes) \(L10n.minutesUnit)",
+          accessibilityLabel: "\(L10n.duration), \(prayer.estimatedMinutes) \(L10n.minutesUnit)"
+        )
 
-        HStack(spacing: 8) {
-          MetaChip(
-            icon: "clock",
-            text: "\(prayer.estimatedMinutes) \(L10n.minutesUnit)",
-            accessibilityLabel: "\(L10n.duration), \(prayer.estimatedMinutes) \(L10n.minutesUnit)"
-          )
-
-          MetaChip(
-            icon: "list.bullet",
-            text: "\(prayer.body.count) \(L10n.verses)",
-            accessibilityLabel: "\(prayer.body.count) \(L10n.verses)"
-          )
-        }
+        MetaChip(
+          icon: "list.bullet",
+          text: "\(prayer.body.count) \(L10n.verses)",
+          accessibilityLabel: "\(prayer.body.count) \(L10n.verses)"
+        )
       }
     }
     .frame(maxWidth: .infinity)
