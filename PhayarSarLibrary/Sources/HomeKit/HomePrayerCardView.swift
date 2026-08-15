@@ -1,4 +1,5 @@
 import DesignKit
+import LocalisationKit
 import PrayersKit
 import SwiftUI
 
@@ -33,7 +34,7 @@ struct HomePrayerCardView: View {
   }
   
   private var verses: String {
-    return "\(prayer.body.count) verses"
+    return "\(prayer.body.count) \(L10n.verses)"
   }
   
   var body: some View {
