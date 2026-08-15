@@ -47,6 +47,50 @@
     "En": "Verses",
     "Mm": "ပိုဒ်"
   },
+  "minutes_unit": {
+    "En": "min",
+    "Mm": "မိနစ်"
+  },
+  "duration": {
+    "En": "Duration",
+    "Mm": "ကြာချိန်"
+  },
+  "prayer_about": {
+    "En": "About",
+    "Mm": "အကြောင်းအရာ"
+  },
+  "show_more": {
+    "En": "Show more",
+    "Mm": "ဆက်ဖတ်ရန်"
+  },
+  "show_less": {
+    "En": "Show less",
+    "Mm": "ချုံ့ရန်"
+  },
+  "quick_actions": {
+    "En": "Quick actions",
+    "Mm": "အမြန်လုပ်ဆောင်ချက်များ"
+  },
+  "add_to_plan": {
+    "En": "Add to plan",
+    "Mm": "အဓိဌာန်ထည့်ရန်"
+  },
+  "nissaya": {
+    "En": "Nissaya",
+    "Mm": "နိဿယ"
+  },
+  "theme_and_settings": {
+    "En": "Theme & settings",
+    "Mm": "အပြင်အဆင်"
+  },
+  "report_error": {
+    "En": "Report error",
+    "Mm": "အမှားတင်ပြရန်"
+  },
+  "start_reading": {
+    "En": "Start",
+    "Mm": "စတင်ဖတ်ရန်"
+  },
   "prayer_not_found": {
     "En": "This prayer is no longer available.",
     "Mm": "ဤဘုရားစာကို ရှာမတွေ့ပါ။"
