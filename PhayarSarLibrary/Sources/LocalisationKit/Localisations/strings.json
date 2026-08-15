@@ -4,16 +4,16 @@
     "Mm": "ပင်မ"
   },
   "meditation_tab": {
-      "En": "Meditation",
-      "Mm": "တရားထိုင်"
+    "En": "Meditation",
+    "Mm": "တရားထိုင်"
   },
   "beads_tab": {
     "En": "Beads",
     "Mm": "ပုတီးစိပ်"
   },
   "plans_tab": {
-      "En": "Plans",
-      "Mm": "အဓိဌာန်"
+    "En": "Plans",
+    "Mm": "အဓိဌာန်"
   },
   "settings_tab": {
     "En": "Settings",
@@ -46,5 +46,29 @@
   "verses": {
     "En": "Verses",
     "Mm": "ပိုဒ်"
+  },
+  "prayer_not_found": {
+    "En": "This prayer is no longer available.",
+    "Mm": "ဤဘုရားစာကို ရှာမတွေ့ပါ။"
+  },
+  "language": {
+    "En": "Language",
+    "Mm": "ဘာသာစကား"
+  },
+  "language_footer": {
+    "En": "Changes apply across the app right away.",
+    "Mm": "ရွေးချယ်ပြီးသည်နှင့် အက်ပ်တစ်ခုလုံးတွင် ချက်ချင်း ပြောင်းလဲပါမည်။"
+  },
+  "about": {
+    "En": "About",
+    "Mm": "အက်ပ်အကြောင်း"
+  },
+  "app_name": {
+    "En": "App name",
+    "Mm": "အက်ပ်အမည်"
+  },
+  "version": {
+    "En": "Version",
+    "Mm": "ဗားရှင်း"
   }
 }

@@ -23,6 +23,9 @@ struct HomePrayerCardView: View {
   /// `false` on the last row of a section — a separator sitting directly on the
   /// card's bottom edge reads as a rendering mistake.
   let shouldShowDivider: Bool
+  /// Routing is the screen's job, not the row's — see `HomeScreen`, which is
+  /// the view that holds the navigator.
+  let onTap: () -> Void
 
   private var name: String {
     prayer.title
@@ -39,28 +42,38 @@ struct HomePrayerCardView: View {
   
   var body: some View {
     VStack(spacing: 0) {
-      HStack(spacing: 12) {
-        RoundedRectangle(cornerRadius: 12)
-          .fill(Color.gray)
-          .frame(width: 46, height: 46)
-        
-        VStack(alignment: .leading, spacing: 8) {
-          Text(name)
-            .font(AppFont.listItemTitle)
-          HStack(spacing: 4) {
-            Text(duration)
-            Text("•")
-            Text(verses)
+      // Only the row is tappable. The divider below bleeds past the card's
+      // content insets, so including it would make a strip of the card's
+      // margin open the prayer too.
+      Button(action: onTap) {
+        HStack(spacing: 12) {
+          RoundedRectangle(cornerRadius: 12)
+            .fill(Color.gray)
+            .frame(width: 46, height: 46)
+
+          VStack(alignment: .leading, spacing: 8) {
+            Text(name)
+              .font(AppFont.listItemTitle)
+            HStack(spacing: 4) {
+              Text(duration)
+              Text("•")
+              Text(verses)
+            }
+            .foregroundStyle(AppColor.grey400)
+            .font(AppFont.caption)
           }
-          .foregroundStyle(AppColor.grey400)
-          .font(AppFont.caption)
+          .frame(maxWidth: .infinity, alignment: .leading)
+
+          Image(systemName: "chevron.right")
+            .foregroundStyle(AppColor.grey400)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        
-        Image(systemName: "chevron.right")
-          .foregroundStyle(AppColor.grey400)
+        .padding(.vertical, HomePrayerCardMetrics.rowVerticalPadding)
+        // The `HStack` only spans the full width because of the inner
+        // `maxWidth: .infinity`; without this the button's own hit area would
+        // stop at the content and leave the gaps dead.
+        .contentShape(Rectangle())
       }
-      .padding(.vertical, HomePrayerCardMetrics.rowVerticalPadding)
+      .buttonStyle(.plain)
 
       if shouldShowDivider {
         Divider()

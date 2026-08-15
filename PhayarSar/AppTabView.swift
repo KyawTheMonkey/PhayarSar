@@ -8,11 +8,12 @@
 import DesignKit
 import EnvironmentKit
 import HomeKit
+import SettingsKit
 import SwiftUI
 
 struct AppTabView: View {
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-  @State private var selectedTab: EnvironmentKit.AppTab? = .home
+  @EnvironmentObject private var navigator: AppNavigatorModel
 
   /// Mac always gets the split view. On iOS/iPadOS we key off the
   /// horizontal size class so it adapts live to iPad multitasking,
@@ -35,42 +36,52 @@ struct AppTabView: View {
       }
     }
     .tint(DesignKit.AppColor.primary)
+    // On the outermost view rather than inside a stack, so a sheet presents
+    // above the tab bar instead of within whichever tab happened to open it.
+    .sheet(item: $navigator.presentedSheet) { destination in
+      SheetView(destination: destination)
+    }
   }
 
   private var splitView: some View {
     NavigationSplitView {
-      List(AppTab.allCases, selection: $selectedTab) { tab in
-        tab.label(isSelected: selectedTab == tab)
+      // `NavigationSplitView` insists on an optional selection, but the rest
+      // of the app relies on a tab always being selected — so the optionality
+      // is adapted here and nowhere else.
+      List(
+        AppTab.allCases,
+        selection: Binding(
+          get: { navigator.selectedTab },
+          set: { navigator.selectedTab = $0 ?? navigator.selectedTab }
+        )
+      ) { tab in
+        tab.label(isSelected: navigator.selectedTab == tab)
           .tag(tab)
       }
       .navigationTitle("PhayarSar")
     } detail: {
-      if let selectedTab {
-        NavigationStack {
-          content(for: selectedTab)
-            .navigationTitle(selectedTab.title)
-        }
-      } else {
-        Text("Select a tab")
-          .foregroundStyle(.secondary)
+      NavigationStack(path: navigator.path(for: navigator.selectedTab)) {
+        content(for: navigator.selectedTab)
+          .navigationTitle(navigator.selectedTab.title)
+          .navigationDestination(for: RouterDestination.self) { destination in
+            RouteView(destination: destination)
+          }
       }
     }
   }
 
   private var tabStackView: some View {
-    TabView(
-      selection: Binding(
-        get: { selectedTab ?? .home },
-        set: { selectedTab = $0 }
-      )
-    ) {
+    TabView(selection: $navigator.selectedTab) {
       ForEach(AppTab.allCases) { tab in
-        NavigationStack {
+        NavigationStack(path: navigator.path(for: tab)) {
           content(for: tab)
             .navigationTitle(tab.title)
+            .navigationDestination(for: RouterDestination.self) { destination in
+              RouteView(destination: destination)
+            }
         }
         .tabItem {
-          tab.label(isSelected: selectedTab == tab)
+          tab.label(isSelected: navigator.selectedTab == tab)
         }
         .tag(tab)
       }
@@ -83,6 +94,8 @@ struct AppTabView: View {
     switch tab {
     case .home:
       HomeScreen()
+    case .settings:
+      SettingsScreen()
     default:
       Text(tab.title)
     }
@@ -91,4 +104,5 @@ struct AppTabView: View {
 
 #Preview {
   AppTabView()
+    .environmentObject(AppNavigatorModel())
 }

@@ -54,6 +54,7 @@ public final class PrayerCatalog: @unchecked Sendable {
   private let loader: PrayerLoader
   private let bundle: Bundle
   private var cached: [PrayerSection]?
+  private var idIndex: [Prayer.ID: Prayer]?
   private let cacheQueue = DispatchQueue(label: "com.phayarsar.prayers.catalog")
 
   /// Reads the manifest from the PrayersKit resource bundle.
@@ -84,6 +85,32 @@ public final class PrayerCatalog: @unchecked Sendable {
     let sections = loadSections()
     cacheQueue.sync { cached = sections }
     return sections
+  }
+
+  /// Looks a prayer up by ``Prayer/id``.
+  ///
+  /// This is the key that `RouterDestination` carries and that
+  /// `PrayerConfiguration.prayerId` persists — deliberately not the file name
+  /// ``PrayerLoader/prayer(named:)`` takes, which is a separate namespace.
+  ///
+  /// - Returns: `nil` if no prayer in the catalog has that id. A stale deep
+  ///   link or an id from an older build both land here, so callers must
+  ///   handle it rather than force-unwrap.
+  public func prayer(id: Prayer.ID) -> Prayer? {
+    if let index = cacheQueue.sync(execute: { idIndex }) {
+      return index[id]
+    }
+
+    // Built from `sections()` rather than `loader.allPrayers()` so it reuses
+    // the decode the list screen has already paid for. A prayer left out of
+    // the manifest is therefore unreachable by id — which matches the fact
+    // that it is also unreachable by tapping.
+    let index = Dictionary(
+      sections().flatMap(\.prayers).map { ($0.id, $0) },
+      uniquingKeysWith: { first, _ in first }
+    )
+    cacheQueue.sync { idIndex = index }
+    return index[id]
   }
 
   private func loadSections() -> [PrayerSection] {

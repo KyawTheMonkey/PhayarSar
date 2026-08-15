@@ -1,4 +1,5 @@
 import DesignKit
+import EnvironmentKit
 import Inject
 import LocalisationKit
 import SwiftUI
@@ -50,6 +51,7 @@ public struct HomeScreen: View {
   private static let scrollSpace = "HomeScreen.scroll"
 
   @ObserveInjection private var injectionObserver
+  @EnvironmentObject private var navigator: AppNavigatorModel
   @StateObject private var viewModel = HomeViewModel()
   @State private var scrollOffset: CGFloat = 0
   @State private var segmentTop: CGFloat = .greatestFiniteMagnitude
@@ -247,7 +249,11 @@ public struct HomeScreen: View {
         ForEach(section.prayers) { prayer in
           HomePrayerCardView(
             prayer: prayer,
-            shouldShowDivider: prayer.id != section.prayers.last?.id
+            shouldShowDivider: prayer.id != section.prayers.last?.id,
+            // A `Button` through the navigator rather than a
+            // `NavigationLink(value:)` — a link would push straight onto the
+            // stack and leave `AppNavigatorModel` unaware of where the user is.
+            onTap: { navigator.navigate(to: .prayerDetail(prayerID: prayer.id)) }
           )
         }
       }
@@ -259,4 +265,5 @@ public struct HomeScreen: View {
   NavigationStack {
     HomeScreen()
   }
+  .environmentObject(AppNavigatorModel())
 }

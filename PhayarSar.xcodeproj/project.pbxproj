@@ -50,6 +50,7 @@
 		C82039FC2B1CE2B4000EEF61 /* Bundle+Decode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */; };
 		C828F5C72D32C965007C1E01 /* Array+chunked.swift in Sources */ = {isa = PBXBuildFile; fileRef = C828F5C62D32C965007C1E01 /* Array+chunked.swift */; };
 		C82CE4EC3026D1D3005F78D5 /* AppTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */; };
+		C82CE4EE3026D1D3005F78D5 /* RouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82CE4ED3026D1D3005F78D5 /* RouteView.swift */; };
 		C830D0F030284B4800500533 /* HomeKit in Frameworks */ = {isa = PBXBuildFile; productRef = C830D0EF30284B4800500533 /* HomeKit */; };
 		C83961B22B4053E900E189D9 /* View+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B12B4053E900E189D9 /* View+Preview.swift */; };
 		C83961B62B40578200E189D9 /* SafeAreaInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83961B52B40578200E189D9 /* SafeAreaInsets.swift */; };
@@ -112,6 +113,7 @@
 		C8CEF9FD2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FC2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json */; };
 		C8CEF9FF2B68061500EF9B9E /* အမျှဝေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FE2B68061500EF9B9E /* အမျှဝေ.json */; };
 		C8D166463028D20600FA4895 /* PrayersKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8D166453028D20600FA4895 /* PrayersKit */; };
+		C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C23030A10000000002 /* SettingsKit */; };
 		C8D403112B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403102B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json */; };
 		C8D403132B6A031600448EDC /* မင်္ဂလသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403122B6A031600448EDC /* မင်္ဂလသုတ်.json */; };
 		C8D403152B6A076900448EDC /* ရတနသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403142B6A076900448EDC /* ရတနသုတ်.json */; };
@@ -218,6 +220,7 @@
 		C82039FB2B1CE2B4000EEF61 /* Bundle+Decode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Decode.swift"; sourceTree = "<group>"; };
 		C828F5C62D32C965007C1E01 /* Array+chunked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+chunked.swift"; sourceTree = "<group>"; };
 		C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTabView.swift; sourceTree = "<group>"; };
+		C82CE4ED3026D1D3005F78D5 /* RouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteView.swift; sourceTree = "<group>"; };
 		C82D77C52FA1CD2E0069FE44 /* PhayarSarLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = PhayarSarLibrary; sourceTree = "<group>"; };
 		C83961B12B4053E900E189D9 /* View+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Preview.swift"; sourceTree = "<group>"; };
 		C83961B52B40578200E189D9 /* SafeAreaInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaInsets.swift; sourceTree = "<group>"; };
@@ -311,6 +314,7 @@
 				C817925E2BFB979E00DC741E /* FirebaseRemoteConfig in Frameworks */,
 				C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */,
 				C8D166463028D20600FA4895 /* PrayersKit in Frameworks */,
+				C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -435,6 +439,7 @@
 				C84F4A942C03132600B5A502 /* PhayarSar.entitlements */,
 				C82039AD2B1CABE4000EEF61 /* PhayarSarApp.swift */,
 				C82CE4EB3026D1D3005F78D5 /* AppTabView.swift */,
+				C82CE4ED3026D1D3005F78D5 /* RouteView.swift */,
 				C815D6C92B4B140700BFB79C /* CoreData */,
 				C81E927E2B2DCDAD00F4ED9E /* Models */,
 				C81E927B2B2DC94C00F4ED9E /* Managers */,
@@ -665,6 +670,7 @@
 				C8EF0F202FA3A47500543BCA /* EnvironmentKit */,
 				C830D0EF30284B4800500533 /* HomeKit */,
 				C8D166453028D20600FA4895 /* PrayersKit */,
+				C8A1B2C23030A10000000002 /* SettingsKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -880,6 +886,7 @@
 				C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */,
 				C82039AE2B1CABE4000EEF61 /* PhayarSarApp.swift in Sources */,
 				C82CE4EC3026D1D3005F78D5 /* AppTabView.swift in Sources */,
+				C82CE4EE3026D1D3005F78D5 /* RouteView.swift in Sources */,
 				C8A661D02B55795600F2A553 /* NavigationBarColor.swift in Sources */,
 				C8FCD1342BA462D900AB5BD3 /* LocalizedAlert.swift in Sources */,
 				C84E69202B4C42FA006231CD /* NSObject+Extension.swift in Sources */,
@@ -1389,6 +1396,10 @@
 		C8D166453028D20600FA4895 /* PrayersKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PrayersKit;
+		};
+		C8A1B2C23030A10000000002 /* SettingsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SettingsKit;
 		};
 		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -30,6 +30,31 @@ final class PhayarSarUITests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
 
+    /// Tapping a prayer row pushes its detail screen.
+    ///
+    /// Covers the whole route: `HomeScreen` asks `AppNavigatorModel` to
+    /// navigate, the navigator appends to the home tab's path, `AppTabView`'s
+    /// `navigationDestination` hands the route to `RouteView`, and
+    /// `PrayerDetailScreen` resolves the id back into a prayer.
+    func testTappingPrayerRowPushesDetail() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let title = "ငါးပါးသီလ"
+        let row = app.buttons.containing(.staticText, identifier: title).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "prayer row never appeared")
+        row.tap()
+
+        // The nav bar carries the prayer's title, so its presence proves the id
+        // in the route resolved — a failed lookup would title the bar with the
+        // not-found string instead.
+        XCTAssertTrue(
+            app.navigationBars[title].waitForExistence(timeout: 5),
+            "detail screen did not push"
+        )
+        XCTAssertTrue(app.navigationBars.buttons.firstMatch.exists, "no back button")
+    }
+
     func testLaunchPerformance() throws {
         if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
             // This measures how long it takes to launch your application.

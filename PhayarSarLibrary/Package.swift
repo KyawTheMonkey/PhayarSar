@@ -34,6 +34,10 @@ let package = Package(
       name: "PrayersKit",
       targets: ["PrayersKit"]
     ),
+    .library(
+      name: "SettingsKit",
+      targets: ["SettingsKit"]
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0")
@@ -86,6 +90,10 @@ let package = Package(
       name: "PrayersKit",
       dependencies: ["EnvironmentKit", "DesignKit"],
       resources: [.process("Prayers")]
+    ),
+    .target(
+      name: "SettingsKit",
+      dependencies: ["EnvironmentKit", "DesignKit"]
     )
   ]
 )
