@@ -56,12 +56,22 @@ public struct HomeScreen: View {
   @ViewBuilder
   private func PrayersContent() -> some View {
     ForEach(viewModel.sections) { section in
-      AppListSection(section.category.displayText) {
+      // Zero vertical insets: `HomePrayerCardView` pads its own rows, so the
+      // section adding more would double the gap at the first and last row.
+      AppListSection(
+        section.category.displayText,
+        contentInsets: EdgeInsets(
+          top: 0,
+          leading: AppListSectionMetrics.contentInsets.leading,
+          bottom: 0,
+          trailing: AppListSectionMetrics.contentInsets.trailing
+        )
+      ) {
         ForEach(section.prayers) { prayer in
-          VStack(alignment: .leading) {
-            Text(prayer.title)
-            Divider()
-          }
+          HomePrayerCardView(
+            prayer: prayer,
+            shouldShowDivider: prayer.id != section.prayers.last?.id
+          )
         }
       }
     }
