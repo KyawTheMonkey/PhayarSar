@@ -670,25 +670,6 @@ private struct PressableButtonStyle: ButtonStyle {
   }
 }
 
-/// Shown when the route's id matches no bundled prayer.
-///
-/// Reachable state rather than a programmer error: with id-carrying routes, a
-/// notification payload or a restored stack can name a prayer that a later
-/// build no longer ships.
-private struct PrayerNotFoundView: View {
-  var body: some View {
-    VStack(spacing: 8) {
-      Image(systemName: "questionmark.circle")
-        .font(.largeTitle)
-      Text(L10n.prayerNotFound)
-        .multilineTextAlignment(.center)
-    }
-    .foregroundStyle(.secondary)
-    .padding()
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-  }
-}
-
 // MARK: - Previews
 
 #Preview {

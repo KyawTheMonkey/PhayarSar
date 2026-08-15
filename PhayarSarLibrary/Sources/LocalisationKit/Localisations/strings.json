@@ -163,6 +163,10 @@
     "En": "This prayer is no longer available.",
     "Mm": "ဤဘုရားစာကို ရှာမတွေ့ပါ။"
   },
+  "reader_unavailable": {
+    "En": "Reading is available on iPhone and iPad.",
+    "Mm": "ဖတ်ရှုခြင်းကို iPhone နှင့် iPad တွင်သာ အသုံးပြုနိုင်ပါသည်။"
+  },
   "language": {
     "En": "Language",
     "Mm": "ဘာသာစကား"
