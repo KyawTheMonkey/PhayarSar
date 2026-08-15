@@ -1,4 +1,5 @@
 import DesignKit
+import EnvironmentKit
 import Inject
 import LocalisationKit
 import PrayersKit
@@ -73,6 +74,7 @@ private enum PrayerDetailMetrics {
 
 public struct PrayerDetailScreen: View {
   @ObserveInjection private var injectionObserver
+  @EnvironmentObject private var navigator: AppNavigatorModel
 
   /// The catalog in order, so the carousel can page through it.
   ///
@@ -174,7 +176,7 @@ public struct PrayerDetailScreen: View {
       .padding(.bottom, AppListSectionMetrics.recommendedSectionSpacing)
     }
     .safeAreaInset(edge: .bottom) {
-      StartBar()
+      StartBar(prayer)
     }
   }
 
@@ -267,9 +269,11 @@ public struct PrayerDetailScreen: View {
   // MARK: - Start CTA
 
   @ViewBuilder
-  private func StartBar() -> some View {
+  private func StartBar(_ prayer: Prayer) -> some View {
     Button {
-      // The reading screen doesn't exist yet.
+      // Whichever prayer the carousel has landed on, not the one the route
+      // opened with.
+      navigator.navigate(to: .prayer(prayerID: prayer.id))
     } label: {
       HStack(spacing: 8) {
         Image(systemName: "play.fill")
@@ -672,26 +676,32 @@ private struct PressableButtonStyle: ButtonStyle {
 
 // MARK: - Previews
 
+// The navigator is what "Start" pushes through, so every preview needs one —
+// without it the screen traps the moment SwiftUI resolves the environment.
 #Preview {
   NavigationStack {
     PrayerDetailScreen(prayerID: "Khandha")
   }
+  .environmentObject(AppNavigatorModel())
 }
 
 #Preview("Long about") {
   NavigationStack {
     PrayerDetailScreen(prayerID: "သရဏဂုံ")
   }
+  .environmentObject(AppNavigatorModel())
 }
 
 #Preview("No about") {
   NavigationStack {
     PrayerDetailScreen(prayerID: "အမျှဝေ")
   }
+  .environmentObject(AppNavigatorModel())
 }
 
 #Preview("Not found") {
   NavigationStack {
     PrayerDetailScreen(prayerID: "no-such-prayer")
   }
+  .environmentObject(AppNavigatorModel())
 }

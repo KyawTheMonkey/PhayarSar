@@ -113,6 +113,8 @@ public final class AppNavigatorModel: ObservableObject {
 /// Name new cases `<subject><Screen>(<id>:)` — e.g. `planDetail(planID:)`.
 public enum RouterDestination: Hashable, Codable {
   case prayerDetail(prayerID: String)
+  /// The reading screen itself, pushed from the detail screen's "Start".
+  case prayer(prayerID: String)
 }
 
 /// Every modally presented screen. Same rules as ``RouterDestination``.

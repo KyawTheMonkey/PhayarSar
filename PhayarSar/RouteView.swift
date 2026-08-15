@@ -25,6 +25,8 @@ struct RouteView: View {
     switch destination {
     case let .prayerDetail(prayerID):
       PrayerDetailScreen(prayerID: prayerID)
+    case let .prayer(prayerID):
+      PrayerScreen(prayerID: prayerID)
     }
   }
 }
