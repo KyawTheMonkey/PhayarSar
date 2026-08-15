@@ -32,8 +32,7 @@ struct HomePrayerCardView: View {
   }
   
   private var duration: String {
-//    prayer.body
-    return "2 min"
+    return "\(prayer.estimatedMinutes) \(L10n.minutesUnit)"
   }
   
   private var verses: String {
