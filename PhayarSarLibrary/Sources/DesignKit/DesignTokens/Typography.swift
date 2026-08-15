@@ -207,21 +207,25 @@ public enum AppUIFont {
   }
 
   // MARK: - Special (Myanmar)
+  //
+  // These take a `size` as well as a text style, unlike the scale above: the
+  // reading screen sets its own point size from `PrayerSettings.textSize`, and
+  // still wants that size to track Dynamic Type from there.
 
-  public static func jasmine(relativeTo style: UIFont.TextStyle = .body) -> UIFont {
-    scaledFont(AppFonts.jasmineUnicode.rawValue, size: 17, relativeTo: style)
+  public static func jasmine(size: CGFloat = 17, relativeTo style: UIFont.TextStyle = .body) -> UIFont {
+    scaledFont(AppFonts.jasmineUnicode.rawValue, size: size, relativeTo: style)
   }
 
-  public static func panlong(relativeTo style: UIFont.TextStyle = .body) -> UIFont {
-    scaledFont(AppFonts.pangLong.rawValue, size: 17, relativeTo: style)
+  public static func panlong(size: CGFloat = 17, relativeTo style: UIFont.TextStyle = .body) -> UIFont {
+    scaledFont(AppFonts.pangLong.rawValue, size: size, relativeTo: style)
   }
 
-  public static func mSquare(relativeTo style: UIFont.TextStyle = .body) -> UIFont {
-    scaledFont(AppFonts.myanmarSquare.rawValue, size: 17, relativeTo: style)
+  public static func mSquare(size: CGFloat = 17, relativeTo style: UIFont.TextStyle = .body) -> UIFont {
+    scaledFont(AppFonts.myanmarSquare.rawValue, size: size, relativeTo: style)
   }
 
-  public static func yoeYar(relativeTo style: UIFont.TextStyle = .body) -> UIFont {
-    scaledFont(AppFonts.yoeYarOne.rawValue, size: 17, relativeTo: style)
+  public static func yoeYar(size: CGFloat = 17, relativeTo style: UIFont.TextStyle = .body) -> UIFont {
+    scaledFont(AppFonts.yoeYarOne.rawValue, size: size, relativeTo: style)
   }
 
   /// Falls back to the system font at the same size if the custom font
