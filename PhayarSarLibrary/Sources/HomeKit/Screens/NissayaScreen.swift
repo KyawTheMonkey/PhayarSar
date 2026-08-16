@@ -87,7 +87,6 @@ public struct NissayaScreen: View {
     // Also set on the detail screen this is pushed from, but the tab bar would
     // otherwise sit under the pager and compete with it for the same thumb.
     .hideTabBar()
-    .appBackground()
     .enableInjection()
   }
 

@@ -58,6 +58,28 @@ private enum PrayerDetailMetrics {
 
   static let ctaCornerRadius: CGFloat = 16
 
+  /// How far above the CTA the scrolling content starts to dissolve.
+  ///
+  /// Added to the bar's own measured height, so the ramp always begins clear of
+  /// the button rather than part way down it. `AppFadeBlurBackground` behind the
+  /// CTA fades too, but only across the bar itself — at `solidStop` 0.55 of a
+  /// ~70pt bar that is barely 30pt of ramp, short enough that content arriving
+  /// at it reads as meeting an edge. This is the long half of the transition;
+  /// the blur is the short, legibility-holding half.
+  static let ctaContentFadeHeight: CGFloat = 64
+
+  /// Clearance under the last section.
+  ///
+  /// `safeAreaInset` already stops the content at the CTA's top edge, but the
+  /// fade above begins higher than that — so scrolled to the very bottom, the
+  /// last card came to rest *inside* the ramp and never reached full strength.
+  /// Padding by the whole fade height lifts it clear whatever the device's
+  /// bottom safe area happens to be: about 58pt of daylight on a phone, and on
+  /// an iPad — which has no bottom inset to help — still the full 24.
+  static var contentBottomClearance: CGFloat {
+    AppListSectionMetrics.recommendedSectionSpacing + (ctaContentFadeHeight * 0.5)
+  }
+
   /// How much of the about text shows before the "Show more" toggle takes over.
   static let aboutCollapsedLineLimit = 5
 
@@ -95,6 +117,15 @@ public struct PrayerDetailScreen: View {
   /// Which prayer the screen is currently showing. The carousel writes to it,
   /// and everything else on the screen reads from it.
   @State private var selectedID: Prayer.ID
+
+  /// How tall the CTA turned out to be, so the content's fade can be anchored
+  /// to it. `0` until the first layout pass.
+  ///
+  /// Measured rather than assumed: the bar is about 70pt at the default text
+  /// size, but the button's label grows with Dynamic Type, and a hard-coded
+  /// number would put the ramp across the middle of the button at the largest
+  /// sizes.
+  @State private var ctaHeight: CGFloat = 0
 
   /// Resolved from the id the route carried rather than passed in whole — see
   /// `RouterDestination`, whose payloads are ids so that routes stay `Codable`.
@@ -175,11 +206,36 @@ public struct PrayerDetailScreen: View {
         .animation(.prayerContentSwap, value: prayer.id)
       }
       .padding(.top, 8)
-      .padding(.bottom, AppListSectionMetrics.recommendedSectionSpacing)
+      .padding(.bottom, PrayerDetailMetrics.contentBottomClearance)
+    }
+    // Applied to the scroll view *before* the CTA is inset below, so the bar
+    // itself is outside the mask. Masking after would fade out the button along
+    // with the content it is supposed to be sitting above.
+    .mask(alignment: .top) {
+      VStack(spacing: 0) {
+        // Takes everything the ramp doesn't: the content is untouched until it
+        // reaches the CTA's neighbourhood.
+        Rectangle()
+
+        LinearGradient(
+          colors: [.black, .clear],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+        .frame(height: ctaHeight + PrayerDetailMetrics.ctaContentFadeHeight)
+      }
     }
     .safeAreaInset(edge: .bottom) {
       StartBar(prayer)
+        .background {
+          GeometryReader { geometry in
+            Color.clear.preference(key: CTAHeightKey.self, value: geometry.size.height)
+          }
+        }
     }
+    // Safe from feeding back into itself: the mask above changes what the
+    // content looks like, never how tall the bar is.
+    .onPreferenceChange(CTAHeightKey.self) { ctaHeight = $0 }
   }
 
   // MARK: - Title block
@@ -320,6 +376,16 @@ public struct PrayerDetailScreen: View {
 }
 
 // MARK: - Pieces
+
+/// The CTA's measured height, so the content's fade can be anchored to the bar
+/// rather than to a guess about how tall it is.
+private struct CTAHeightKey: PreferenceKey {
+  static var defaultValue: CGFloat { 0 }
+
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = max(value, nextValue())
+  }
+}
 
 /// The prayer's background text, clamped to a few lines with a toggle when it
 /// runs long.
