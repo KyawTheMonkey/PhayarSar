@@ -26,13 +26,30 @@ enum PrayerReaderMetrics {
   /// set small.
   static let minimumPronunciationSize: CGFloat = 13
 
-  /// Gap between a verse and its pronunciation. Tight on purpose — the two
-  /// belong to each other, and `PrayerSettings.verseSpacing` is what separates
-  /// one pair from the next.
-  static let pronunciationSpacing: CGFloat = 6
-
   /// Gap between a named verse's name and its text.
   static let nameSpacing: CGFloat = 4
+
+  /// Gap between a glossed line's respelling and the Pali beneath it. Nearly
+  /// nothing — the two are one unit, and any air here starts to read as the gap
+  /// to the next pair instead.
+  static let glossPairSpacing: CGFloat = 2
+
+  /// Base gap between the rule under one pair of a gloss and the next pair,
+  /// before the reader's own line-spacing setting is added to it. There is a
+  /// floor under it because a pair is two lines of text tall, and at a setting
+  /// of zero the pairs would run into each other where plain lines would only
+  /// sit close.
+  static let glossLineSpacing: CGFloat = 8
+
+  /// Gap between a glossed pair and the rule under it. Nearer to the pair it
+  /// closes than to the one it opens, so the rule reads as ending a line rather
+  /// than as floating between two.
+  static let glossSeparatorSpacing: CGFloat = 8
+
+  /// A hairline at the densest screen the app runs on. Fixed rather than
+  /// `1 / displayScale`: this is a rule drawn across a page of text, and it
+  /// should look the same weight wherever it is read.
+  static let glossSeparatorThickness: CGFloat = 0.5
 
   /// Only a starting guess for the scroll indicator — every row measures itself.
   static let estimatedRowHeight: CGFloat = 140
@@ -54,6 +71,10 @@ struct PrayerReadingStyle {
   /// For the pronunciation and the verse name — the page's own ink, stepped
   /// back so the recited line stays the loudest thing on the page.
   let secondaryTextColor: UIColor
+
+  /// The rule under each line of a gloss. Far fainter than either text: it is
+  /// there to close a line, not to be read as part of it.
+  let separatorColor: UIColor
 
   let alignment: NSTextAlignment
   let kern: CGFloat
@@ -82,6 +103,7 @@ struct PrayerReadingStyle {
     pageColor = UIColor(settings.background.color)
     textColor = UIColor(settings.background.foreground)
     secondaryTextColor = textColor.withAlphaComponent(0.6)
+    separatorColor = textColor.withAlphaComponent(0.15)
 
     alignment = settings.alignment.nsTextAlignment
     kern = settings.letterSpacing
@@ -114,19 +136,80 @@ struct PrayerReadingStyle {
     )
   }
 
-  /// The respelling beneath a verse. No tracking: the letter-spacing setting is
-  /// about the recited line, and the aid is set small enough that the same
-  /// tracking would pull it apart.
-  func attributedPronunciation(_ text: String) -> NSAttributedString {
-    NSAttributedString(
-      string: text,
-      attributes: [
-        .font: pronunciationFont,
-        .foregroundColor: secondaryTextColor,
-        .paragraphStyle: paragraphStyle(lineSpacing: lineSpacing / 2)
-      ]
+  /// A verse as an interlinear gloss: each line's respelling with the Pali it
+  /// stands for set smaller beneath it.
+  ///
+  /// The respelling takes the recited size and ink and the Pali becomes the
+  /// reference beneath it, which is the way round it is actually read: someone
+  /// reciting is reading the respelling, and the Pali under it is what they are
+  /// reciting *from*.
+  ///
+  /// The two halves are one attributed string rather than two labels: they are
+  /// paragraphs of the same text, and a paragraph is the smallest run that can
+  /// carry its own spacing.
+  func attributedGloss(_ line: PrayerVerseGloss.Line) -> NSAttributedString {
+    let composed = NSMutableAttributedString()
+
+    composed.append(glossHalf(
+      line.pronunciation,
+      attributes: [.font: verseFont, .foregroundColor: textColor, .kern: kern],
+      leading: lineSpacing,
+      // Tight, so the Pali reads as belonging to the line above it.
+      spacingAfter: PrayerReaderMetrics.glossPairSpacing,
+      terminated: true
+    ))
+
+    composed.append(glossHalf(
+      line.content,
+      // No tracking: the letter-spacing setting is about the recited line, and
+      // the Pali is set small enough that the same tracking would pull it
+      // apart.
+      attributes: [.font: pronunciationFont, .foregroundColor: secondaryTextColor],
+      leading: lineSpacing / 2,
+      spacingAfter: 0,
+      terminated: false
+    ))
+
+    return composed
+  }
+
+  /// One half of a glossed line, as a paragraph of its own.
+  ///
+  /// - Parameters:
+  ///   - leading: Spacing between this half's own rows, for a line long enough
+  ///     to wrap.
+  ///   - spacingAfter: Gap to the half below.
+  ///   - terminated: Whether to end the paragraph. The lower half is left open
+  ///     — a trailing newline would draw an empty line under it and push the
+  ///     rule that much further from the text it closes.
+  private func glossHalf(
+    _ text: String,
+    attributes: [NSAttributedString.Key: Any],
+    leading: CGFloat,
+    spacingAfter: CGFloat,
+    terminated: Bool
+  ) -> NSAttributedString {
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.lineSpacing = leading
+    paragraph.alignment = alignment
+    paragraph.paragraphSpacing = spacingAfter
+
+    var attributes = attributes
+    attributes[.paragraphStyle] = paragraph
+
+    return NSAttributedString(
+      string: (text.isEmpty ? Self.blank : text) + (terminated ? "\n" : ""),
+      attributes: attributes
     )
   }
+
+  /// Stands in for a line the other half of the verse has no counterpart for.
+  ///
+  /// A space rather than the empty string: an empty paragraph has no character
+  /// to carry the font, so it would collapse and let the pairs below it ride up
+  /// out of step — see ``PrayerVerseGloss`` for why a verse can come up a line
+  /// short.
+  private static let blank = " "
 }
 
 // MARK: - SwiftUI alignment bridge

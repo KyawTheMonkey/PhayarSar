@@ -3,8 +3,13 @@ import LocalisationKit
 import PrayersKit
 import UIKit
 
-/// One verse of a prayer: its name where the source gives one, the recited
-/// text, and the phonetic respelling beneath it.
+/// One verse of a prayer: its name where the source gives one, and the verse
+/// itself in one of two settings.
+///
+/// With the respelling on, the verse is drawn as an interlinear gloss — each
+/// line's respelling with the Pali it stands for beneath it, ruled off — because
+/// the respelling is what someone reciting is actually reading off the page.
+/// With it off, the Pali stands alone as the recited line.
 ///
 /// Self-sizing — the table sets `automaticDimension` and the stack's
 /// constraints to the content guide are what give the cell its height.
@@ -13,8 +18,8 @@ final class PrayerVerseCell: UITableViewCell {
 
   private let stack = UIStackView()
   private let nameLabel = UILabel()
+  private let glossView = PrayerGlossView()
   private let verseLabel = UILabel()
-  private let pronunciationLabel = UILabel()
 
   override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -38,7 +43,7 @@ final class PrayerVerseCell: UITableViewCell {
     // no setting could get below.
     contentView.preservesSuperviewLayoutMargins = false
 
-    for label in [nameLabel, verseLabel, pronunciationLabel] {
+    for label in [nameLabel, verseLabel] {
       label.numberOfLines = 0
     }
 
@@ -46,13 +51,14 @@ final class PrayerVerseCell: UITableViewCell {
     stack.alignment = .fill
     stack.translatesAutoresizingMaskIntoConstraints = false
     stack.addArrangedSubview(nameLabel)
+    // Only ever one of these two is on screen: the gloss when there is a
+    // respelling to show, the plain verse when there is not.
+    stack.addArrangedSubview(glossView)
     stack.addArrangedSubview(verseLabel)
-    stack.addArrangedSubview(pronunciationLabel)
 
-    // Spacing is per-gap rather than uniform: the respelling sits close under
-    // its verse, while the name sits closer still to the text it titles.
+    // The name sits close to the text it titles rather than at the gap between
+    // one verse and the next.
     stack.setCustomSpacing(PrayerReaderMetrics.nameSpacing, after: nameLabel)
-    stack.setCustomSpacing(PrayerReaderMetrics.pronunciationSpacing, after: verseLabel)
 
     contentView.addSubview(stack)
 
@@ -94,19 +100,30 @@ final class PrayerVerseCell: UITableViewCell {
       nameLabel.isHidden = true
     }
 
-    verseLabel.attributedText = style.attributedVerse(verse.content)
-
     // Two conditions, not one: the reader can switch the respelling off, and
     // several prayers ship none to begin with.
     let pronunciation = style.showsPronunciation ? verse.pronunciation : ""
-    if pronunciation.isEmpty {
-      pronunciationLabel.attributedText = nil
-      pronunciationLabel.isHidden = true
+    let gloss = pronunciation.isEmpty
+      ? nil
+      : PrayerVerseGloss(content: verse.content, pronunciation: pronunciation)
+
+    if let gloss, !gloss.isEmpty {
+      glossView.configure(with: gloss, style: style)
+      glossView.isHidden = false
+      // VoiceOver gets the verse whole. Read off the gloss it would come out as
+      // an alternation of two languages, neither of them followable.
+      glossView.accessibilityLabel =
+        "\(verse.content), \(L10n.pronunciation), \(verse.pronunciation)"
+
+      verseLabel.attributedText = nil
+      verseLabel.isHidden = true
     } else {
-      pronunciationLabel.attributedText = style.attributedPronunciation(pronunciation)
-      pronunciationLabel.isHidden = false
-      // Otherwise VoiceOver reads the respelling as if it were more scripture.
-      pronunciationLabel.accessibilityLabel = "\(L10n.pronunciation), \(pronunciation)"
+      glossView.reset()
+      glossView.isHidden = true
+      glossView.accessibilityLabel = nil
+
+      verseLabel.attributedText = style.attributedVerse(verse.content)
+      verseLabel.isHidden = false
     }
   }
 
@@ -114,8 +131,10 @@ final class PrayerVerseCell: UITableViewCell {
     super.prepareForReuse()
     nameLabel.attributedText = nil
     verseLabel.attributedText = nil
-    pronunciationLabel.attributedText = nil
-    pronunciationLabel.accessibilityLabel = nil
+    glossView.accessibilityLabel = nil
+    // The gloss is left standing on purpose. `configure` either replaces it
+    // line for line or resets it, and tearing it down here would throw away a
+    // pool of line views that the next verse is about to want back.
   }
 }
 #endif
