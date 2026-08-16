@@ -8,8 +8,13 @@ import UtilKit
 
 /// Layout constants for `NissayaScreen`.
 private enum NissayaMetrics {
-  /// Gap above the deck. Small — the cards carry their own margin, and the
-  /// navigation bar is already a boundary.
+  /// Clearance kept at each end of the deck, so a card tall enough to hit its
+  /// cap still stops short of the navigation bar and the home indicator rather
+  /// than running under them.
+  ///
+  /// Taken out of the height the deck is offered rather than applied as
+  /// padding — see `deckRoom(in:)`. Padding would push a tall card down instead
+  /// of making it shorter.
   static let deckTopPadding: CGFloat = 8
 
   /// Gap between the deck and the pager below it.
@@ -55,6 +60,10 @@ public struct NissayaScreen: View {
   /// because the pager below it steps through the same value.
   @State private var index = 0
 
+  /// How tall the pager turned out to be, so the deck can be told how much room
+  /// is left for it. `0` until the first layout pass.
+  @State private var pagerHeight: CGFloat = 0
+
   public init(prayerID: String) {
     self.prayer = PrayerCatalog.shared.prayer(id: prayerID)
   }
@@ -84,14 +93,64 @@ public struct NissayaScreen: View {
 
   // MARK: - Deck
 
+  /// The deck and its pager, as one block centred in the screen.
+  ///
+  /// Centred as a *pair* rather than laid out top-to-bottom. Now that a card is
+  /// only as tall as its verse, a pager pinned to the bottom of an iPad would
+  /// sit some 300pt below the card it drives — near enough to look like it
+  /// belongs to something else. Closed up, the two read as one object with room
+  /// around it, which is what the space is for.
+  ///
+  /// The screen owns the only `GeometryReader` here, and hands the room down.
+  /// One inside the deck would fill whatever it was offered, which is exactly
+  /// what this layout needs it not to do.
   @ViewBuilder
   private func Deck(_ prayer: Prayer) -> some View {
-    VStack(spacing: 0) {
-      NissayaCardStack(verses: prayer.body, index: $index)
-        .padding(.top, NissayaMetrics.deckTopPadding)
+    GeometryReader { proxy in
+      VStack(spacing: NissayaMetrics.pagerTopPadding) {
+        NissayaCardStack(
+          verses: prayer.body,
+          index: $index,
+          available: CGSize(
+            width: proxy.size.width,
+            height: deckRoom(in: proxy.size.height)
+          )
+        )
 
-      Pager(total: prayer.body.count)
+        Pager(total: prayer.body.count)
+          // Measured rather than assumed: the row is 44pt tall at the default
+          // text size, but the counter inside it grows with Dynamic Type, and a
+          // hard-coded number would start cropping the card at the largest
+          // sizes.
+          .background {
+            GeometryReader { geometry in
+              Color.clear.preference(
+                key: PagerHeightKey.self,
+                value: geometry.size.height
+              )
+            }
+          }
+      }
+      // Centres the pair. No padding on top of this — the clearance the deck
+      // needs is taken out of the height it is offered instead, in
+      // `deckRoom(in:)`, so that a tall card is capped short of the navigation
+      // bar rather than pushed into it.
+      .frame(width: proxy.size.width, height: proxy.size.height)
     }
+    .onPreferenceChange(PagerHeightKey.self) { pagerHeight = $0 }
+  }
+
+  /// How tall the deck may grow, given the whole screen.
+  ///
+  /// Everything the deck does not own comes off first: the pager, the gap above
+  /// it, and a margin at each end so a full-height card still clears the
+  /// navigation bar and the home indicator.
+  private func deckRoom(in totalHeight: CGFloat) -> CGFloat {
+    let reserved = pagerHeight
+      + NissayaMetrics.pagerTopPadding
+      + NissayaMetrics.deckTopPadding * 2
+
+    return max(NissayaCardMetrics.minCardHeight, totalHeight - reserved)
   }
 
   // MARK: - Pager
@@ -154,6 +213,15 @@ public struct NissayaScreen: View {
 
 // MARK: - Pieces
 
+/// The pager's measured height, so the deck knows how much room is left.
+private struct PagerHeightKey: PreferenceKey {
+  static var defaultValue: CGFloat { 0 }
+
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = max(value, nextValue())
+  }
+}
+
 /// One end of the pager: a chevron that turns the deck by a card.
 private struct StepButton: View {
   let icon: String
@@ -200,9 +268,6 @@ private struct ProgressTrack: View {
       }
     }
     .frame(height: NissayaMetrics.progressTrackHeight)
-    // A `GeometryReader` is greedy vertically, and inside the pager's `VStack`
-    // it would otherwise claim every point the row could give it.
-    .fixedSize(horizontal: false, vertical: true)
   }
 }
 
