@@ -51,8 +51,44 @@ enum PrayerReaderMetrics {
   /// should look the same weight wherever it is read.
   static let glossSeparatorThickness: CGFloat = 0.5
 
-  /// Only a starting guess for the scroll indicator — every row measures itself.
-  static let estimatedRowHeight: CGFloat = 140
+  /// What the rest of the page fades to while a tapped line is being followed.
+  /// Far enough down to put the page behind glass, not so far that the reader
+  /// loses the passage the line sits in.
+  static let recededAlpha: CGFloat = 0.28
+
+  /// How long the page takes to carry a tapped line to the middle. The page
+  /// recedes over exactly this, on the same curve and from the same instant, so
+  /// that the move and the tint are one movement rather than two.
+  ///
+  /// Slower than `scrollToRow`'s own animation, which this replaces: the whole
+  /// point of the move is to be followed, and UIKit's is quick enough to be
+  /// missed.
+  static let focusScroll: TimeInterval = 0.4
+
+  /// How long the tinted line is held after the page has settled — the "and
+  /// there it is" beat, before the page comes back up around it.
+  static let focusLinger: TimeInterval = 0.35
+
+  /// How long the page takes to come back up. Slow enough to be seen as a
+  /// movement rather than a cut.
+  static let focusFade: TimeInterval = 0.28
+
+  /// Inset of the tint behind a focused line from the text it sits behind.
+  static let focusOutset = (horizontal: CGFloat(10), vertical: CGFloat(6))
+
+  static let focusCornerRadius: CGFloat = 10
+
+  /// How much of the readable page counts as "near enough to the middle" when a
+  /// line is tapped: a line already inside this much of it, centred on the
+  /// middle, does not move the page. Two thirds leaves the outer sixth at each
+  /// end — where a line is genuinely awkward to read — as the part worth
+  /// scrolling for.
+  static let centredBandFraction: CGFloat = 2.0 / 3.0
+
+  /// Only a starting guess for the scroll indicator — every row measures
+  /// itself. A row is one line of the prayer: a respelling, the Pali under it,
+  /// and the rule closing them.
+  static let estimatedRowHeight: CGFloat = 72
 }
 
 /// Everything the cells need to draw a verse, resolved once from
@@ -75,6 +111,11 @@ struct PrayerReadingStyle {
   /// The rule under each line of a gloss. Far fainter than either text: it is
   /// there to close a line, not to be read as part of it.
   let separatorColor: UIColor
+
+  /// The tint behind a line the reader has tapped. Fainter still than the rule
+  /// — the line is picked out by the rest of the page receding from it, and
+  /// this only has to say which line it was.
+  let focusColor: UIColor
 
   let alignment: NSTextAlignment
   let kern: CGFloat
@@ -104,6 +145,7 @@ struct PrayerReadingStyle {
     textColor = UIColor(settings.background.foreground)
     secondaryTextColor = textColor.withAlphaComponent(0.6)
     separatorColor = textColor.withAlphaComponent(0.15)
+    focusColor = textColor.withAlphaComponent(0.07)
 
     alignment = settings.alignment.nsTextAlignment
     kern = settings.letterSpacing

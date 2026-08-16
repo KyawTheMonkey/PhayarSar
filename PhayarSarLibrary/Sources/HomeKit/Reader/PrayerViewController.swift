@@ -2,8 +2,8 @@
 import PrayersKit
 import UIKit
 
-/// The reading screen: a prayer's verses, one per row, with the phonetic
-/// respelling under each.
+/// The reading screen: a prayer's lines, one per row, each with the phonetic
+/// respelling over the Pali it stands for.
 ///
 /// UIKit rather than SwiftUI because of what this screen is going to become. A
 /// reader has to hold a scroll position across a settings change, scroll a
@@ -24,7 +24,7 @@ final class PrayerViewController: UIViewController {
     case verses
   }
 
-  /// Identity only — the verse's own index, not its text.
+  /// Identity only — where the line sits, not what it says.
   ///
   /// Deliberately carries nothing that a settings change would alter: with the
   /// text in here, changing the type size would diff as "every row deleted and
@@ -32,7 +32,7 @@ final class PrayerViewController: UIViewController {
   /// the snapshot, content in the cell provider, and a settings change becomes
   /// a reconfigure of rows that never moved.
   enum Item: Hashable {
-    case verse(Prayer.Verse.ID)
+    case line(PrayerVerseLine.ID)
   }
 
   private typealias DataSource = UITableViewDiffableDataSource<Section, Item>
@@ -44,17 +44,13 @@ final class PrayerViewController: UIViewController {
   private var settings: PrayerSettings
   private var style: PrayerReadingStyle
 
-  /// The verses in reading order, deduplicated by index.
-  ///
-  /// A diffable snapshot traps on a repeated identifier, and `index` comes from
-  /// hand-maintained JSON — a duplicate there would be a crash on open rather
-  /// than a doubled verse. Dropping the repeat keeps the screen up.
-  private var verses: [Prayer.Verse] = []
+  /// The prayer's lines in reading order, which is what the table shows.
+  private var lines: [PrayerVerseLine] = []
 
-  /// Verse by index, for the cell provider. A dictionary rather than
-  /// `verses[index - 1]`: `index` is the source's own numbering, and nothing
-  /// guarantees it is a gapless 1-based run.
-  private var versesByID: [Prayer.Verse.ID: Prayer.Verse] = [:]
+  /// Line by identity, for the cell provider. A dictionary rather than
+  /// `lines[indexPath.row]`: the cell provider is handed an identifier, and
+  /// looking it up is what keeps the two from drifting apart mid-update.
+  private var linesByID: [PrayerVerseLine.ID: PrayerVerseLine] = [:]
 
   private lazy var tableView = UITableView(frame: .zero, style: .plain)
   private lazy var dataSource = makeDataSource()
@@ -97,13 +93,16 @@ final class PrayerViewController: UIViewController {
   private func setUpTableView() {
     tableView.translatesAutoresizingMaskIntoConstraints = false
     tableView.register(
-      PrayerVerseCell.self,
-      forCellReuseIdentifier: PrayerVerseCell.reuseIdentifier
+      PrayerVerseLineCell.self,
+      forCellReuseIdentifier: PrayerVerseLineCell.reuseIdentifier
     )
     tableView.separatorStyle = .none
-    // Nothing to select yet. When tapping a verse means "start playback from
-    // here", this comes back on together with the highlight.
-    tableView.allowsSelection = false
+    // Tapping a line brings it to the middle of the page. The highlight stays
+    // off — the cells draw no selected state, so the tap moves the page and
+    // leaves nothing behind. When tapping also means "start playback from
+    // here", the highlight comes back with it.
+    tableView.allowsSelection = true
+    tableView.delegate = self
     tableView.rowHeight = UITableView.automaticDimension
     tableView.estimatedRowHeight = PrayerReaderMetrics.estimatedRowHeight
     tableView.contentInset = UIEdgeInsets(
@@ -132,24 +131,20 @@ final class PrayerViewController: UIViewController {
   private func makeDataSource() -> DataSource {
     DataSource(tableView: tableView) { [weak self] tableView, indexPath, item in
       let cell = tableView.dequeueReusableCell(
-        withIdentifier: PrayerVerseCell.reuseIdentifier,
+        withIdentifier: PrayerVerseLineCell.reuseIdentifier,
         for: indexPath
       )
 
       guard
         let self,
-        let cell = cell as? PrayerVerseCell,
-        case let .verse(id) = item,
-        let verse = self.versesByID[id]
+        let cell = cell as? PrayerVerseLineCell,
+        case let .line(id) = item,
+        let line = self.linesByID[id]
       else {
         return cell
       }
 
-      cell.configure(
-        with: verse,
-        style: self.style,
-        isLast: id == self.verses.last?.id
-      )
+      cell.configure(with: line, style: self.style)
 
       return cell
     }
@@ -157,16 +152,24 @@ final class PrayerViewController: UIViewController {
 
   // MARK: - Content
 
+  /// Flattens the prayer into the rows the table shows.
+  ///
+  /// The verses are deduplicated by index first: a diffable snapshot traps on a
+  /// repeated identifier, and `index` comes from hand-maintained JSON — a
+  /// duplicate there would be a crash on open rather than a doubled verse.
+  /// Dropping the repeat keeps the screen up.
   private func indexVerses() {
     var seen: Set<Prayer.Verse.ID> = []
-    verses = prayer.body.filter { seen.insert($0.id).inserted }
-    versesByID = Dictionary(uniqueKeysWithValues: verses.map { ($0.id, $0) })
+    let verses = prayer.body.filter { seen.insert($0.id).inserted }
+
+    lines = PrayerVerseLine.lines(in: verses)
+    linesByID = Dictionary(uniqueKeysWithValues: lines.map { ($0.id, $0) })
   }
 
   private func applySnapshot(animated: Bool) {
     var snapshot = Snapshot()
     snapshot.appendSections([.verses])
-    snapshot.appendItems(verses.map { Item.verse($0.id) }, toSection: .verses)
+    snapshot.appendItems(lines.map { Item.line($0.id) }, toSection: .verses)
     dataSource.apply(snapshot, animatingDifferences: animated)
   }
 
@@ -175,10 +178,194 @@ final class PrayerViewController: UIViewController {
   /// `reconfigureItems` rather than `reloadItems`: reconfigure hands the
   /// existing cell back to the provider, so the rows keep their place and the
   /// reader's scroll position survives a change of type size.
-  private func reconfigureVisibleVerses() {
+  private func reconfigureVisibleLines() {
     var snapshot = dataSource.snapshot()
     snapshot.reconfigureItems(snapshot.itemIdentifiers)
     dataSource.apply(snapshot, animatingDifferences: false)
+  }
+
+  // MARK: - Following a tap
+
+  /// The line the reader last tapped, for as long as the page is stepped back
+  /// around it.
+  private var focusedLine: PrayerVerseLine.ID?
+
+  /// Puts the page back up. Held so a second tap can cancel the first one's
+  /// release rather than have it land in the middle of the second.
+  private var focusRelease: DispatchWorkItem?
+
+  /// Carries a line to the middle of the page, with the page receding around it
+  /// as it goes, and lets go a beat after it lands.
+  ///
+  /// The move is animated here rather than left to `scrollToRow(at:at:animated:)`
+  /// so that it and the tint can share one animation: the same duration, the
+  /// same curve, the same instant of starting and stopping. Handing the scroll
+  /// to UIKit would mean guessing at the length of an animation it does not
+  /// document and syncing to the guess.
+  ///
+  /// It also gives the release something dependable to hang off. The obvious
+  /// hook, `scrollViewDidEndScrollingAnimation`, is the wrong one: a tap on a
+  /// line the table cannot centre — near either end of the prayer, where the
+  /// scroll is clamped — moves the page not at all and so never reports
+  /// finishing, and the page would stay stepped back with nothing to put it
+  /// right. A `UIView` animation's completion runs either way.
+  private func follow(_ id: PrayerVerseLine.ID, at indexPath: IndexPath) {
+    focusRelease?.cancel()
+    focusRelease = nil
+
+    focusedLine = id
+    let offset = centredOffset(for: indexPath)
+
+    UIView.animate(
+      withDuration: PrayerReaderMetrics.focusScroll,
+      delay: 0,
+      // `beginFromCurrentState` so a second tap mid-move carries on from where
+      // the page has got to; `allowUserInteraction` so the reader can take the
+      // page back at any point.
+      options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction],
+      animations: {
+        self.tableView.contentOffset = offset
+        // Unanimated on its own account — it is this block that animates it,
+        // which is what puts the page's receding on the move's clock.
+        self.applyEmphasis(animated: false)
+      },
+      completion: { [weak self] finished in
+        // An unfinished move was cut short by the reader dragging, or replaced
+        // by a second tap. Either way the release it would schedule belongs to
+        // a follow that is no longer happening.
+        guard finished else { return }
+        self?.scheduleRelease()
+      }
+    )
+  }
+
+  private func scheduleRelease() {
+    focusRelease?.cancel()
+
+    let release = DispatchWorkItem { [weak self] in
+      self?.releaseFocus()
+    }
+    focusRelease = release
+    DispatchQueue.main.asyncAfter(
+      deadline: .now() + PrayerReaderMetrics.focusLinger,
+      execute: release
+    )
+  }
+
+  private func releaseFocus() {
+    focusRelease?.cancel()
+    focusRelease = nil
+
+    guard focusedLine != nil else { return }
+    focusedLine = nil
+    applyEmphasis(animated: true)
+  }
+
+  /// Leaves a follow's scroll where the page has actually got to, for a reader
+  /// who has grabbed it part way there.
+  ///
+  /// Without this the page jumps: a finger on a scroll view drives the offset
+  /// from its *model* value, which an animation in flight has already set to
+  /// the far end, so the page would leap the rest of the move before following
+  /// the finger. Taking the offset off the presentation layer and dropping the
+  /// animation makes the page carry on from where it looks like it is.
+  private func stopFollowingScroll() {
+    // Only ever a follow's own animation. Every other drag of the page reaches
+    // here too, and none of them has anything to be cut short.
+    guard
+      focusedLine != nil,
+      let presented = tableView.layer.presentation()?.bounds.origin
+    else {
+      return
+    }
+
+    UIView.performWithoutAnimation {
+      // Only the scroll animation lives on the table's own layer; the page
+      // receding is on the cells'.
+      tableView.layer.removeAllAnimations()
+      tableView.contentOffset = presented
+    }
+  }
+
+  private func emphasis(for item: Item) -> PrayerVerseLineCell.Emphasis {
+    guard let focusedLine else { return .none }
+    return item == .line(focusedLine) ? .focused : .receded
+  }
+
+  private func applyEmphasis(animated: Bool) {
+    for cell in tableView.visibleCells {
+      guard
+        let cell = cell as? PrayerVerseLineCell,
+        let indexPath = tableView.indexPath(for: cell),
+        let item = dataSource.itemIdentifier(for: indexPath)
+      else {
+        continue
+      }
+
+      cell.setEmphasis(emphasis(for: item), animated: animated)
+    }
+  }
+
+  // MARK: - Centring a line
+
+  /// The band of the page a tapped line has to fall outside of before the page
+  /// will move for it.
+  ///
+  /// There is a dead zone at all because otherwise every tap would scroll: a
+  /// line a few points off the middle would slide to the middle, which reads as
+  /// the page twitching under the finger rather than as a deliberate move.
+  ///
+  /// In content coordinates, and measured against the *inset* page — the safe
+  /// area and the reader's own top and bottom insets are not somewhere a line
+  /// can sit, so counting them would put the band off-centre from the part of
+  /// the page that can actually be read.
+  private var centredBand: (minY: CGFloat, maxY: CGFloat, height: CGFloat)? {
+    let inset = tableView.adjustedContentInset
+    let pageHeight = tableView.bounds.height - inset.top - inset.bottom
+    guard pageHeight > 0 else { return nil }
+
+    let pageTop = tableView.contentOffset.y + inset.top
+    let margin = pageHeight * (1 - PrayerReaderMetrics.centredBandFraction) / 2
+
+    return (
+      minY: pageTop + margin,
+      maxY: pageTop + pageHeight - margin,
+      height: pageHeight - 2 * margin
+    )
+  }
+
+  /// Where the page has to sit for a line to be in the middle of it — or where
+  /// it sits now, if the line is near enough to the middle already.
+  ///
+  /// Returning the current offset rather than nothing, so that a tap which
+  /// moves the page and a tap which does not are the same animation with the
+  /// same completion. Only the distance differs.
+  private func centredOffset(for indexPath: IndexPath) -> CGPoint {
+    let current = tableView.contentOffset
+    guard let band = centredBand else { return current }
+
+    let row = tableView.rectForRow(at: indexPath)
+
+    // A line taller than the band can never sit inside it, so it is judged by
+    // where its middle falls instead. Without that, the page would move for
+    // every tap on a line that long however well centred it already was — and
+    // at the largest type sizes that is an ordinary line, not a freak one.
+    let isCentred = row.height > band.height
+      ? row.midY >= band.minY && row.midY <= band.maxY
+      : row.minY >= band.minY && row.maxY <= band.maxY
+
+    guard !isCentred else { return current }
+
+    let inset = tableView.adjustedContentInset
+    let pageHeight = tableView.bounds.height - inset.top - inset.bottom
+
+    // Clamped to what the page can actually show, so a line near either end of
+    // the prayer settles against that end rather than pulling the page past it.
+    let top = -inset.top
+    let bottom = max(top, tableView.contentSize.height + inset.bottom - tableView.bounds.height)
+    let y = row.midY - inset.top - pageHeight / 2
+
+    return CGPoint(x: current.x, y: min(max(y, top), bottom))
   }
 
   // MARK: - Style
@@ -193,7 +380,7 @@ final class PrayerViewController: UIViewController {
 
   @objc private func contentSizeCategoryDidChange() {
     style = PrayerReadingStyle(settings: settings)
-    reconfigureVisibleVerses()
+    reconfigureVisibleLines()
   }
 
   // MARK: - Updates from SwiftUI
@@ -228,8 +415,52 @@ final class PrayerViewController: UIViewController {
         animated: false
       )
     } else if isViewLoaded {
-      reconfigureVisibleVerses()
+      reconfigureVisibleLines()
     }
+  }
+}
+
+// MARK: - Selection
+
+extension PrayerViewController: UITableViewDelegate {
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    // The row is deselected straight away: the selected state draws nothing,
+    // and a line left selected under the finger is state the reader can neither
+    // see nor clear. What the tap looks like is `follow`'s business.
+    tableView.deselectRow(at: indexPath, animated: false)
+
+    guard case let .line(id)? = dataSource.itemIdentifier(for: indexPath) else { return }
+    follow(id, at: indexPath)
+  }
+
+  /// A line scrolling into view during the follow has to arrive in the state
+  /// the rest of the page is already in.
+  func tableView(
+    _ tableView: UITableView,
+    willDisplay cell: UITableViewCell,
+    forRowAt indexPath: IndexPath
+  ) {
+    guard
+      focusedLine != nil,
+      let cell = cell as? PrayerVerseLineCell,
+      let item = dataSource.itemIdentifier(for: indexPath)
+    else {
+      return
+    }
+
+    // Outside the move's animation, even though it lands in the middle of one:
+    // a line arriving at the edge of the page should already be stepped back,
+    // not be caught fading into it.
+    UIView.performWithoutAnimation {
+      cell.setEmphasis(emphasis(for: item), animated: false)
+    }
+  }
+
+  /// The reader taking hold of the page ends the follow: they have found what
+  /// they were following, or they no longer care where it went.
+  func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    stopFollowingScroll()
+    releaseFocus()
   }
 }
 
