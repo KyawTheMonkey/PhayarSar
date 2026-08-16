@@ -56,8 +56,6 @@ private enum PrayerDetailMetrics {
   /// x in every cell.
   static let specIconBoxWidth: CGFloat = 16
 
-  static let ctaCornerRadius: CGFloat = 16
-
   /// How far above the CTA the scrolling content starts to dissolve.
   ///
   /// Added to the bar's own measured height, so the ramp always begins clear of
@@ -338,28 +336,11 @@ public struct PrayerDetailScreen: View {
 
   @ViewBuilder
   private func StartBar(_ prayer: Prayer) -> some View {
-    Button {
+    AppButton(L10n.startReading, systemImage: "play.fill") {
       // Whichever prayer the carousel has landed on, not the one the route
       // opened with.
       navigator.navigate(to: .prayer(prayerID: prayer.id))
-    } label: {
-      HStack(spacing: 8) {
-        Image(systemName: "play.fill")
-        Text(L10n.startReading)
-      }
-      .font(AppFont.headline)
-      .foregroundStyle(AppColor.buttonPrimaryText)
-      .frame(maxWidth: .infinity)
-      .padding(.vertical, 16)
-      .background(
-        AppColor.buttonPrimaryBackground,
-        in: RoundedRectangle(
-          cornerRadius: PrayerDetailMetrics.ctaCornerRadius,
-          style: .continuous
-        )
-      )
     }
-    .buttonStyle(PressableButtonStyle())
     .appHorizontalInset()
     .padding(.top, 12)
     .padding(.bottom, 8)
@@ -735,20 +716,6 @@ private struct QuickActionRow: View {
     // Rows highlight rather than shrink: scaling something this wide reads as
     // the card itself flexing.
     .buttonStyle(PressableButtonStyle(pressedScale: 1))
-  }
-}
-
-/// `.plain` with the press feedback put back — plain leaves a filled control
-/// looking dead under the finger.
-private struct PressableButtonStyle: ButtonStyle {
-  /// `1` for full-width rows, where only the dimming should show.
-  var pressedScale: CGFloat = 0.97
-
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .opacity(configuration.isPressed ? 0.7 : 1)
-      .scaleEffect(configuration.isPressed ? pressedScale : 1)
-      .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
   }
 }
 

@@ -79,6 +79,9 @@
 		C88DECB72B9DF94700A96B29 /* TextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB62B9DF94700A96B29 /* TextType.swift */; };
 		C88DECB92B9DF95900A96B29 /* AnimateNumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECB82B9DF95900A96B29 /* AnimateNumberText.swift */; };
 		C88DECBB2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88DECBA2B9DF96900A96B29 /* AnimateNumberTextFomatter.swift */; };
+		C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C23030A10000000002 /* SettingsKit */; };
+		C8A1B2C43030A10000000004 /* KloudKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C33030A10000000003 /* KloudKit */; };
+		C8A1B2C63030A10000000006 /* AuthKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C53030A10000000005 /* AuthKit */; };
 		C8A342522B3E70C800B24F7C /* HapticKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A342512B3E70C800B24F7C /* HapticKit.swift */; };
 		C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A661CD2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift */; };
 		C8A661D02B55795600F2A553 /* NavigationBarColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A661CF2B55795600F2A553 /* NavigationBarColor.swift */; };
@@ -113,7 +116,6 @@
 		C8CEF9FD2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FC2B6804DF00EF9B9E /* ဆယ်မျက်နှာမ္မေတ္တာပွား.json */; };
 		C8CEF9FF2B68061500EF9B9E /* အမျှဝေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8CEF9FE2B68061500EF9B9E /* အမျှဝေ.json */; };
 		C8D166463028D20600FA4895 /* PrayersKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8D166453028D20600FA4895 /* PrayersKit */; };
-		C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C23030A10000000002 /* SettingsKit */; };
 		C8D403112B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403102B696FFB00448EDC /* သမ္ဗုဒ္ဓေ.json */; };
 		C8D403132B6A031600448EDC /* မင်္ဂလသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403122B6A031600448EDC /* မင်္ဂလသုတ်.json */; };
 		C8D403152B6A076900448EDC /* ရတနသုတ်.json in Resources */ = {isa = PBXBuildFile; fileRef = C8D403142B6A076900448EDC /* ရတနသုတ်.json */; };
@@ -315,6 +317,8 @@
 				C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */,
 				C8D166463028D20600FA4895 /* PrayersKit in Frameworks */,
 				C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */,
+				C8A1B2C43030A10000000004 /* KloudKit in Frameworks */,
+				C8A1B2C63030A10000000006 /* AuthKit in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -671,6 +675,8 @@
 				C830D0EF30284B4800500533 /* HomeKit */,
 				C8D166453028D20600FA4895 /* PrayersKit */,
 				C8A1B2C23030A10000000002 /* SettingsKit */,
+				C8A1B2C33030A10000000003 /* KloudKit */,
+				C8A1B2C53030A10000000005 /* AuthKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1101,6 +1107,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PhayarSar/PhayarSar.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PhayarSar/Preview Content\"";
@@ -1119,13 +1126,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_LDFLAGS = (
 					"-Xlinker",
 					"-interposable",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1141,6 +1149,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PhayarSar/PhayarSar.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PhayarSar/Preview Content\"";
@@ -1159,9 +1168,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1260,7 +1270,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.PhayarSarNotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1287,7 +1297,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.PhayarSarNotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1393,13 +1403,21 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = UtilKit;
 		};
-		C8D166453028D20600FA4895 /* PrayersKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = PrayersKit;
-		};
 		C8A1B2C23030A10000000002 /* SettingsKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SettingsKit;
+		};
+		C8A1B2C33030A10000000003 /* KloudKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KloudKit;
+		};
+		C8A1B2C53030A10000000005 /* AuthKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthKit;
+		};
+		C8D166453028D20600FA4895 /* PrayersKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PrayersKit;
 		};
 		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -27,6 +27,14 @@ let package = Package(
       targets: ["ComponentKit"]
     ),
     .library(
+      name: "KloudKit",
+      targets: ["KloudKit"]
+    ),
+    .library(
+      name: "AuthKit",
+      targets: ["AuthKit"]
+    ),
+    .library(
       name: "HomeKit",
       targets: ["HomeKit"]
     ),
@@ -80,8 +88,16 @@ let package = Package(
       name: "ComponentKit",
       dependencies: ["EnvironmentKit"]
     ),
+    .target(
+      name: "KloudKit"
+    ),
 
     // MARK: - Features
+    .target(
+      name: "AuthKit",
+      dependencies: ["EnvironmentKit", "DesignKit", "KloudKit"],
+      resources: [.process("Resources")]
+    ),
     .target(
       name: "HomeKit",
       dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit"]
@@ -93,7 +109,7 @@ let package = Package(
     ),
     .target(
       name: "SettingsKit",
-      dependencies: ["EnvironmentKit", "DesignKit"]
+      dependencies: ["EnvironmentKit", "DesignKit", "AuthKit"]
     )
   ]
 )

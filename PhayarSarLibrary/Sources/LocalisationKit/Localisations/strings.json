@@ -206,5 +206,149 @@
   "next_verse": {
     "En": "Next verse",
     "Mm": "နောက်ပိုဒ်"
+  },
+  "sign_in_title": {
+    "En": "Welcome to PhayarSar",
+    "Mm": "ဘုရားစာမှ ကြိုဆိုပါတယ်"
+  },
+  "sign_in_subtitle": {
+    "En": "Sign in to keep your prayers, plans and settings on all your devices.",
+    "Mm": "သင့်ဆုတောင်းများ၊ အဓိဌာန်များနှင့် ဆက်တင်များကို စက်ပစ္စည်းအားလုံးတွင် သိမ်းဆည်းရန် အကောင့်ဝင်ပါ။"
+  },
+  "continue_as_guest": {
+    "En": "Continue as Guest",
+    "Mm": "ဧည့်သည်အဖြစ် ဆက်သုံးမည်"
+  },
+  "sign_in_required_title": {
+    "En": "Sign in required",
+    "Mm": "အကောင့်ဝင်ရန် လိုအပ်သည်"
+  },
+  "sign_in_required_message": {
+    "En": "Sign in with Apple to use this feature.",
+    "Mm": "ဤအင်္ဂါရပ်ကို အသုံးပြုရန် Apple ဖြင့် အကောင့်ဝင်ပါ။"
+  },
+  "sign_in_failed": {
+    "En": "Sign in failed. Please try again.",
+    "Mm": "အကောင့်ဝင်၍ မရပါ။ ထပ်မံကြိုးစားပါ။"
+  },
+  "sign_out": {
+    "En": "Sign Out",
+    "Mm": "အကောင့်ထွက်မည်"
+  },
+  "icloud_unavailable": {
+    "En": "iCloud is unavailable on this device, so nothing will sync yet.",
+    "Mm": "ဤစက်တွင် iCloud ကို အသုံးပြု၍ မရသဖြင့် အချက်အလက်များ စင့်ခ်လုပ်မည် မဟုတ်ပါ။"
+  },
+  "close": {
+    "En": "Close",
+    "Mm": "ပိတ်မည်"
+  },
+  "cancel": {
+    "En": "Cancel",
+    "Mm": "မလုပ်တော့ပါ"
+  },
+  "account": {
+    "En": "Account",
+    "Mm": "အကောင့်"
+  },
+  "guest": {
+    "En": "Guest",
+    "Mm": "ဧည့်သည်"
+  },
+  "sign_in": {
+    "En": "Sign In",
+    "Mm": "အကောင့်ဝင်မည်"
+  },
+  "signed_in_with_apple": {
+    "En": "Signed in with Apple",
+    "Mm": "Apple ဖြင့် အကောင့်ဝင်ထားသည်"
+  },
+  "account_synced_footer": {
+    "En": "Your prayers, plans and settings are kept in your own iCloud account.",
+    "Mm": "သင့်ဆုတောင်းများ၊ အဓိဌာန်များနှင့် ဆက်တင်များကို သင့်ကိုယ်ပိုင် iCloud အကောင့်တွင် သိမ်းဆည်းထားပါသည်။"
+  },
+  "icloud_sync": {
+    "En": "iCloud Sync",
+    "Mm": "iCloud စင့်ခ်"
+  },
+  "sync_up_to_date": {
+    "En": "Up to date",
+    "Mm": "နောက်ဆုံးအခြေအနေ ဖြစ်သည်"
+  },
+  "sync_in_progress": {
+    "En": "Syncing…",
+    "Mm": "စင့်ခ်လုပ်နေသည်…"
+  },
+  "sync_failed": {
+    "En": "Last sync failed",
+    "Mm": "နောက်ဆုံးစင့်ခ် မအောင်မြင်ပါ"
+  },
+  "sync_off": {
+    "En": "Not syncing",
+    "Mm": "စင့်ခ်မလုပ်ပါ"
+  },
+  "icloud_needs_attention": {
+    "En": "Your iCloud account needs attention in the Settings app.",
+    "Mm": "သင့် iCloud အကောင့်ကို Settings အက်ပ်တွင် စစ်ဆေးရန် လိုအပ်ပါသည်။"
+  },
+  "sign_out_confirm_title": {
+    "En": "Sign out of PhayarSar?",
+    "Mm": "ဘုရားစာမှ အကောင့်ထွက်မလား။"
+  },
+  "preferences": {
+    "En": "Preferences",
+    "Mm": "စိတ်ကြိုက်ပြင်ဆင်ရန်"
+  },
+  "account_settings": {
+    "En": "Account Settings",
+    "Mm": "အကောင့် ဆက်တင်များ"
+  },
+  "notifications": {
+    "En": "Notifications",
+    "Mm": "အသိပေးချက်များ"
+  },
+  "appearance": {
+    "En": "Appearance",
+    "Mm": "အသွင်အပြင်"
+  },
+  "theme_system": {
+    "En": "System",
+    "Mm": "စက်အတိုင်း"
+  },
+  "theme_light": {
+    "En": "Light",
+    "Mm": "အလင်း"
+  },
+  "theme_dark": {
+    "En": "Dark",
+    "Mm": "အမှောင်"
+  },
+  "resources": {
+    "En": "Resources",
+    "Mm": "အထောက်အကူများ"
+  },
+  "contact_support": {
+    "En": "Contact Support",
+    "Mm": "အကူအညီ တောင်းခံရန်"
+  },
+  "rate_in_app_store": {
+    "En": "Rate in App Store",
+    "Mm": "App Store တွင် အဆင့်သတ်မှတ်ရန်"
+  },
+  "follow_us": {
+    "En": "Follow Us",
+    "Mm": "ကျွန်ုပ်တို့ကို Follow လုပ်ရန်"
+  },
+  "data_sources": {
+    "En": "Data Sources",
+    "Mm": "အချက်အလက် ရင်းမြစ်များ"
+  },
+  "terms_and_privacy": {
+    "En": "Terms & Privacy",
+    "Mm": "စည်းကမ်းချက်နှင့် ကိုယ်ရေးအချက်အလက်"
+  },
+  "sign_out_confirm_message": {
+    "En": "Your data stays in iCloud. This device goes back to storing everything locally.",
+    "Mm": "သင့်အချက်အလက်များသည် iCloud တွင် ကျန်ရှိနေမည်ဖြစ်ပြီး ဤစက်တွင်မူ စက်တွင်း၌သာ ပြန်လည်သိမ်းဆည်းပါမည်။"
   }
 }
