@@ -1,3 +1,6 @@
+#if os(iOS)
+import AudioToolbox
+#endif
 import SwiftUI
 
 extension View {
@@ -62,6 +65,92 @@ private struct HideTabBar: ViewModifier {
     } else {
       content.toolbar(hidden ? .hidden : .visible, for: .tabBar)
     }
+    #endif
+  }
+}
+
+// MARK: - Haptics
+
+extension View {
+  /// Ticks the selection haptic whenever `trigger` changes.
+  ///
+  /// A shim, because `sensoryFeedback` is iOS 17 and the package ships to 16 —
+  /// below that this is the view unchanged, and the change happens silently.
+  ///
+  /// Apply it to whatever *owns* the selection rather than to each control that
+  /// can change it: a value that a drag, a button and a keyboard shortcut can all
+  /// move should tick once from one place, not once per route into it.
+  @ViewBuilder
+  public func appSelectionFeedback(trigger: some Equatable) -> some View {
+    if #available(iOS 17.0, macOS 14.0, *) {
+      sensoryFeedback(.selection, trigger: trigger)
+    } else {
+      self
+    }
+  }
+}
+
+/// Constants for the selection tick.
+public enum AppSelectionSound {
+  /// The system's keyboard click — the shortest, driest tick iOS exposes, and
+  /// the one already in every reader's ear as "a thing moved by one".
+  ///
+  /// iOS gives no public id for the picker wheel's own detent, which would be
+  /// the closer match; this is the conventional stand-in for it.
+  /// A plain `UInt32`, not `SystemSoundID`: that typealias comes from
+  /// AudioToolbox, which is only imported on the platform that can play it.
+  public static let tick: UInt32 = 1104
+
+  /// Nothing plays sooner than this after the last one.
+  ///
+  /// A detent crossed every fifteen milliseconds is what a fast scrub actually
+  /// produces, and firing a system sound that often is neither audible as
+  /// separate ticks nor pleasant as a tone. Capped at about eighteen a second,
+  /// a fast run reads as a drumroll thinning out as it slows — which is what a
+  /// physical detent does.
+  public static let minimumInterval: TimeInterval = 0.055
+}
+
+extension View {
+  /// Ticks the system click whenever `trigger` changes.
+  ///
+  /// Meant to sit alongside ``appSelectionFeedback(trigger:)`` on the same
+  /// value, not to replace it: the haptic is the part that works in a pocket,
+  /// in silent mode, and for anyone who reads with the volume down. The sound
+  /// is the confirmation on top, and everything still has to work without it.
+  ///
+  /// Rate-limited — see ``AppSelectionSound/minimumInterval``. iOS only:
+  /// `AudioServicesPlaySystemSound`'s ids are a different set on the Mac, and
+  /// none of them is this.
+  public func appSelectionSound(trigger: some Equatable) -> some View {
+    modifier(AppSelectionSoundModifier(trigger: trigger))
+  }
+}
+
+private struct AppSelectionSoundModifier<Trigger: Equatable>: ViewModifier {
+  let trigger: Trigger
+
+  /// Held per-view rather than globally: two controls ticking at once should
+  /// not silence each other.
+  @State private var lastPlayed = Date.distantPast
+
+  func body(content: Content) -> some View {
+    // `onChange(of:perform:)` is deprecated from iOS 17, and the replacement
+    // does not exist before it.
+    if #available(iOS 17.0, macOS 14.0, *) {
+      content.onChange(of: trigger) { _, _ in play() }
+    } else {
+      content.onChange(of: trigger) { _ in play() }
+    }
+  }
+
+  private func play() {
+    #if os(iOS)
+    let now = Date()
+    guard now.timeIntervalSince(lastPlayed) >= AppSelectionSound.minimumInterval else { return }
+
+    lastPlayed = now
+    AudioServicesPlaySystemSound(AppSelectionSound.tick)
     #endif
   }
 }

@@ -24,15 +24,25 @@ final class PrayerViewController: UIViewController {
     case verses
   }
 
-  /// Identity only — where the line sits, not what it says.
+  /// Identity only — which line of which prayer, not what it says.
   ///
-  /// Deliberately carries nothing that a settings change would alter: with the
-  /// text in here, changing the type size would diff as "every row deleted and
-  /// a new one inserted" and animate the whole prayer out and back. Identity in
-  /// the snapshot, content in the cell provider, and a settings change becomes
-  /// a reconfigure of rows that never moved.
+  /// Deliberately carries nothing that a *settings* change would alter: with
+  /// the text in here, changing the type size would diff as "every row deleted
+  /// and a new one inserted" and animate the whole prayer out and back.
+  /// Identity in the snapshot, content in the cell provider, and a settings
+  /// change becomes a reconfigure of rows that never moved.
+  ///
+  /// It does carry the prayer, though, and has to. Without it a line is
+  /// identified by its position alone — verse 1, line 0 — which every prayer in
+  /// the catalog has. Swapping the prayer under the table then diffs as *no
+  /// change at all* for every position the two prayers share: the rows are
+  /// never reconfigured, the cell provider is never asked for their new text,
+  /// and the reader goes on showing the prayer it was on under the new one's
+  /// title, with only the tail beyond the shorter of the two inserted or
+  /// deleted. With the prayer in here the whole snapshot is replaced, which is
+  /// what a different prayer actually is.
   enum Item: Hashable {
-    case line(PrayerVerseLine.ID)
+    case line(prayer: Prayer.ID, line: PrayerVerseLine.ID)
   }
 
   private typealias DataSource = UITableViewDiffableDataSource<Section, Item>
@@ -54,6 +64,7 @@ final class PrayerViewController: UIViewController {
 
   private lazy var tableView = UITableView(frame: .zero, style: .plain)
   private lazy var dataSource = makeDataSource()
+
 
   // MARK: - Life cycle
 
@@ -138,7 +149,7 @@ final class PrayerViewController: UIViewController {
       guard
         let self,
         let cell = cell as? PrayerVerseLineCell,
-        case let .line(id) = item,
+        case let .line(_, id) = item,
         let line = self.linesByID[id]
       else {
         return cell
@@ -169,7 +180,10 @@ final class PrayerViewController: UIViewController {
   private func applySnapshot(animated: Bool) {
     var snapshot = Snapshot()
     snapshot.appendSections([.verses])
-    snapshot.appendItems(lines.map { Item.line($0.id) }, toSection: .verses)
+    snapshot.appendItems(
+      lines.map { Item.line(prayer: prayer.id, line: $0.id) },
+      toSection: .verses
+    )
     dataSource.apply(snapshot, animatingDifferences: animated)
   }
 
@@ -289,7 +303,7 @@ final class PrayerViewController: UIViewController {
 
   private func emphasis(for item: Item) -> PrayerVerseLineCell.Emphasis {
     guard let focusedLine else { return .none }
-    return item == .line(focusedLine) ? .focused : .receded
+    return item == .line(prayer: prayer.id, line: focusedLine) ? .focused : .receded
   }
 
   private func applyEmphasis(animated: Bool) {
@@ -407,13 +421,20 @@ final class PrayerViewController: UIViewController {
     if prayerChanged {
       indexVerses()
       guard isViewLoaded else { return }
+
+      // The tapped line belonged to the prayer that has just been replaced.
+      // Left standing, its pending release would fire against the new page and
+      // fade up a page that was never stepped back — and `focusedLine` would
+      // recede every line of it in the meantime, because none of them matches.
+      focusRelease?.cancel()
+      focusRelease = nil
+      focusedLine = nil
+
       applySnapshot(animated: false)
       // A different prayer starts at its own beginning rather than wherever the
       // last one had been scrolled to.
-      tableView.setContentOffset(
-        CGPoint(x: 0, y: -tableView.adjustedContentInset.top),
-        animated: false
-      )
+      let top = -tableView.adjustedContentInset.top
+      tableView.setContentOffset(CGPoint(x: 0, y: top), animated: false)
     } else if isViewLoaded {
       reconfigureVisibleLines()
     }
@@ -429,7 +450,7 @@ extension PrayerViewController: UITableViewDelegate {
     // see nor clear. What the tap looks like is `follow`'s business.
     tableView.deselectRow(at: indexPath, animated: false)
 
-    guard case let .line(id)? = dataSource.itemIdentifier(for: indexPath) else { return }
+    guard case let .line(_, id)? = dataSource.itemIdentifier(for: indexPath) else { return }
     follow(id, at: indexPath)
   }
 
@@ -462,6 +483,7 @@ extension PrayerViewController: UITableViewDelegate {
     stopFollowingScroll()
     releaseFocus()
   }
+
 }
 
 // MARK: - Helpers

@@ -1,11 +1,12 @@
-#if canImport(UIKit)
-import DesignKit
-import PrayersKit
-// For the `UIColor(_: Color)` bridge — the design tokens are SwiftUI `Color`s.
-import SwiftUI
-import UIKit
+import CoreGraphics
+import Foundation
 
 /// Layout constants for the reading screen.
+///
+/// Outside the UIKit guard below, unlike everything else in this file: these are
+/// plain numbers with nothing UIKit about them, and the SwiftUI chrome floating
+/// over the reader — see ``PrayerPageSwitcher`` — has to be laid out against the
+/// same ones the table is.
 enum PrayerReaderMetrics {
   /// Side margins for the recited text. Wider than the 16pt the cards on the
   /// detail screen use — a full-bleed page of text needs more gutter than a
@@ -14,9 +15,26 @@ enum PrayerReaderMetrics {
 
   static let topInset: CGFloat = 16
 
+  /// The strip at the foot of the page the switcher rests in, above the home
+  /// indicator. Taken from the switcher's own numbers so the two cannot drift.
+  static var chromeClearance: CGFloat {
+    PrayerPageSwitcherMetrics.bottomPadding + PrayerPageSwitcherMetrics.shutHeight
+  }
+
+  /// Air between the last line and the switcher resting under it, so the end of
+  /// a prayer stops short of the pill rather than against it.
+  ///
+  /// Roughly a line of recited text at the default size.
+  static let chromeGap: CGFloat = 28
+
   /// Clearance under the last verse, so the reader can scroll it clear of the
-  /// home indicator and of whatever playback controls land here later.
-  static let bottomInset: CGFloat = 48
+  /// home indicator and of the floating page switcher.
+  ///
+  /// This is the only thing keeping the two apart. Nothing is laid over the
+  /// foot of the page, so a line *passing* the switcher mid-scroll does go
+  /// under it — the inset decides where the last line comes to rest, not what
+  /// happens on the way there.
+  static var bottomInset: CGFloat { chromeClearance + chromeGap }
 
   /// Pronunciation size as a fraction of the recited size. The respelling is a
   /// reading aid; at parity it competes with the text it is glossing.
@@ -90,6 +108,13 @@ enum PrayerReaderMetrics {
   /// and the rule closing them.
   static let estimatedRowHeight: CGFloat = 72
 }
+
+#if canImport(UIKit)
+import DesignKit
+import PrayersKit
+// For the `UIColor(_: Color)` bridge — the design tokens are SwiftUI `Color`s.
+import SwiftUI
+import UIKit
 
 /// Everything the cells need to draw a verse, resolved once from
 /// ``PrayerSettings``.

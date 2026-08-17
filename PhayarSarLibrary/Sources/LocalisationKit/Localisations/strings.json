@@ -207,6 +207,18 @@
     "En": "Next verse",
     "Mm": "နောက်ပိုဒ်"
   },
+  "previous_prayer": {
+    "En": "Previous prayer",
+    "Mm": "ယခင်ဘုရားစာ"
+  },
+  "next_prayer": {
+    "En": "Next prayer",
+    "Mm": "နောက်ဘုရားစာ"
+  },
+  "prayer_position": {
+    "En": "Prayer {0} of {1}",
+    "Mm": "ဘုရားစာ {1} ခုအနက် {0}"
+  },
   "sign_in_title": {
     "En": "Welcome to PhayarSar",
     "Mm": "ဘုရားစာမှ ကြိုဆိုပါတယ်"
