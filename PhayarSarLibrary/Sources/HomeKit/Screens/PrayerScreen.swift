@@ -67,11 +67,6 @@ public struct PrayerScreen: View {
   /// back and nearly gone.
   @State private var swapPhase: CGFloat = 0
 
-  /// Which way the page is travelling, as a sign. Flipped at the exchange so
-  /// that the arriving prayer comes in from the far side rather than carrying
-  /// on off the near one.
-  @State private var swapTravel: CGFloat = 0
-
   /// The pending exchange, held so a second turn started mid-blur replaces it
   /// rather than landing on top of it.
   @State private var swapWork: DispatchWorkItem?
@@ -147,13 +142,10 @@ public struct PrayerScreen: View {
         // The page colour runs to every edge — a reader with a strip of app
         // background under it reads as a card, not as a page.
         .ignoresSafeArea(edges: .bottom)
-        // The turn, in four parts. Blur is the loud one; the rest are what stop
-        // it reading as a smudge — the page steps back, gives up most of its
-        // ink, and leaves the way the finger sent it.
-        .blur(radius: swapBlur)
+        // The turn: the page fades out, is exchanged while it is gone, and
+        // fades back. See ``PrayerReaderMetrics/pageFade`` for why that is all
+        // it does.
         .opacity(swapOpacity)
-        .scaleEffect(swapScale)
-        .offset(x: swapDrift)
 
       if isTrayOpening {
         // Anywhere off the tray closes it. Live from the moment the tray starts
@@ -180,20 +172,8 @@ public struct PrayerScreen: View {
 
   // MARK: - The turn
 
-  private var swapBlur: CGFloat {
-    swapPhase * PrayerReaderMetrics.pageBlur
-  }
-
   private var swapOpacity: Double {
     1 - Double(swapPhase) * PrayerReaderMetrics.pageFade
-  }
-
-  private var swapScale: CGFloat {
-    1 - swapPhase * PrayerReaderMetrics.pageScaleBack
-  }
-
-  private var swapDrift: CGFloat {
-    swapPhase * swapTravel * PrayerReaderMetrics.pageDrift
   }
 
   /// Whether the tray has begun to open at all.
@@ -214,42 +194,25 @@ public struct PrayerScreen: View {
   /// it into ``PrayerViewController/update(prayer:settings:)``, which re-indexes
   /// the verses, re-applies the snapshot and puts the page back at the top.
   ///
-  /// Nothing here opens or shuts the tray. Where it settles is decided by the
-  /// gesture that let go of it — see `PrayerPageSwitcher.workTheTray` — and a
-  /// commit is not evidence either way: the same release can land on a new
-  /// prayer and leave the tray open to pick another.
+  /// Nothing here opens or shuts the tray, even though in practice a commit is
+  /// always followed by one shutting. That belongs to the gesture that let go
+  /// of the ruler — see `PrayerPageSwitcher.workTheTray` — because it is the
+  /// release that decides it, not the landing: a scrub that comes back to the
+  /// prayer it started on commits nothing and still shuts the tray.
   private func commit(_ target: Int) {
     guard prayers.indices.contains(target) else { return }
 
-    let leaving = index
-    guard target != leaving else { return }
-
-    guard !reduceMotion else {
-      // No blur, no travel, no wait — the prayer is simply the one asked for.
-      selectedID = prayers[target].id
-      return
-    }
-
-    // Later prayers are the ones a leftward drag brings to the needle, so a
-    // page leaving for one goes the same way the finger sent it.
-    let travel: CGFloat = target > leaving ? -1 : 1
+    guard target != index else { return }
 
     swapWork?.cancel()
-    swapTravel = travel
     withAnimation(.readerPageDissolve) { swapPhase = 1 }
 
     let exchange = DispatchWorkItem {
-      // Behind the blur, so none of this is seen: the reader takes the new
-      // prayer, and the travel flips so that what it draws next is a page
-      // arriving from the far side rather than one still leaving by the near.
-      withoutAnimation {
-        selectedID = prayers[target].id
-        swapTravel = -travel
-      }
+      // On an empty page, so there is nothing for the exchange to be seen
+      // against.
+      withoutAnimation { selectedID = prayers[target].id }
 
-      // Back on the tray's own spring, so the page settles the way the control
-      // that fetched it settles.
-      withAnimation(.readerPageSettle) { swapPhase = 0 }
+      withAnimation(.readerPageResolve) { swapPhase = 0 }
       swapWork = nil
     }
 

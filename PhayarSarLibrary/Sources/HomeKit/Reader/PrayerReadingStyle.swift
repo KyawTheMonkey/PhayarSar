@@ -91,35 +91,36 @@ enum PrayerReaderMetrics {
   /// movement rather than a cut.
   static let focusFade: TimeInterval = 0.28
 
-  /// How long the page takes to blur back before one prayer is exchanged for
-  /// another.
+  /// How long the page takes to soften before one prayer is exchanged for
+  /// another, and how long it takes to come back.
   ///
-  /// Timed rather than sprung, unlike the return — the exchange has to be
-  /// placed at the exact instant the page is least visible, and a spring
-  /// approaches its rest position without ever arriving at it, so there is no
-  /// such instant to place it on.
+  /// The turn is a cross-dissolve and nothing else — no travel, no zoom. Those
+  /// are the two things that make a transition unpleasant for a reader prone to
+  /// motion sickness, and neither of them was earning its place here: a page
+  /// sliding sideways says "you have moved", which is a lie, because the reader
+  /// has not gone anywhere. They asked for a different prayer and got one.
+  ///
+  /// The leaving half is timed rather than sprung because the exchange has to be
+  /// placed at the exact instant the page is least legible, and a spring
+  /// approaches its rest position without ever arriving at it. The returning
+  /// half is the slower of the two so that the new page settles rather than
+  /// snaps.
   static let pageDissolve: TimeInterval = 0.22
+  static let pageResolve: TimeInterval = 0.32
 
-  /// How far out of focus the page goes at the turn.
+  /// How much of its ink the page gives up at the deepest point of the turn.
   ///
-  /// Far. The scrub itself leaves the page untouched, so this is the only
-  /// moment the reader sees anything happen at all, and a polite version of it
-  /// would let a prayer seem to have been there all along.
-  static let pageBlur: CGFloat = 18
-
-  /// How much of its opacity the page gives up at the turn.
+  /// All of it, which is what makes this a true cross-dissolve: the old page
+  /// goes to nothing, the exchange happens on an empty page, and the new one
+  /// comes up out of the same nothing. Anything short of that leaves a ghost of
+  /// the old text for the new to cut through, which is the one artefact a
+  /// dissolve exists to avoid.
   ///
-  /// Not all of it. A page that vanishes outright is a cut with a blur in front
-  /// of it; leaving a trace of the old one is what makes it read as one prayer
-  /// *becoming* another rather than as two shown in turn.
-  static let pageFade: Double = 0.85
-
-  /// How far the page draws back, as a fraction of itself.
-  static let pageScaleBack: CGFloat = 0.06
-
-  /// How far the page slides toward the side the scrub came from, before the
-  /// next one arrives from the other.
-  static let pageDrift: CGFloat = 28
+  /// Nothing else happens. No travel, no zoom, no blur — a fade is the calmest
+  /// transition there is, it carries no vestibular load at all, and it is what
+  /// Reduce Motion would have asked for anyway, so both paths are the same
+  /// path.
+  static let pageFade: Double = 1
 
   /// Inset of the tint behind a focused line from the text it sits behind.
   static let focusOutset = (horizontal: CGFloat(10), vertical: CGFloat(6))

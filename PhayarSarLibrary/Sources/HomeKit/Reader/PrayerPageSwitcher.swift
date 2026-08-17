@@ -304,14 +304,18 @@ extension Animation {
     .easeOut(duration: 0.14)
   }
 
-  /// How the page blurs back before one prayer is exchanged for another.
+  /// The two halves of a page turn: softening out, and settling back.
   ///
-  /// Only the leaving half of the turn. What comes back is
-  /// ``readerPageSettle`` — the tray's own spring — so the new page arrives on
-  /// the same curve the control that fetched it settles on, and the two read as
-  /// one movement rather than as a control and a consequence.
+  /// Eased at both ends rather than sprung, which is the one place in this
+  /// control that does *not* borrow the tray's curve. A spring overshoots, and
+  /// overshoot is a small unrequested movement — harmless on a pill somebody is
+  /// holding, unkind on a full page of scripture somebody is about to read.
   static var readerPageDissolve: Animation {
-    .easeIn(duration: PrayerReaderMetrics.pageDissolve)
+    .easeInOut(duration: PrayerReaderMetrics.pageDissolve)
+  }
+
+  static var readerPageResolve: Animation {
+    .easeInOut(duration: PrayerReaderMetrics.pageResolve)
   }
 
   /// How the title under the needle changes over.
@@ -593,8 +597,8 @@ struct PrayerTickStrip: View {
 ///
 /// Releasing a move settles the tray to whichever end its *projected* travel is
 /// nearer — projected, so a flick counts for as much as a haul. Releasing a
-/// scrub leaves the tray exactly as open as it was and springs the ruler onto
-/// the tick it landed on.
+/// scrub shuts it: the finger coming off the ruler *is* the choice, and the
+/// tray has nothing further to offer once it has been made.
 ///
 /// Open, it is a dark instrument laid over the page: a ruler of one tick per
 /// prayer running past both edges of its window, a fixed needle at the centre,
@@ -653,6 +657,20 @@ struct PrayerPageSwitcher: View {
   /// The live drag, or `nil` between gestures.
   @State private var drag: CGSize?
 
+  /// Where the ruler was left when the choice was made, held until the reading
+  /// catches up with it.
+  ///
+  /// The page is exchanged a beat *after* the finger lifts — the reader softens
+  /// out first, see ``PrayerReaderMetrics/pageDissolve`` — so for that beat
+  /// ``index`` still names the prayer being left. Falling back to it would spring
+  /// the strip all the way back to where the scrub began and then carry it
+  /// forward again when the exchange landed: two journeys for one choice, the
+  /// second of them under a pill that has already shut.
+  ///
+  /// Cleared when the next gesture starts, which is the only moment it could go
+  /// stale — everything that moves ``index`` sets this first.
+  @State private var landedIndex: Int?
+
   /// Which of the two things this drag is doing. `nil` between gestures.
   @State private var grip: Grip?
 
@@ -672,8 +690,10 @@ struct PrayerPageSwitcher: View {
 
   /// Openness as the finger is asking for it, which can be outside 0…1.
   ///
-  /// Only a ``Grip/move`` asks. A scrub leaves the tray exactly as open as it
-  /// found it, however far up or down the finger strays while it runs.
+  /// Only a ``Grip/move`` asks. A scrub holds the tray exactly as open as it
+  /// found it however far up or down the finger strays while it runs — and then
+  /// shuts it outright on release, which is a decision about the gesture ending
+  /// rather than about anything the finger did during it.
   private var rawOpenness: CGFloat {
     guard let drag, grip == .move else { return openness }
     return opennessAtStart + (-drag.height) / PrayerPageSwitcherMetrics.openSpan
@@ -784,7 +804,9 @@ struct PrayerPageSwitcher: View {
   /// being read and stays there — which is also what keeps the haptic silent,
   /// since the tick that fires it is derived from this.
   private var position: CGFloat {
-    guard let drag, grip == .scrub, total > 0 else { return CGFloat(index) }
+    guard let drag, grip == .scrub, total > 0 else {
+      return CGFloat(landedIndex ?? index)
+    }
 
     // Subtracted rather than added: the strip moves *with* the finger, so
     // dragging right carries it right and brings earlier prayers into the
@@ -1041,7 +1063,12 @@ struct PrayerPageSwitcher: View {
   private func nudge(_ direction: PrayerPageDirection) {
     guard canStep(direction) else { return }
 
-    onCommit(displayIndex + direction.step)
+    // Held for the same reason a scrub is: the exchange is a beat behind, and
+    // the strip should not visit the prayer being left on its way to the one
+    // being asked for.
+    let target = displayIndex + direction.step
+    landedIndex = target
+    onCommit(target)
   }
 
   // MARK: - Gesture
@@ -1054,7 +1081,10 @@ struct PrayerPageSwitcher: View {
           // began, and reading these per frame would measure each move against
           // the last one instead of against the beginning.
           opennessAtStart = openness
-          indexAtStart = index
+          // From where the ruler is actually sitting, which for the beat after a
+          // choice is not yet where the reading is.
+          indexAtStart = landedIndex ?? index
+          landedIndex = nil
           grip = Self.grip(for: value.translation)
         }
 
@@ -1071,22 +1101,34 @@ struct PrayerPageSwitcher: View {
         // Read before clearing: both are derived from the live drag, and there
         // is nothing left to derive them from a line later.
         let landed = displayIndex
-        let movedRuler = grip == .scrub && landed != indexAtStart
+        let wasScrub = grip == .scrub
+        let movedRuler = wasScrub && landed != indexAtStart
 
-        // Velocity, by way of where the drag was *going* rather than where it
-        // stopped — the same projection the nissaya deck settles on. A flick
-        // that travelled twenty points can therefore open the tray that a slow
-        // haul of the same distance would not.
+        // Where the tray lands, which depends on what the hand was doing.
         //
-        // A scrub never moved the tray, so it lands back exactly where it
-        // started: releasing the ruler is not an opinion about how open the
-        // thing holding it should be.
+        // A move is settled by velocity, projected from where the drag was
+        // *going* rather than where it stopped — the same projection the
+        // nissaya deck uses. A flick that travelled twenty points can therefore
+        // open the tray that a slow haul of the same distance would not.
+        //
+        // A scrub shuts it. Lifting the finger off the ruler is the choice
+        // being made, and the tray has nothing left to do once it is: leaving
+        // it standing over the prayer it was opened to find makes the reader
+        // dismiss a control they have finished with. It also puts the tray out
+        // of the way of the page turning underneath it, which is the thing
+        // actually worth looking at at that moment.
+        //
+        // Anything else — a gesture that never resolved into either — is left
+        // exactly where it was found.
         let settled: CGFloat
-        if grip == .move {
+        switch grip {
+        case .move:
           let projected = opennessAtStart
             + (-value.predictedEndTranslation.height) / PrayerPageSwitcherMetrics.openSpan
           settled = projected >= PrayerPageSwitcherMetrics.openThreshold ? 1 : 0
-        } else {
+        case .scrub:
+          settled = 0
+        case .none:
           settled = opennessAtStart
         }
 
@@ -1096,6 +1138,12 @@ struct PrayerPageSwitcher: View {
           // landed on, rather than cutting there.
           if movedRuler {
             onCommit(landed)
+          }
+          // Pinned here rather than left to `index`, which is a page turn
+          // behind. The only movement left is the last fraction of a tick the
+          // finger stopped short of, which is the settle this animation is for.
+          if wasScrub {
+            landedIndex = landed
           }
           drag = nil
           grip = nil
