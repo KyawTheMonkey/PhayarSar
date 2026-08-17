@@ -430,14 +430,29 @@ final class PrayerViewController: UIViewController {
       focusRelease = nil
       focusedLine = nil
 
-      applySnapshot(animated: false)
-      // A different prayer starts at its own beginning rather than wherever the
-      // last one had been scrolled to.
-      let top = -tableView.adjustedContentInset.top
-      tableView.setContentOffset(CGPoint(x: 0, y: top), animated: false)
+      turnPage()
     } else if isViewLoaded {
       reconfigureVisibleLines()
     }
+  }
+
+  /// Puts the new prayer on the page.
+  ///
+  /// Deliberately instant, and deliberately not animated here. ``PrayerScreen``
+  /// owns the transition: it blurs the whole reader out, waits for this to
+  /// happen behind the blur, and resolves the new page in. A `UIView.transition`
+  /// underneath that would be a second animation of the same change, running on
+  /// a different clock — and a real blur is one modifier in SwiftUI and a
+  /// snapshot-and-filter dance in UIKit, so the shell is the right owner
+  /// regardless.
+  private func turnPage() {
+    applySnapshot(animated: false)
+    // A different prayer starts at its own beginning rather than wherever the
+    // last one had been scrolled to.
+    tableView.setContentOffset(
+      CGPoint(x: 0, y: -tableView.adjustedContentInset.top),
+      animated: false
+    )
   }
 }
 

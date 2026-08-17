@@ -91,6 +91,36 @@ enum PrayerReaderMetrics {
   /// movement rather than a cut.
   static let focusFade: TimeInterval = 0.28
 
+  /// How long the page takes to blur back before one prayer is exchanged for
+  /// another.
+  ///
+  /// Timed rather than sprung, unlike the return — the exchange has to be
+  /// placed at the exact instant the page is least visible, and a spring
+  /// approaches its rest position without ever arriving at it, so there is no
+  /// such instant to place it on.
+  static let pageDissolve: TimeInterval = 0.22
+
+  /// How far out of focus the page goes at the turn.
+  ///
+  /// Far. The scrub itself leaves the page untouched, so this is the only
+  /// moment the reader sees anything happen at all, and a polite version of it
+  /// would let a prayer seem to have been there all along.
+  static let pageBlur: CGFloat = 18
+
+  /// How much of its opacity the page gives up at the turn.
+  ///
+  /// Not all of it. A page that vanishes outright is a cut with a blur in front
+  /// of it; leaving a trace of the old one is what makes it read as one prayer
+  /// *becoming* another rather than as two shown in turn.
+  static let pageFade: Double = 0.85
+
+  /// How far the page draws back, as a fraction of itself.
+  static let pageScaleBack: CGFloat = 0.06
+
+  /// How far the page slides toward the side the scrub came from, before the
+  /// next one arrives from the other.
+  static let pageDrift: CGFloat = 28
+
   /// Inset of the tint behind a focused line from the text it sits behind.
   static let focusOutset = (horizontal: CGFloat(10), vertical: CGFloat(6))
 

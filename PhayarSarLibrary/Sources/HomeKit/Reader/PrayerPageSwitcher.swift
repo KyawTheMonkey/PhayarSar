@@ -304,6 +304,16 @@ extension Animation {
     .easeOut(duration: 0.14)
   }
 
+  /// How the page blurs back before one prayer is exchanged for another.
+  ///
+  /// Only the leaving half of the turn. What comes back is
+  /// ``readerPageSettle`` — the tray's own spring — so the new page arrives on
+  /// the same curve the control that fetched it settles on, and the two read as
+  /// one movement rather than as a control and a consequence.
+  static var readerPageDissolve: Animation {
+    .easeIn(duration: PrayerReaderMetrics.pageDissolve)
+  }
+
   /// How the title under the needle changes over.
   ///
   /// Short, because during a scrub this fires on every tick that passes: a

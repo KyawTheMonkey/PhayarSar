@@ -63,6 +63,19 @@ public struct PrayerScreen: View {
   /// tap outside it cannot appear only once the tray is fully open.
   @State private var openness: CGFloat = 0
 
+  /// How far through an exchange the page is: 0 sharp and in place, 1 blurred
+  /// back and nearly gone.
+  @State private var swapPhase: CGFloat = 0
+
+  /// Which way the page is travelling, as a sign. Flipped at the exchange so
+  /// that the arriving prayer comes in from the far side rather than carrying
+  /// on off the near one.
+  @State private var swapTravel: CGFloat = 0
+
+  /// The pending exchange, held so a second turn started mid-blur replaces it
+  /// rather than landing on top of it.
+  @State private var swapWork: DispatchWorkItem?
+
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   /// Resolved from the id the route carried rather than passed in whole — see
@@ -115,6 +128,7 @@ public struct PrayerScreen: View {
     // always: a resumed session or a notification can open this screen
     // directly, with the tab bar still showing.
     .hideTabBar()
+    .onDisappear { swapWork?.cancel() }
     .enableInjection()
   }
 
@@ -123,10 +137,23 @@ public struct PrayerScreen: View {
   /// The reader, with the switcher floating over it.
   private func page(_ prayer: Prayer) -> some View {
     ZStack(alignment: .bottom) {
+      // Under the reader rather than only inside it. A page drawing back and
+      // fading through an exchange has to reveal paper; without this it would
+      // be showing the void the reader was covering.
+      settings.background.color
+        .ignoresSafeArea(edges: .bottom)
+
       PrayerReader(prayer: prayer, settings: settings)
         // The page colour runs to every edge — a reader with a strip of app
         // background under it reads as a card, not as a page.
         .ignoresSafeArea(edges: .bottom)
+        // The turn, in four parts. Blur is the loud one; the rest are what stop
+        // it reading as a smudge — the page steps back, gives up most of its
+        // ink, and leaves the way the finger sent it.
+        .blur(radius: swapBlur)
+        .opacity(swapOpacity)
+        .scaleEffect(swapScale)
+        .offset(x: swapDrift)
 
       if isTrayOpening {
         // Anywhere off the tray closes it. Live from the moment the tray starts
@@ -149,6 +176,24 @@ public struct PrayerScreen: View {
       .appHorizontalInset()
       .padding(.bottom, PrayerPageSwitcherMetrics.bottomPadding)
     }
+  }
+
+  // MARK: - The turn
+
+  private var swapBlur: CGFloat {
+    swapPhase * PrayerReaderMetrics.pageBlur
+  }
+
+  private var swapOpacity: Double {
+    1 - Double(swapPhase) * PrayerReaderMetrics.pageFade
+  }
+
+  private var swapScale: CGFloat {
+    1 - swapPhase * PrayerReaderMetrics.pageScaleBack
+  }
+
+  private var swapDrift: CGFloat {
+    swapPhase * swapTravel * PrayerReaderMetrics.pageDrift
   }
 
   /// Whether the tray has begun to open at all.
@@ -176,7 +221,51 @@ public struct PrayerScreen: View {
   private func commit(_ target: Int) {
     guard prayers.indices.contains(target) else { return }
 
-    selectedID = prayers[target].id
+    let leaving = index
+    guard target != leaving else { return }
+
+    guard !reduceMotion else {
+      // No blur, no travel, no wait — the prayer is simply the one asked for.
+      selectedID = prayers[target].id
+      return
+    }
+
+    // Later prayers are the ones a leftward drag brings to the needle, so a
+    // page leaving for one goes the same way the finger sent it.
+    let travel: CGFloat = target > leaving ? -1 : 1
+
+    swapWork?.cancel()
+    swapTravel = travel
+    withAnimation(.readerPageDissolve) { swapPhase = 1 }
+
+    let exchange = DispatchWorkItem {
+      // Behind the blur, so none of this is seen: the reader takes the new
+      // prayer, and the travel flips so that what it draws next is a page
+      // arriving from the far side rather than one still leaving by the near.
+      withoutAnimation {
+        selectedID = prayers[target].id
+        swapTravel = -travel
+      }
+
+      // Back on the tray's own spring, so the page settles the way the control
+      // that fetched it settles.
+      withAnimation(.readerPageSettle) { swapPhase = 0 }
+      swapWork = nil
+    }
+
+    swapWork = exchange
+    DispatchQueue.main.asyncAfter(
+      deadline: .now() + PrayerReaderMetrics.pageDissolve,
+      execute: exchange
+    )
+  }
+
+  /// Makes a change that SwiftUI must not animate, whatever animation the call
+  /// happens to be nested inside.
+  private func withoutAnimation(_ change: () -> Void) {
+    var transaction = Transaction()
+    transaction.disablesAnimations = true
+    withTransaction(transaction, change)
   }
 
   private func close() {
