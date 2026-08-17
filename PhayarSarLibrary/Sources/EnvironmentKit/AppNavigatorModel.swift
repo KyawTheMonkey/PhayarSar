@@ -112,6 +112,9 @@ public final class AppNavigatorModel: ObservableObject {
 ///
 /// Name new cases `<subject><Screen>(<id>:)` — e.g. `planDetail(planID:)`.
 public enum RouterDestination: Hashable, Codable {
+  /// Who the signed-in user is. Carries no id — it is always *this* device's
+  /// user, and `AuthManager` is the one place that knows who that is.
+  case profile
   case prayerDetail(prayerID: String)
   /// The reading screen itself, pushed from the detail screen's "Start".
   case prayer(prayerID: String)
@@ -122,14 +125,19 @@ public enum RouterDestination: Hashable, Codable {
 
 /// Every modally presented screen. Same rules as ``RouterDestination``.
 public enum SheetDestination: Identifiable, Hashable, Codable {
-  // No sheet exists yet; the case is a placeholder so the plumbing in
-  // `AppTabView` is already wired when the first real one lands.
-  case dummy
+  /// Who the signed-in user is, raised from the home nav bar.
+  ///
+  /// The same screen as ``RouterDestination/profile``, and deliberately
+  /// reachable both ways: from settings the profile is a level down and gets
+  /// pushed, while from home it is a detour off a screen the user is in the
+  /// middle of reading, and a sheet lets them flick it away rather than aim for
+  /// a back button.
+  case profile
 
   public var id: String {
     switch self {
-    case .dummy:
-      return "dummy"
+    case .profile:
+      return "profile"
     }
   }
 }

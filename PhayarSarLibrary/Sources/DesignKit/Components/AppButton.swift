@@ -27,6 +27,13 @@ public enum AppButtonKind: Sendable {
   /// Text only. For the way out of a screen, or an action that undoes something.
   case plain
 
+  /// Signing out, deleting, resetting. Tinted rather than filled: the weight
+  /// belongs on the *warning*, not on the invitation — a solid red slab reads as
+  /// the thing the screen wants you to do.
+  ///
+  /// The row counterpart is ``AppSettingsRowEmphasis/destructive``.
+  case destructive
+
   var foreground: Color {
     switch self {
     case .primary:
@@ -35,6 +42,8 @@ public enum AppButtonKind: Sendable {
       return AppColor.buttonSecondaryText
     case .plain:
       return AppColor.textSecondary
+    case .destructive:
+      return AppColor.error
     }
   }
 
@@ -46,6 +55,11 @@ public enum AppButtonKind: Sendable {
       return AppColor.buttonSecondaryBackground
     case .plain:
       return .clear
+    case .destructive:
+      // Derived rather than a token of its own: there is one destructive colour
+      // in the palette, and a second hand-picked "soft error" would be a value
+      // to keep in step with it for no gain.
+      return AppColor.error.opacity(0.12)
     }
   }
 }

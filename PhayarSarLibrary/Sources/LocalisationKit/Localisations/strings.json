@@ -315,6 +315,70 @@
     "En": "Account Settings",
     "Mm": "အကောင့် ဆက်တင်များ"
   },
+  "profile": {
+    "En": "Profile",
+    "Mm": "ကိုယ်ရေးအချက်အလက်"
+  },
+  "storage": {
+    "En": "Storage",
+    "Mm": "သိုလှောင်မှု"
+  },
+  "app_data": {
+    "En": "App Data",
+    "Mm": "အက်ပ်ဒေတာ"
+  },
+  "nothing_to_clear": {
+    "En": "Nothing to clear here.",
+    "Mm": "ရှင်းလင်းရန် မရှိပါ။"
+  },
+  "item_count_one": {
+    "En": "1 item",
+    "Mm": "၁ ခု"
+  },
+  "item_count_other": {
+    "En": "items",
+    "Mm": "ခု"
+  },
+  "member_since": {
+    "En": "Member since",
+    "Mm": "စတင်အသုံးပြုသည့်အချိန်"
+  },
+  "storage_mirrored_note": {
+    "En": "Your plans and settings, kept on this device and mirrored to your iCloud.",
+    "Mm": "သင့်အဓိဌာန်များနှင့် ဆက်တင်များကို ဤစက်တွင် သိမ်းဆည်းထားပြီး သင့် iCloud သို့လည်း မိတ္တူပွားထားပါသည်။"
+  },
+  "storage_local_note": {
+    "En": "Your plans and settings, kept on this device only.",
+    "Mm": "သင့်အဓိဌာန်များနှင့် ဆက်တင်များကို ဤစက်တွင်သာ သိမ်းဆည်းထားပါသည်။"
+  },
+  "delete_item_confirm_title": {
+    "En": "Delete this item?",
+    "Mm": "ဤအရာကို ဖျက်မလား။"
+  },
+  "delete_item_confirm_cloud": {
+    "En": "It will be removed from this device and from your iCloud, on every device you use.",
+    "Mm": "ဤစက်နှင့် သင့် iCloud မှ ဖျက်ပါမည်။ သင်အသုံးပြုသော စက်အားလုံးမှလည်း ပျက်သွားမည်။"
+  },
+  "delete_item_confirm_local": {
+    "En": "It will be removed from this device.",
+    "Mm": "ဤစက်မှ ဖျက်ပါမည်။"
+  },
+  "delete": {
+    "En": "Delete",
+    "Mm": "ဖျက်မည်"
+  },
+  "delete_failed": {
+    "En": "Could not delete. Please try again.",
+    "Mm": "ဖျက်၍ မရပါ။ ထပ်မံကြိုးစားပါ။"
+  },
+  "sync_paused": {
+    "En": "Paused",
+    "Mm": "ရပ်တန့်ထားသည်"
+  },
+  "icloud_full": {
+    "En": "Your iCloud storage is full, so nothing new can sync until you free some up.",
+    "Mm": "သင့် iCloud သိုလှောင်ခန်း ပြည့်နေသဖြင့် နေရာလွတ် မရှိမချင်း အသစ်များ စင့်ခ်လုပ်မည် မဟုတ်ပါ။"
+  },
   "notifications": {
     "En": "Notifications",
     "Mm": "အသိပေးချက်များ"

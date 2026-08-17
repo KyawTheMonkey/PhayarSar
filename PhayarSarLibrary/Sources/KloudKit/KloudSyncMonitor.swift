@@ -1,3 +1,4 @@
+import CloudKit
 import CoreData
 import Foundation
 
@@ -17,6 +18,14 @@ public enum KloudSyncState: Equatable, Sendable {
   /// The last operation failed. Usually transient — no network, or iCloud
   /// throttling — so this is worth surfacing quietly rather than as an alert.
   case failed(String)
+
+  /// The user's iCloud account is out of space, so nothing more can be exported.
+  ///
+  /// Split out from ``failed(_:)`` because it is the one sync failure the user
+  /// can do something about, and the only one worth naming: it is not transient,
+  /// retrying will not clear it, and "Last sync failed" would send someone
+  /// looking for a network problem they do not have.
+  case quotaExceeded
 
   /// Mirroring cannot run at all: no iCloud account on the device, or the
   /// container is unreachable. See ``KloudAccount``.
@@ -62,12 +71,13 @@ final class KloudSyncMonitor {
 
       let hasEnded = event.endDate != nil
       let failure = event.error?.localizedDescription
+      let isOutOfSpace = Self.isQuotaExceeded(event.error)
 
       // `assumeIsolated` rather than a `Task`: `queue: .main` means this block is
       // already on the main queue, and hopping would let two events land out of
       // order and leave `inFlight` wrong.
       MainActor.assumeIsolated {
-        self?.handle(hasEnded: hasEnded, failure: failure)
+        self?.handle(hasEnded: hasEnded, failure: failure, isOutOfSpace: isOutOfSpace)
       }
     }
   }
@@ -78,7 +88,7 @@ final class KloudSyncMonitor {
     }
   }
 
-  private func handle(hasEnded: Bool, failure: String?) {
+  private func handle(hasEnded: Bool, failure: String?, isOutOfSpace: Bool) {
     guard hasEnded else {
       inFlight += 1
       onChange(.syncing)
@@ -87,10 +97,36 @@ final class KloudSyncMonitor {
 
     inFlight = max(0, inFlight - 1)
 
-    if let failure {
+    if isOutOfSpace {
+      onChange(.quotaExceeded)
+    } else if let failure {
       onChange(.failed(failure))
     } else if inFlight == 0 {
       onChange(.idle)
     }
+  }
+
+  /// Whether this error is CloudKit saying the account is full.
+  ///
+  /// Checked two ways because an export rarely fails as a single clean error: a
+  /// batch that could not be saved comes back as `.partialFailure` carrying one
+  /// error per record, and the quota code is inside those rather than on the
+  /// error the notification hands over.
+  ///
+  /// `nonisolated` and `static` so it can run in the notification's own context,
+  /// where the event is unpacked — see `init`.
+  private nonisolated static func isQuotaExceeded(_ error: Error?) -> Bool {
+    guard let error = error as? CKError else { return false }
+
+    if error.code == .quotaExceeded { return true }
+
+    guard
+      error.code == .partialFailure,
+      let partial = error.partialErrorsByItemID
+    else {
+      return false
+    }
+
+    return partial.values.contains { ($0 as? CKError)?.code == .quotaExceeded }
   }
 }

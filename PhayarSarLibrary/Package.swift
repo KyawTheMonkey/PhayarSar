@@ -100,7 +100,7 @@ let package = Package(
     ),
     .target(
       name: "HomeKit",
-      dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit"]
+      dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit", "AuthKit"]
     ),
     .target(
       name: "PrayersKit",

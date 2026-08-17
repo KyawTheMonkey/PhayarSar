@@ -5,6 +5,7 @@
 //  Created by Kyaw Zay Ya Lin Tun on 15/08/2026.
 //
 
+import AuthKit
 import EnvironmentKit
 import HomeKit
 import SwiftUI
@@ -23,6 +24,8 @@ struct RouteView: View {
 
   var body: some View {
     switch destination {
+    case .profile:
+      ProfileScreen()
     case let .prayerDetail(prayerID):
       PrayerDetailScreen(prayerID: prayerID)
     case let .prayer(prayerID):
@@ -39,9 +42,14 @@ struct SheetView: View {
 
   var body: some View {
     switch destination {
-    case .dummy:
-      // Placeholder — `SheetDestination` has no real case yet.
-      EmptyView()
+    case .profile:
+      // Wrapped so the screen keeps its title bar — `navigationTitle` draws
+      // nothing in a bare sheet. The drag indicator is the visible half of the
+      // promise the sheet is already making: this closes with a flick.
+      NavigationStack {
+        ProfileScreen()
+      }
+      .presentationDragIndicator(.visible)
     }
   }
 }

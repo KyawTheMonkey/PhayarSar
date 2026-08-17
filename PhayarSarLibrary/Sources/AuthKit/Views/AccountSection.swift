@@ -23,10 +23,11 @@ import SwiftUI
 /// signing out is a separate ``AccountSignOutRow``: the reference layout puts it
 /// at the bottom of the screen, not next to the name.
 ///
-/// Both halves of "am I signed in" are shown together on purpose. Sign in with
+/// Both halves of "am I signed in" are reported here on purpose. Sign in with
 /// Apple and iCloud are different accounts (see ``KloudKit/KloudAccount``), so a
 /// user can be signed in here and still have nothing syncing, and the only place
-/// they could ever find that out is a row that says so.
+/// they could ever find that out is a row that says so — but only when there is
+/// something to say. A working mirror keeps quiet; see ``sync``.
 public struct AccountSection: View {
   @ObserveInjection private var injectionObserver
 
@@ -60,13 +61,15 @@ public struct AccountSection: View {
           )
         }
 
-        AppSettingsRow(
-          L10n.icloudSync,
-          systemImage: "icloud",
-          detail: sync.text,
-          detailColor: sync.tint,
-          accessory: .none
-        )
+        if let sync {
+          AppSettingsRow(
+            L10n.icloudSync,
+            systemImage: "icloud",
+            detail: sync.text,
+            detailColor: sync.tint,
+            accessory: .none
+          )
+        }
 
         if let warning {
           Text(warning)
@@ -111,7 +114,7 @@ public struct AccountSection: View {
 
   private var identityLabel: some View {
     HStack(spacing: 14) {
-      avatar
+      ProfileAvatarView(size: Metrics.avatarSize)
 
       VStack(alignment: .leading, spacing: 2) {
         Text(title)
@@ -119,19 +122,21 @@ public struct AccountSection: View {
           .foregroundStyle(AppColor.textPrimary)
           .lineLimit(1)
 
-        HStack(spacing: 4) {
-          Text(subtitle)
-            .font(AppFont.body)
-            .foregroundStyle(AppColor.textSecondary)
-            // A private relay address is long enough to push the row wider than
-            // the screen on a small phone.
-            .lineLimit(1)
-            .truncationMode(.middle)
+        if let subtitle {
+          HStack(spacing: 4) {
+            Text(subtitle)
+              .font(AppFont.body)
+              .foregroundStyle(AppColor.textSecondary)
+              // A private relay address is long enough to push the row wider
+              // than the screen on a small phone.
+              .lineLimit(1)
+              .truncationMode(.middle)
 
-          if !auth.isSignedIn {
-            Image(systemName: "chevron.right")
-              .font(.system(size: 13, weight: .semibold))
-              .foregroundStyle(AppColor.textTertiary)
+            if !auth.isSignedIn {
+              Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(AppColor.textTertiary)
+            }
           }
         }
       }
@@ -142,57 +147,41 @@ public struct AccountSection: View {
     .contentShape(Rectangle())
   }
 
-  /// The user's initial, or a placeholder glyph when there is no name to take
-  /// one from — which is every guest, and any user who hid their name from
-  /// Apple.
-  private var avatar: some View {
-    Circle()
-      .fill(AppColor.primarySoft)
-      .frame(width: 60, height: 60)
-      .overlay {
-        if let initial {
-          Text(initial)
-            .font(AppFont.title)
-            .foregroundStyle(AppColor.primary)
-        } else {
-          Image(systemName: auth.isSignedIn ? "person.fill" : "person")
-            .font(.system(size: 26, weight: .light))
-            .foregroundStyle(AppColor.primary)
-        }
-      }
-      .accessibilityHidden(true)
-  }
-
+  /// The user's full name, as Apple gave it on their first authorization.
+  ///
+  /// The provider line is a last resort, not the norm: it is what an account
+  /// shows when the user chose to hide their name from the app, which is the
+  /// one case where there is genuinely nothing to call them.
   private var title: String {
     guard auth.isSignedIn else { return L10n.guest }
     return auth.profile?.displayName ?? L10n.signedInWithApple
   }
 
-  private var subtitle: String {
+  /// The email, and nothing else.
+  ///
+  /// This line used to fall back to the sync state, which is how "Up to date"
+  /// ended up being the largest thing said about a healthy account. Sync now
+  /// speaks for itself in its own row, and only when it has something to
+  /// report — so this says nothing rather than filling the space.
+  private var subtitle: String? {
     guard auth.isSignedIn else { return L10n.signIn }
-
-    if let email = auth.profile?.email { return email }
-    // The Apple line has already been used as the title when there is no name,
-    // so fall back to what the account is actually doing instead of repeating it.
-    return auth.profile?.displayName == nil ? sync.text : L10n.signedInWithApple
-  }
-
-  private var initial: String? {
-    guard
-      let name = auth.profile?.displayName,
-      let first = name.trimmingCharacters(in: .whitespacesAndNewlines).first
-    else {
-      return nil
-    }
-
-    return String(first).uppercased()
+    return auth.profile?.email
   }
 
   // MARK: - Sync status
 
   /// Shown under the sync row only when there is something the user could act
-  /// on. "Up to date" needs no explanation; "not syncing" does.
+  /// on. "Not syncing" needs explaining; a healthy account has no row at all.
+  ///
+  /// A full iCloud account is checked first because it is the most specific
+  /// answer available: the account itself is fine and reachable, so nothing in
+  /// ``accountStatus`` would mention it, and "out of space" is both the real
+  /// reason and the one the user can clear.
   private var warning: String? {
+    if kloud.syncState == .quotaExceeded {
+      return L10n.icloudFull
+    }
+
     switch accountStatus {
     case .noAccount, .restricted:
       return L10n.icloudUnavailable
@@ -203,12 +192,17 @@ public struct AccountSection: View {
     }
   }
 
-  /// What the sync row says, and in what colour.
+  /// What the sync row says, and in what colour — or `nil` when the row should
+  /// not be there at all.
+  ///
+  /// A mirror that is doing its job is not news. The row exists to tell the
+  /// user something is wrong or in flight, and a permanent "Up to date" only
+  /// trains them to stop reading it, so a healthy account gets no row.
   ///
   /// The iCloud account is checked before the store's own state, because a
   /// device with no iCloud account reports a perfectly idle mirror — it just
-  /// never mirrors anything. Saying "up to date" there would be a lie.
-  private var sync: (text: String, tint: Color) {
+  /// never mirrors anything. Staying silent there would hide a real problem.
+  private var sync: (text: String, tint: Color)? {
     switch accountStatus {
     case .noAccount, .restricted:
       return (L10n.syncOff, AppColor.textSecondary)
@@ -220,7 +214,9 @@ public struct AccountSection: View {
 
     switch kloud.syncState {
     case .idle:
-      return (L10n.syncUpToDate, AppColor.textSecondary)
+      return nil
+    case .quotaExceeded:
+      return (L10n.syncPaused, AppColor.error)
     case .syncing:
       return (L10n.syncInProgress, AppColor.textSecondary)
     case .failed:
@@ -235,6 +231,14 @@ public struct AccountSection: View {
   private func resolvedAccountStatus() async -> KloudAccountStatus? {
     guard let identifier = kloud.mode.containerIdentifier else { return nil }
     return await KloudAccount.status(containerIdentifier: identifier)
+  }
+
+  // MARK: - Metrics
+
+  private enum Metrics {
+    /// Tall enough to carry the two lines of text beside it, which is what sets
+    /// this row's height.
+    static let avatarSize: CGFloat = 60
   }
 }
 

@@ -63,18 +63,34 @@ extension AppleSignInCoordinator: ASAuthorizationControllerDelegate {
       return
     }
 
-    let name = credential.fullName.flatMap { components in
-      let formatted = PersonNameComponentsFormatter.localizedString(from: components, style: .default)
-      return formatted.isEmpty ? nil : formatted
-    }
-
     finish(with: .success(
       AuthUser(
         userIdentifier: credential.user,
-        displayName: name,
+        displayName: Self.fullName(from: credential.fullName),
         email: credential.email
       )
     ))
+  }
+
+  /// The user's whole name, in the order their locale writes it.
+  ///
+  /// `.long` rather than the default `.medium`: the default is given plus
+  /// family, which drops a middle name and any prefix or suffix. Apple hands
+  /// these over exactly once, on the first authorization and never again, so
+  /// anything not read here is lost for the life of the account — there is no
+  /// second chance to decide a middle name was worth keeping after all.
+  ///
+  /// Returns `nil` rather than an empty string when the user chose to hide
+  /// their name, so that "no name" stays one value everywhere downstream.
+  private static func fullName(from components: PersonNameComponents?) -> String? {
+    guard let components else { return nil }
+
+    let formatted = PersonNameComponentsFormatter
+      .localizedString(from: components, style: .long)
+      // A name missing its middle components formats with the gaps left in.
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+
+    return formatted.isEmpty ? nil : formatted
   }
 
   func authorizationController(

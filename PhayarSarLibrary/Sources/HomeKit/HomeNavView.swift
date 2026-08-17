@@ -1,4 +1,6 @@
+import AuthKit
 import DesignKit
+import EnvironmentKit
 import Inject
 import LocalisationKit
 import SwiftUI
@@ -24,6 +26,7 @@ struct HomeNavView: View {
 
   @ObserveInjection private var injectionObserver
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @EnvironmentObject private var navigator: AppNavigatorModel
 
   private var buttonScale: CGFloat {
     // Reduce Motion: the bar still gains its background, but nothing resizes.
@@ -98,15 +101,41 @@ struct HomeNavView: View {
           .toolBarButtonCircularGlass()
       }
 
-      Button {} label: {
-        Image(systemName: "person.crop.circle")
-          .font(.title2)
-          .fontWeight(.medium)
-          .foregroundStyle(AppColor.textPrimary)
-          .padding(8)
-          .toolBarButtonCircularGlass()
-      }
+      profileButton
     }
+  }
+
+  /// The way into ``ProfileScreen``, on the same glass as the two buttons
+  /// beside it — this is a toolbar control, and it should not be the one that
+  /// looks different.
+  ///
+  /// The avatar brings no circle of its own for exactly that reason: the glass
+  /// *is* its surface, and a tinted circle inside it would be a second one. A
+  /// picture fills the glass; failing that the user's monogram sits on it,
+  /// which is the glass earning its keep — a bare letter would need a backing,
+  /// and this one already has it. Only an account with no name at all falls
+  /// back to the `person.crop.circle` glyph that used to be here always.
+  ///
+  /// Same font and same padding as the search button, and no size of its own —
+  /// so the two come out identical without a constant to keep in step, and stay
+  /// identical as Dynamic Type moves both.
+  ///
+  /// Presented rather than pushed. From here the profile is a detour, not a
+  /// place in the home hierarchy — a sheet says "glance and flick away", and
+  /// the user can do exactly that without going for the back button. Settings
+  /// still pushes it, because there it *is* a level down.
+  private var profileButton: some View {
+    Button {
+      navigator.present(.profile)
+    } label: {
+      ProfileAvatarView()
+        .font(.title2)
+        .fontWeight(.medium)
+        .foregroundStyle(AppColor.textPrimary)
+        .padding(8)
+        .toolBarButtonCircularGlass()
+    }
+    .accessibilityLabel(L10n.profile)
   }
 }
 
@@ -216,6 +245,7 @@ struct HomeCollapsingTitle: View {
 
 #Preview("Collapse states") {
   HomeNavViewPreview()
+    .environmentObject(AppNavigatorModel())
 }
 
 private struct HomeNavViewPreview: View {

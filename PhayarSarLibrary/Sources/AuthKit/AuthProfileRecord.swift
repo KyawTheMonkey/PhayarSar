@@ -1,5 +1,6 @@
 import Foundation
 import KloudKit
+import LocalisationKit
 
 /// The signed-in user, in the synced store.
 ///
@@ -17,9 +18,22 @@ public final class AuthProfileRecord: NSManagedObject, KloudEntity {
   @NSManaged public var userIdentifier: String?
   @NSManaged public var displayName: String?
   @NSManaged public var email: String?
+  /// The user's picture, as an absolute URL string. See ``AuthUser/avatarURL``
+  /// for why it is here before anything writes it.
+  @NSManaged public var avatarURL: String?
   /// When this account first signed in on any device. Not updated on later
   /// sign-ins — the earliest value wins once it has synced.
   @NSManaged public var signedInAt: Date?
+
+  public static var storageLabel: String { L10n.account }
+
+  /// Never offered for deletion. This is the one thing in the store that is
+  /// identity rather than content: a name and an email Apple hands over exactly
+  /// once and will not send again, in about a hundred bytes. Clearing it would
+  /// blank the user's name on every other device and free nothing worth having,
+  /// so it is kept out of the storage screen entirely rather than shown there
+  /// with the delete disabled.
+  public static var isUserClearable: Bool { false }
 
   public static func makeEntity() -> NSEntityDescription {
     let entity = NSEntityDescription()
@@ -27,6 +41,7 @@ public final class AuthProfileRecord: NSManagedObject, KloudEntity {
       KloudAttribute.make("userIdentifier", .stringAttributeType),
       KloudAttribute.make("displayName", .stringAttributeType),
       KloudAttribute.make("email", .stringAttributeType),
+      KloudAttribute.make("avatarURL", .stringAttributeType),
       KloudAttribute.make("signedInAt", .dateAttributeType),
     ]
     return entity
@@ -46,6 +61,11 @@ extension AuthProfileRecord {
 
   var asUser: AuthUser? {
     guard let userIdentifier else { return nil }
-    return AuthUser(userIdentifier: userIdentifier, displayName: displayName, email: email)
+    return AuthUser(
+      userIdentifier: userIdentifier,
+      displayName: displayName,
+      email: email,
+      avatarURL: avatarURL.flatMap(URL.init(string:))
+    )
   }
 }

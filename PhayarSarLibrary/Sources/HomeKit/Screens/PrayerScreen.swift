@@ -199,10 +199,28 @@ public struct PrayerScreen: View {
   /// of the ruler — see `PrayerPageSwitcher.workTheTray` — because it is the
   /// release that decides it, not the landing: a scrub that comes back to the
   /// prayer it started on commits nothing and still shuts the tray.
-  private func commit(_ target: Int) {
+  private func commit(_ target: Int, _ kind: PrayerPageCommit) {
     guard prayers.indices.contains(target) else { return }
 
     guard target != index else { return }
+
+    guard kind == .settled else {
+      // Following a finger on the shut pill. The page changes outright: a turn
+      // per tick crossed would be half a second of dissolve each, stacked on
+      // top of one another, and the reader is scrubbing precisely *because*
+      // they want to see what is there.
+      //
+      // Any turn already in flight is dropped, and its half-faded page put
+      // back — the reader has taken hold again, and finishing an exchange they
+      // have already scrubbed past would be a page they did not ask for.
+      swapWork?.cancel()
+      swapWork = nil
+      withoutAnimation {
+        swapPhase = 0
+        selectedID = prayers[target].id
+      }
+      return
+    }
 
     swapWork?.cancel()
     withAnimation(.readerPageDissolve) { swapPhase = 1 }

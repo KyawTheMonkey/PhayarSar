@@ -22,6 +22,21 @@ enum PrayerPageDirection {
   }
 }
 
+// MARK: - Commit
+
+/// How a prayer was arrived at, which decides whether the page turns or simply
+/// changes.
+enum PrayerPageCommit {
+  /// Live under the finger, while the shut pill is being scrubbed. The page
+  /// changes outright, with no turn: a half-second dissolve per tick crossed
+  /// would be a strobe, and the reader is using the page itself to see where
+  /// they are.
+  case tracking
+  /// The finger has lifted, or the choice was made some other way. The page
+  /// turns.
+  case settled
+}
+
 // MARK: - Metrics
 
 /// Layout and feel constants for the floating page switcher.
@@ -636,7 +651,7 @@ struct PrayerPageSwitcher: View {
   /// much of itself is covered.
   @Binding var openness: CGFloat
 
-  let onCommit: (Int) -> Void
+  let onCommit: (Int, PrayerPageCommit) -> Void
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -808,11 +823,37 @@ struct PrayerPageSwitcher: View {
       return CGFloat(landedIndex ?? index)
     }
 
-    // Subtracted rather than added: the strip moves *with* the finger, so
-    // dragging right carries it right and brings earlier prayers into the
-    // centre — the way every scroll view behaves.
-    let raw = CGFloat(indexAtStart) - drag.width / PrayerPageSwitcherMetrics.tickPitch
+    return Self.position(carrying: drag.width, from: indexAtStart, total: total)
+  }
+
+  /// Where a drag of this width leaves the ruler, in prayers.
+  ///
+  /// Static, and taking its inputs rather than reading them, so that the
+  /// gesture can work out where it has got to without depending on a `@State`
+  /// write it made a line earlier being readable again straight away.
+  ///
+  /// Subtracted rather than added: the strip moves *with* the finger, so
+  /// dragging right carries it right and brings earlier prayers into the centre
+  /// — the way every scroll view behaves.
+  private static func position(carrying width: CGFloat, from start: Int, total: Int) -> CGFloat {
+    let raw = CGFloat(start) - width / PrayerPageSwitcherMetrics.tickPitch
     return PrayerPageSwitcherMetrics.resisted(position: raw, total: total)
+  }
+
+  private static func landing(carrying width: CGFloat, from start: Int, total: Int) -> Int {
+    let place = position(carrying: width, from: start, total: total)
+    return min(max(Int(place.rounded()), 0), max(0, total - 1))
+  }
+
+  /// Whether the page itself is the readout for this scrub.
+  ///
+  /// Shut, the dots say that the reader is somewhere in a catalog and nothing
+  /// whatever about where — so the page has to say it, and it follows the
+  /// finger. Open, the title above the ruler already names every prayer the
+  /// needle passes, and rebuilding the page under a tray nobody is reading
+  /// through would be work done for no one.
+  private var isTracking: Bool {
+    openness < PrayerPageSwitcherMetrics.openThreshold
   }
 
   /// The prayer the tray is currently *describing* — the one nearest the
@@ -1068,7 +1109,7 @@ struct PrayerPageSwitcher: View {
     // being asked for.
     let target = displayIndex + direction.step
     landedIndex = target
-    onCommit(target)
+    onCommit(target, .settled)
   }
 
   // MARK: - Gesture
@@ -1089,6 +1130,15 @@ struct PrayerPageSwitcher: View {
         }
 
         drag = value.translation
+
+        // Shut, the page keeps up with the finger — worked out from the drag
+        // rather than read back off `drag`, which was only just written.
+        if grip == .scrub, isTracking {
+          onCommit(
+            Self.landing(carrying: value.translation.width, from: indexAtStart, total: total),
+            .tracking
+          )
+        }
 
         // Unanimated on purpose. The control is as open as the hand has made
         // it, and a curve between here and there would be the control
@@ -1137,7 +1187,7 @@ struct PrayerPageSwitcher: View {
           // marks the finger left it — overshoot included — onto the tick it
           // landed on, rather than cutting there.
           if movedRuler {
-            onCommit(landed)
+            onCommit(landed, .settled)
           }
           // Pinned here rather than left to `index`, which is a page turn
           // behind. The only movement left is the last fraction of a tick the

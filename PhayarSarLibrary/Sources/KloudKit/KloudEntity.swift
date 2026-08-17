@@ -39,6 +39,33 @@ public protocol KloudEntity: NSManagedObject {
 
   /// Everything but the name: attributes, relationships, indexes.
   static func makeEntity() -> NSEntityDescription
+
+  /// What to call these records on a storage screen — "Plans", "Bookmarks".
+  ///
+  /// Required, with no default, because the only default available would be the
+  /// class name: a user reading "WorshipPlanRecord" in a list of things they can
+  /// delete is worse than a build error reminding someone to name it. Return a
+  /// localised string — the entity's own module can import LocalisationKit,
+  /// which is why this lives on the entity rather than in a table KloudKit would
+  /// have to hold.
+  static var storageLabel: String { get }
+
+  /// Whether a user may delete these records themselves.
+  ///
+  /// `false` for anything that is identity or bookkeeping rather than content —
+  /// a profile record is a name the user cannot be asked for a second time, and
+  /// it has no business appearing in a list of things to clear out. Such an
+  /// entity is left out of ``KloudStorageFootprint`` entirely, so "nothing to
+  /// clear" can be an honest answer while the store is not literally empty.
+  static var isUserClearable: Bool { get }
+
+  /// What to call *one* of these records — a plan's name, a prayer's title.
+  ///
+  /// Read by the per-item list that lets a user delete a single record rather
+  /// than a whole category, so make it the thing they would recognise. Defaults
+  /// to ``storageLabel``, which is right for an entity that only ever holds one
+  /// row.
+  var storageTitle: String { get }
 }
 
 extension KloudEntity {
@@ -46,6 +73,13 @@ extension KloudEntity {
   public static var entityName: String {
     String(describing: Self.self)
   }
+
+  /// Content unless an entity says otherwise. Most entities are the user's own
+  /// data, and the exceptions are rare enough to be worth spelling out at the
+  /// one place they apply.
+  public static var isUserClearable: Bool { true }
+
+  public var storageTitle: String { Self.storageLabel }
 }
 
 // MARK: - Attributes

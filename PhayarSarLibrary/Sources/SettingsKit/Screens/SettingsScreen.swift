@@ -22,6 +22,8 @@ public struct SettingsScreen: View {
   @ObservedObject private var localisation = LocalisationManager.shared
   @ObservedObject private var theme = ThemeSwitcher.shared
 
+  @EnvironmentObject private var navigator: AppNavigatorModel
+
   @Environment(\.openURL) private var openURL
 
   /// Which options sheet is up, if any.
@@ -194,12 +196,14 @@ public struct SettingsScreen: View {
 
   // MARK: - Actions
 
-  /// No-ops until their screens exist. Named rather than inlined as empty
-  /// closures so that "what is still missing" is one search away.
+  /// Pushes onto the settings tab rather than jumping to home's copy of the
+  /// same screen — the user asked from here, so they should come back to here.
   private func openAccountSettings() {
-    // TODO: Push the account settings screen once it exists.
+    navigator.navigate(to: .profile)
   }
 
+  /// No-ops until their screens exist. Named rather than inlined as empty
+  /// closures so that "what is still missing" is one search away.
   private func openNotifications() {
     // TODO: Push the notification preferences screen once it exists.
   }
@@ -240,4 +244,5 @@ private extension View {
     SettingsScreen()
       .navigationTitle(L10n.settingsTab)
   }
+  .environmentObject(AppNavigatorModel())
 }

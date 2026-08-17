@@ -134,6 +134,16 @@ public final class KloudStack: ObservableObject {
     KloudStore(context: viewContext)
   }
 
+  /// Every entity in the loaded model, or `nil` before ``start(schema:mode:)``.
+  ///
+  /// The types rather than their names, because `KloudStorage` needs what each
+  /// one says about itself — its label, and whether a user may clear it.
+  /// Internal rather than private so it can read them without being handed the
+  /// schema a second time.
+  var schemaEntityTypes: [any KloudEntity.Type]? {
+    schema?.entityTypes
+  }
+
   /// A typed store bound to a context you own — pair it with
   /// ``newBackgroundContext()`` for bulk work.
   public nonisolated func store<Entity: KloudEntity>(

@@ -20,12 +20,29 @@ public struct AuthUser: Codable, Hashable, Sendable, Identifiable {
   /// chose to hide their real one.
   public let email: String?
 
+  /// The user's picture, if the app ever learns of one.
+  ///
+  /// Always `nil` today: Sign in with Apple returns no photo, on the first
+  /// authorization or any later one, and the app has no other place a user can
+  /// give it one. It is modelled anyway because every surface that shows the
+  /// user — the home nav button, the settings header, the profile screen — has
+  /// to decide what to draw when there is no picture, and having them all read
+  /// one optional means adding a real source later is a change in one place
+  /// rather than three. See ``AuthKit/ProfileAvatarView``.
+  public let avatarURL: URL?
+
   public var id: String { userIdentifier }
 
-  public init(userIdentifier: String, displayName: String? = nil, email: String? = nil) {
+  public init(
+    userIdentifier: String,
+    displayName: String? = nil,
+    email: String? = nil,
+    avatarURL: URL? = nil
+  ) {
     self.userIdentifier = userIdentifier
     self.displayName = displayName
     self.email = email
+    self.avatarURL = avatarURL
   }
 
   /// Fills in blanks from `other` without ever clearing a value already held.
@@ -37,7 +54,8 @@ public struct AuthUser: Codable, Hashable, Sendable, Identifiable {
     AuthUser(
       userIdentifier: other.userIdentifier,
       displayName: other.displayName ?? displayName,
-      email: other.email ?? email
+      email: other.email ?? email,
+      avatarURL: other.avatarURL ?? avatarURL
     )
   }
 }

@@ -57,6 +57,16 @@ public final class AuthManager: ObservableObject {
   /// be doing. Refreshed on sign-in and on every foreground.
   @Published public private(set) var profile: AuthUser?
 
+  /// When this account first signed in, on any device.
+  ///
+  /// Read from the synced ``AuthProfileRecord`` rather than the Keychain, because
+  /// the earliest date is the interesting one and only the record has travelled
+  /// far enough to know it — a reinstall would reset a locally kept copy.
+  ///
+  /// `nil` for a guest, and for a signed-in user whose record has not arrived
+  /// yet. A screen should treat that as "not known" rather than "today".
+  @Published public private(set) var memberSince: Date?
+
   /// The last sign-in failure, for a screen to show and then clear. Never set
   /// for a user-initiated cancellation.
   @Published public var lastError: AuthError?
@@ -200,6 +210,7 @@ public final class AuthManager: ObservableObject {
     KloudStack.shared.signOut()
     state = .guest
     profile = nil
+    memberSince = nil
   }
 
   /// Checks the stored credential is still good, and signs out if it is not.
@@ -250,6 +261,9 @@ public final class AuthManager: ObservableObject {
       if let email = user.email {
         record.email = email
       }
+      if let avatarURL = user.avatarURL {
+        record.avatarURL = avatarURL.absoluteString
+      }
       if record.signedInAt == nil {
         record.signedInAt = .now
       }
@@ -264,6 +278,7 @@ public final class AuthManager: ObservableObject {
   private func refreshProfile() {
     guard let user = state.user else {
       profile = nil
+      memberSince = nil
       return
     }
 
@@ -271,5 +286,6 @@ public final class AuthManager: ObservableObject {
     let record = try? store.first(where: AuthProfileRecord.matching(user.userIdentifier))
 
     profile = record?.asUser?.merging(user) ?? user
+    memberSince = record?.signedInAt
   }
 }

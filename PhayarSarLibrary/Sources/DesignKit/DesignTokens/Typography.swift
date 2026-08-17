@@ -108,6 +108,16 @@ public enum AppFont {
     relativeTo: .caption
   )
   
+  /// Lora 600 at a caller-chosen size, for the few places where the type has to
+  /// follow a shape rather than the scale — the initial inside an avatar
+  /// circle, which is drawn at 38pt in a nav bar and 96pt on a profile screen.
+  ///
+  /// Reach for the fixed steps above first. This exists so those call sites can
+  /// stay on the display face instead of falling back to the system one.
+  public static func lora(size: CGFloat, relativeTo style: Font.TextStyle = .title) -> Font {
+    Font.custom(AppFonts.loraSemiBold.rawValue, size: size, relativeTo: style)
+  }
+
   // MARK: - Special (Myanmar)
   //
   // These take a `size` as well as a text style, unlike the scale above, and
