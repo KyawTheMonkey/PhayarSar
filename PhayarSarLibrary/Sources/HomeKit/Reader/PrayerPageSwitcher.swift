@@ -155,11 +155,14 @@ enum PrayerPageSwitcherMetrics {
   /// catalog at once and is correspondingly twitchier to stop on a prayer.
   static let tickPitch: CGFloat = 20
 
-  /// How wide the miniature of the ruler on the shut pill is, before its
-  /// padding. Enough marks either side of the needle to read as a ruler rather
-  /// than as a row of dots.
-  static let shutStripWidth: CGFloat = 76
-  static let shutStripInset: CGFloat = 10
+  /// How wide the row of dots on the shut pill is, before its padding, and how
+  /// much air sits either side of it.
+  ///
+  /// Sized against ``PrayerTickStrip/Scale/mini``'s pitch so that about three
+  /// dots stand clear of the fade at once: the prayer being read, and the one
+  /// either side of it.
+  static let shutStripWidth: CGFloat = 64
+  static let shutStripInset: CGFloat = 12
 
   /// How strongly the needle glows. Shared by both scales; the radius is not,
   /// and lives on ``PrayerTickStrip/Scale``.
@@ -388,16 +391,16 @@ private struct PrayerTrayBackground: ViewModifier {
 /// The ruler: one mark per prayer, running past both edges of whatever window
 /// it is given, with a fixed needle at the centre.
 ///
-/// One implementation at two scales. The miniature resting on the shut pill and
-/// the full-width ruler inside the open tray are the same drawing, and they have
-/// to stay the same drawing — the small one is a promise about what pulling it
-/// open gives you, and a promise in a different visual language is not one.
+/// One implementation at two scales. The dots resting on the shut pill and the
+/// full-width ruler inside the open tray are the same strip run through the same
+/// fixed centre — which is what stops the pill being a *picture* of the control.
+/// It is the control, wearing less.
 struct PrayerTickStrip: View {
   /// Everything that differs between the two.
   ///
-  /// Only sizes. The opacities, the falloff and the needle's glow strength are
-  /// shared, because those are what make it recognisably the same instrument at
-  /// either size.
+  /// Sizes, and whether the marks are round. The opacities, the falloff and the
+  /// needle's glow strength are shared, because those are what make it
+  /// recognisably the same instrument at either size.
   struct Scale {
     /// Centre to centre. At full size this is also the scrub rate — see
     /// ``PrayerPageSwitcherMetrics/tickPitch``.
@@ -418,6 +421,17 @@ struct PrayerTickStrip: View {
     /// there rather than as it continuing past the window.
     let edgeFade: CGFloat
 
+    /// Whether marks are drawn round, with their width following their height,
+    /// rather than as bars of a fixed width.
+    ///
+    /// This is the whole difference between a ruler and a row of dots. A bar
+    /// says "a position on a scale", which is what the tray is for; a dot says
+    /// "one of these", which is what a reader glancing at the shut pill wants
+    /// to know. Same mechanism either way — the marks still run under a fixed
+    /// centre — but the smaller one stops pretending to be a measuring
+    /// instrument at a size where it could not be read as one.
+    let isRound: Bool
+
     /// The marks are taller than they need to be to be counted, and the area
     /// taller still than the marks. Both are deliberate: a ruler this wide
     /// apart reads as sparse unless the marks have some length to them, and the
@@ -432,22 +446,30 @@ struct PrayerTickStrip: View {
       needleHeight: 26,
       glowRadius: 5,
       areaHeight: 28,
-      edgeFade: 0.12
+      edgeFade: 0.12,
+      isRound: false
     )
 
-    /// Roughly two fifths of full size, and a wider fade at the ends: the
-    /// window is a third as wide, so the same fraction would leave almost
-    /// nothing at full strength in the middle.
+    /// Dots, spaced so that about three of them are clear of the fade at once:
+    /// the one being read and its neighbour either side. Far wider apart than
+    /// the ruler's marks relative to their size, because dots crowd where bars
+    /// only get denser.
+    ///
+    /// `sectionHeight` matches `markHeight` on purpose. Where a category begins
+    /// is a fact about the catalog worth marking on something the reader is
+    /// navigating *by*; on a pill showing three dots it would just be one
+    /// mysteriously larger dot.
     static let mini = Scale(
-      pitch: 7,
-      markWidth: 1.5,
-      markHeight: 3,
-      sectionHeight: 6,
-      needleWidth: 2.5,
-      needleHeight: 11,
-      glowRadius: 2.5,
+      pitch: 18,
+      markWidth: 5,
+      markHeight: 5,
+      sectionHeight: 5,
+      needleWidth: 8,
+      needleHeight: 8,
+      glowRadius: 3,
       areaHeight: 12,
-      edgeFade: 0.22
+      edgeFade: 0.25,
+      isRound: true
     )
   }
 
@@ -518,9 +540,14 @@ struct PrayerTickStrip: View {
       : PrayerPageSwitcherMetrics.tickOpacity
     let opacity = isNeedle ? 1 : restingOpacity + (1 - restingOpacity) * Double(lifted)
 
+    // Round marks take their width from their height, so that a dot lifted by
+    // the lens swells as a circle rather than stretching into an ellipse.
+    let bar = isNeedle ? scale.needleWidth : scale.markWidth
+    let width = scale.isRound ? height : bar
+
     return Capsule(style: .continuous)
       .fill(ink.opacity(opacity))
-      .frame(width: isNeedle ? scale.needleWidth : scale.markWidth, height: height)
+      .frame(width: width, height: height)
       // A glow, so the needle reads as lit rather than merely large.
       .shadow(
         color: ink.opacity(isNeedle ? PrayerPageSwitcherMetrics.tickGlowOpacity : 0),
@@ -858,14 +885,19 @@ struct PrayerPageSwitcher: View {
     }
   }
 
-  /// The ruler in miniature, resting on the page.
+  /// Three dots, resting on the page: the prayer being read, and the one either
+  /// side of it.
   ///
-  /// Not an icon of a control but a small piece of the control itself, showing
-  /// where in the catalog the reader actually is. It says three things at once
-  /// that a glyph or a fraction could only say one of: that there is a way to
-  /// reach the other prayers, roughly how far through them this one sits, and —
-  /// because it is the same drawing at a smaller scale — exactly what pulling
-  /// it open will give.
+  /// The same strip as the tray's ruler, run through the same fixed centre —
+  /// only drawn round and spaced out, so that at pill size it reads as "one of
+  /// these, and there are more" rather than as a measuring instrument too small
+  /// to measure with. Scrubbing runs the dots under the centre exactly as it
+  /// runs the marks, so the pill is never a picture of the control: it is the
+  /// control, wearing less.
+  ///
+  /// Which is what a glyph could not do. An icon says only that something
+  /// exists to be opened; these say that, and where in the catalog the reader
+  /// is, and what pulling them open is going to feel like.
   private var shutContent: some View {
     PrayerTickStrip(
       total: total,
