@@ -90,32 +90,12 @@ enum PrayerReaderMetrics {
   /// movement rather than a cut.
   static let focusFade: TimeInterval = 0.28
 
-  /// How long a row takes to turn over between its verse and its nissaya.
-  ///
-  /// Slower than a fade of the same content would be. The turn is doing work a
-  /// fade cannot: it says the two faces are the *same* row seen from two sides,
-  /// which is exactly the relationship between a line of Pali and what it
-  /// means. Rushed, it reads as a glitch rather than as a card being turned.
-  static let faceTurn: TimeInterval = 0.5
+  /// How long the sheet takes to grow out of the verse, and to fold back into
+  /// it. Spring-driven — see ``nissayaSheet`` — so this is the settling time
+  /// rather than a hard duration.
+  static let sheetTravel: TimeInterval = 0.5
 
-  /// Distance from the eye to the page, for the perspective the turn is seen
-  /// in. Smaller is a wider lens: the near edge of the card swells as it comes
-  /// forward and the far edge falls away hard.
-  ///
-  /// Near enough to be seen as depth rather than as a card being squashed
-  /// horizontally, far enough that a full-width row does not bow like a
-  /// fisheye at the moment it starts to move.
-  static let turnPerspective: CGFloat = 900
-
-  /// How far the face is taken down as it turns edge-on.
-  ///
-  /// The whole reason the turn reads as a *surface* rather than as text
-  /// narrowing. A page is flat and untextured, so shape alone gives the eye
-  /// nothing to hold; a face that darkens as it turns out of the light is what
-  /// says there is a card there at all.
-  static let turnShade: CGFloat = 0.45
-
-  /// How long UIKit takes to slide a swipe tray shut.
+    /// How long UIKit takes to slide a swipe tray shut.
   ///
   /// Theirs, not ours — measured, because there is no constant to read it from.
   /// The turn waits this long so that it does not start under a tray still on
@@ -239,6 +219,53 @@ struct PrayerReadingStyle {
     showsPronunciation = settings.showsPronunciation
   }
 
+  /// A verse's name, and the small labels the sheet uses in the same slot.
+  ///
+  /// On ``PrayerReadingStyle`` rather than on the cell so that the sheet, which
+  /// is not a cell, cannot end up labelling things a little differently from
+  /// the page it grew out of.
+  func attributedName(_ text: String) -> NSAttributedString {
+    NSAttributedString(
+      string: text.uppercased(),
+      attributes: [
+        .font: nameFont,
+        .foregroundColor: secondaryTextColor,
+        .paragraphStyle: paragraphStyle(lineSpacing: 0)
+      ]
+    )
+  }
+
+  /// The gap under a line.
+  ///
+  /// - Parameter next: What follows it. The last line of a verse block drops the
+  ///   gap entirely — on the page the table's bottom inset provides the
+  ///   clearance, and in the sheet the panel's own padding does; either way both
+  ///   together would read as a hole.
+  func gap(before next: PrayerVerseLine.Next) -> CGFloat {
+    switch next {
+    case .line:
+      // Every line is closed by a rule, so every line needs more air under it
+      // than the reader's leading alone would give — enough that the rule stays
+      // nearer the line it closes than the one it opens.
+      return PrayerReaderMetrics.glossLineSpacing + lineSpacing
+    case .verse:
+      return verseSpacing
+    case .end:
+      return 0
+    }
+  }
+
+  /// The paper the inline nissaya sheet is cut from.
+  ///
+  /// The page's own colour with a little of its ink laid over it: a panel that
+  /// is of the page rather than a slab of some other material dropped onto it,
+  /// but still separable from it — which matters most on the true-black paper,
+  /// where a panel in the page's exact colour and a shadow that black cannot
+  /// carry would leave the sheet with no edge at all.
+  var sheetColor: UIColor {
+    textColor.withAlphaComponent(0.07).blended(over: pageColor)
+  }
+
   /// The paragraph style shared by every line the reader draws.
   ///
   /// - Parameter lineSpacing: The verse's own leading, or a fraction of it for
@@ -354,6 +381,38 @@ struct PrayerReadingStyle {
   /// out of step — see ``PrayerVerseGloss`` for why a verse can come up a line
   /// short.
   private static let blank = " "
+}
+
+// MARK: - Colour
+
+extension UIColor {
+  /// This colour laid over an opaque one, resolved to a single opaque colour.
+  ///
+  /// Flattened rather than left translucent because it backs a sheet: anything
+  /// behind the panel has to be hidden by it, and a 7% ink wash that let the
+  /// page through would show the verse it is sitting on.
+  fileprivate func blended(over base: UIColor) -> UIColor {
+    UIColor { traits in
+      var top = (red: CGFloat(0), green: CGFloat(0), blue: CGFloat(0), alpha: CGFloat(0))
+      var bottom = (red: CGFloat(0), green: CGFloat(0), blue: CGFloat(0), alpha: CGFloat(0))
+
+      guard
+        self.resolvedColor(with: traits)
+          .getRed(&top.red, green: &top.green, blue: &top.blue, alpha: &top.alpha),
+        base.resolvedColor(with: traits)
+          .getRed(&bottom.red, green: &bottom.green, blue: &bottom.blue, alpha: &bottom.alpha)
+      else {
+        return base
+      }
+
+      return UIColor(
+        red: bottom.red + (top.red - bottom.red) * top.alpha,
+        green: bottom.green + (top.green - bottom.green) * top.alpha,
+        blue: bottom.blue + (top.blue - bottom.blue) * top.alpha,
+        alpha: 1
+      )
+    }
+  }
 }
 
 // MARK: - SwiftUI alignment bridge

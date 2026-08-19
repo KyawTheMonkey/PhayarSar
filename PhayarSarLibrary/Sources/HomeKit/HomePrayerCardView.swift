@@ -75,7 +75,7 @@ struct HomePrayerCardView: View {
       .buttonStyle(.plain)
 
       if shouldShowDivider {
-        Divider()
+        AppDivider()
           .padding(.horizontal, HomePrayerCardMetrics.dividerBleed)
       }
     }

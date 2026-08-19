@@ -1,19 +1,17 @@
 #if canImport(UIKit)
-import LocalisationKit
 import PrayersKit
 import UIKit
 
-/// One line of a prayer: its verse's name where this is the line that opens a
-/// named verse, the line itself, and the rule that closes it.
+/// One line of a prayer as a row of the reading page.
 ///
-/// With the respelling on, a line is an interlinear gloss — the respelling with
-/// the Pali it stands for beneath it — because the respelling is what someone
-/// reciting is actually reading off the page. With it off, the Pali stands
-/// alone as the recited line. Either way the rule closes it: what it separates
-/// is one line of the prayer from the next, which is a thing the reader needs
-/// whether or not there is a respelling above it.
+/// The line itself is drawn by ``PrayerVerseLineView``, which the inline nissaya
+/// sheet uses too — the sheet grows out of a line on this page and has to be
+/// showing the very same setting of it at the instant it starts to move. What
+/// this adds is everything about being a *row*: the margins that turn the
+/// reader's spacing settings into the gap under the line, the tint behind a line
+/// that has been tapped, and reuse.
 ///
-/// Self-sizing — the table sets `automaticDimension` and the stack's
+/// Self-sizing — the table sets `automaticDimension` and the line view's
 /// constraints to the content guide are what give the cell its height.
 final class PrayerVerseLineCell: UITableViewCell {
   static let reuseIdentifier = "PrayerVerseLineCell"
@@ -30,14 +28,15 @@ final class PrayerVerseLineCell: UITableViewCell {
     case focused
     /// One of the others, stepped back while the tapped line is followed.
     case receded
+    /// Not on the page at all: the line has been lifted into the inline nissaya
+    /// sheet, which is drawing it — see ``PrayerNissayaSheet``. The sheet opens
+    /// at this row's exact rect and travels away from it, and a row still
+    /// showing the same text underneath is what turns that from one line moving
+    /// into two lines, one of which stayed behind.
+    case lifted
   }
 
-  private let stack = UIStackView()
-  private let nameLabel = UILabel()
-  /// Both halves of the line, as paragraphs of one attributed string — see
-  /// ``PrayerReadingStyle/attributedGloss(_:)``.
-  private let lineLabel = UILabel()
-  private let separator = UIView()
+  private let lineView = PrayerVerseLineView()
   /// The tint behind a focused line. Sized to the text rather than to the cell,
   /// which carries the gap to the next line as well.
   private let focusTint = UIView()
@@ -66,30 +65,15 @@ final class PrayerVerseLineCell: UITableViewCell {
     // setting could get below.
     contentView.preservesSuperviewLayoutMargins = false
 
-    for label in [nameLabel, lineLabel] {
-      label.numberOfLines = 0
-    }
-
-    stack.axis = .vertical
-    stack.alignment = .fill
-    stack.translatesAutoresizingMaskIntoConstraints = false
-    stack.addArrangedSubview(nameLabel)
-    stack.addArrangedSubview(lineLabel)
-    stack.addArrangedSubview(separator)
-
-    // Spacing is per-gap rather than uniform: the name sits close to the text
-    // it titles, and the rule sits nearer the line it closes than the one it
-    // opens.
-    stack.setCustomSpacing(PrayerReaderMetrics.nameSpacing, after: nameLabel)
-    stack.setCustomSpacing(PrayerReaderMetrics.glossSeparatorSpacing, after: lineLabel)
-
     focusTint.alpha = 0
     focusTint.layer.cornerRadius = PrayerReaderMetrics.focusCornerRadius
     focusTint.layer.cornerCurve = .continuous
     focusTint.translatesAutoresizingMaskIntoConstraints = false
     // Added first so it sits behind the text rather than over it.
     contentView.addSubview(focusTint)
-    contentView.addSubview(stack)
+
+    lineView.translatesAutoresizingMaskIntoConstraints = false
+    contentView.addSubview(lineView)
 
     let outset = PrayerReaderMetrics.focusOutset
 
@@ -98,145 +82,33 @@ final class PrayerVerseLineCell: UITableViewCell {
     // line- and verse-spacing settings turn into.
     let margins = contentView.layoutMarginsGuide
     NSLayoutConstraint.activate([
-      focusTint.topAnchor.constraint(equalTo: stack.topAnchor, constant: -outset.vertical),
-      focusTint.bottomAnchor.constraint(equalTo: stack.bottomAnchor, constant: outset.vertical),
-      focusTint.leadingAnchor.constraint(equalTo: stack.leadingAnchor, constant: -outset.horizontal),
-      focusTint.trailingAnchor.constraint(equalTo: stack.trailingAnchor, constant: outset.horizontal),
-      stack.topAnchor.constraint(equalTo: margins.topAnchor),
-      stack.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
-      stack.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
-      stack.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
-      // A bare `UIView` has no height of its own, so the rule needs to be given
-      // one before the stack can place it.
-      separator.heightAnchor.constraint(
-        equalToConstant: PrayerReaderMetrics.glossSeparatorThickness
-      )
+      focusTint.topAnchor.constraint(equalTo: lineView.topAnchor, constant: -outset.vertical),
+      focusTint.bottomAnchor.constraint(equalTo: lineView.bottomAnchor, constant: outset.vertical),
+      focusTint.leadingAnchor.constraint(
+        equalTo: lineView.leadingAnchor,
+        constant: -outset.horizontal
+      ),
+      focusTint.trailingAnchor.constraint(
+        equalTo: lineView.trailingAnchor,
+        constant: outset.horizontal
+      ),
+      lineView.topAnchor.constraint(equalTo: margins.topAnchor),
+      lineView.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
+      lineView.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
+      lineView.bottomAnchor.constraint(equalTo: margins.bottomAnchor)
     ])
   }
 
   func configure(with line: PrayerVerseLine, style: PrayerReadingStyle) {
-    // Two conditions, not one: the reader can switch the respelling off, and
-    // several prayers ship none to begin with.
-    let isGlossed = style.showsPronunciation && line.hasPronunciation
-
     contentView.directionalLayoutMargins = NSDirectionalEdgeInsets(
       top: 0,
       leading: PrayerReaderMetrics.horizontalInset,
-      bottom: gap(before: line.next, style: style),
+      bottom: style.gap(before: line.next),
       trailing: PrayerReaderMetrics.horizontalInset
     )
 
-    if let name = line.name, !name.isEmpty {
-      nameLabel.attributedText = NSAttributedString(
-        string: name.uppercased(),
-        attributes: [
-          .font: style.nameFont,
-          .foregroundColor: style.secondaryTextColor,
-          .paragraphStyle: style.paragraphStyle(lineSpacing: 0)
-        ]
-      )
-      nameLabel.isHidden = false
-    } else {
-      nameLabel.attributedText = nil
-      nameLabel.isHidden = true
-    }
-
-    if isGlossed {
-      lineLabel.attributedText = style.attributedGloss(line.gloss)
-    } else {
-      lineLabel.attributedText = style.attributedVerse(line.gloss.content)
-    }
-
-    separator.backgroundColor = style.separatorColor
+    lineView.configure(with: line, style: style)
     focusTint.backgroundColor = style.focusColor
-
-    lineLabel.accessibilityLabel = accessibilityLabel(for: line, isGlossed: isGlossed)
-  }
-
-  /// Draws the verse's nissaya in place of its lines — the face the row turns
-  /// over to.
-  ///
-  /// The same three views as the front, given different things to say, rather
-  /// than a second face built alongside them. Two stacks in one cell would both
-  /// have to be kept in step with every reading setting, and only one of them
-  /// is ever on screen.
-  ///
-  /// - Parameter next: What follows the *verse*, not the line — a turned row
-  ///   stands for the whole verse, so the air under it is the air that would
-  ///   have been under its last line.
-  func configure(
-    nissaya meaning: String,
-    next: PrayerVerseLine.Next,
-    style: PrayerReadingStyle
-  ) {
-    contentView.directionalLayoutMargins = NSDirectionalEdgeInsets(
-      top: 0,
-      leading: PrayerReaderMetrics.horizontalInset,
-      bottom: gap(before: next, style: style),
-      trailing: PrayerReaderMetrics.horizontalInset
-    )
-
-    // Where the verse's name would be, and in its place. A turned row looks
-    // enough like an ordinary one that without this the reader has no way to
-    // tell the nissaya from a verse set in Burmese — and it is also what says
-    // there is another side to swipe back to.
-    nameLabel.attributedText = NSAttributedString(
-      string: L10n.nissayaMeaning.uppercased(),
-      attributes: [
-        .font: style.nameFont,
-        .foregroundColor: style.secondaryTextColor,
-        .paragraphStyle: style.paragraphStyle(lineSpacing: 0)
-      ]
-    )
-    nameLabel.isHidden = false
-
-    lineLabel.attributedText = style.attributedMeaning(meaning)
-
-    separator.backgroundColor = style.separatorColor
-    focusTint.backgroundColor = style.focusColor
-
-    lineLabel.accessibilityLabel = "\(L10n.nissayaMeaning), \(meaning)"
-  }
-
-  /// The gap under this line.
-  ///
-  /// - Parameter next: What follows it. The last line of the prayer drops the
-  ///   gap entirely — the table's bottom content inset already provides the
-  ///   clearance there, and both together would read as a hole under it.
-  private func gap(
-    before next: PrayerVerseLine.Next,
-    style: PrayerReadingStyle
-  ) -> CGFloat {
-    switch next {
-    case .line:
-      // Every line is closed by a rule, so every line needs more air under it
-      // than the reader's leading alone would give — enough that the rule stays
-      // nearer the line it closes than the one it opens.
-      return PrayerReaderMetrics.glossLineSpacing + style.lineSpacing
-    case .verse:
-      return style.verseSpacing
-    case .end:
-      return 0
-    }
-  }
-
-  /// VoiceOver gets the line whole. Read off the gloss it would come out as an
-  /// alternation of two languages, neither of them followable.
-  private func accessibilityLabel(
-    for line: PrayerVerseLine,
-    isGlossed: Bool
-  ) -> String? {
-    var parts: [String] = []
-
-    if !line.gloss.content.isEmpty {
-      parts.append(line.gloss.content)
-    }
-
-    if isGlossed, !line.gloss.pronunciation.isEmpty {
-      parts.append("\(L10n.pronunciation), \(line.gloss.pronunciation)")
-    }
-
-    return parts.isEmpty ? nil : parts.joined(separator: ", ")
   }
 
   // MARK: - Focus
@@ -275,14 +147,14 @@ final class PrayerVerseLineCell: UITableViewCell {
     case .receded:
       contentView.alpha = PrayerReaderMetrics.recededAlpha
       focusTint.alpha = 0
+    case .lifted:
+      contentView.alpha = 0
+      focusTint.alpha = 0
     }
   }
 
   override func prepareForReuse() {
     super.prepareForReuse()
-    nameLabel.attributedText = nil
-    lineLabel.attributedText = nil
-    lineLabel.accessibilityLabel = nil
     // A recycled cell starts level. The table sets it again from the tap being
     // followed, if there is one, before the cell is shown.
     emphasis = .none

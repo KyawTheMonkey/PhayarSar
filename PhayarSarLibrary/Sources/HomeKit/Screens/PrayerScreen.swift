@@ -91,6 +91,14 @@ public struct PrayerScreen: View {
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+  /// Whether the reader has the inline nissaya sheet up.
+  ///
+  /// Reported up from the UIKit reader, which owns the sheet — see
+  /// ``PrayerNissayaSheet``. The switcher has to know because it floats over the
+  /// reader in *this* hierarchy, above anything the reader can draw, and it
+  /// comes to rest exactly where the sheet arrives.
+  @State private var isShowingNissaya = false
+
   /// Resolved from the id the route carried rather than passed in whole — see
   /// `RouterDestination`, whose payloads are ids so that routes stay `Codable`.
   public init(prayerID: String) {
@@ -194,7 +202,7 @@ public struct PrayerScreen: View {
         // be the page the reader is on, not a strip of app background above it.
         .ignoresSafeArea()
 
-      PrayerReader(prayer: prayer, settings: settings)
+      PrayerReader(prayer: prayer, settings: settings, onSheetChange: showNissaya)
         // The page colour runs to every edge — a reader with a strip of app
         // background under it reads as a card, not as a page.
         .ignoresSafeArea(edges: .bottom)
@@ -242,6 +250,13 @@ public struct PrayerScreen: View {
       )
       .appHorizontalInset()
       .padding(.bottom, PrayerPageSwitcherMetrics.bottomPadding)
+      // Out of the way while the nissaya sheet is up, rather than floating on
+      // top of it. Faded rather than removed: taken out of the layout it would
+      // be rebuilt on the way back, and it would come back shut even if the
+      // reader had left it open.
+      .opacity(isShowingNissaya ? 0 : 1)
+      .allowsHitTesting(!isShowingNissaya)
+      .animation(.readerPageSettle, value: isShowingNissaya)
     }
   }
 
@@ -346,6 +361,17 @@ public struct PrayerScreen: View {
     withTransaction(transaction, change)
   }
 
+  /// The reader has opened or closed the inline nissaya sheet.
+  private func showNissaya(_ isShowing: Bool) {
+    isShowingNissaya = isShowing
+
+    // A tray left open under the sheet would still be open behind it when the
+    // sheet went away.
+    if isShowing {
+      close()
+    }
+  }
+
   private func close() {
     guard openness != 0 else { return }
 
@@ -363,12 +389,20 @@ public struct PrayerScreen: View {
 private struct PrayerReader: UIViewControllerRepresentable {
   let prayer: Prayer
   let settings: PrayerSettings
+  /// Called when the reader opens or closes its inline nissaya sheet.
+  let onSheetChange: (Bool) -> Void
 
   func makeUIViewController(context: Context) -> PrayerViewController {
-    PrayerViewController(prayer: prayer, settings: settings)
+    let controller = PrayerViewController(prayer: prayer, settings: settings)
+    controller.onSheetChange = onSheetChange
+
+    return controller
   }
 
   func updateUIViewController(_ controller: PrayerViewController, context: Context) {
+    // Re-set on every pass, because the closure captures the current `body`'s
+    // state — a stale one would be writing to a `State` that has moved on.
+    controller.onSheetChange = onSheetChange
     controller.update(prayer: prayer, settings: settings)
   }
 }
@@ -382,6 +416,9 @@ private struct PrayerReader: UIViewControllerRepresentable {
 private struct PrayerReader: View {
   let prayer: Prayer
   let settings: PrayerSettings
+  /// Unused on macOS, which has no reader and so no sheet. Here so that the
+  /// call site does not have to know which platform it is building for.
+  let onSheetChange: (Bool) -> Void
 
   var body: some View {
     VStack(spacing: 8) {

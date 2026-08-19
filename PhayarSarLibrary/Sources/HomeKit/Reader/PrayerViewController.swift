@@ -74,21 +74,18 @@ final class PrayerViewController: UIViewController {
   /// over to an empty face.
   private var meaningsByVerse: [Prayer.Verse.ID: String] = [:]
 
-  /// The air under each verse, taken from what follows its last line.
-  ///
-  /// A turned row stands in for the whole verse, so it has to be given the gap
-  /// the verse had rather than the gap its own line had — otherwise the last
-  /// verse of a prayer, turned over, would draw a rule and a line's worth of
-  /// space under itself at the very bottom of the page.
-  private var gapAfterVerse: [Prayer.Verse.ID: PrayerVerseLine.Next] = [:]
+  /// The inline nissaya sheet, while one is up.
+  private var nissayaSheet: PrayerNissayaSheet?
 
-  /// The verses currently showing their nissaya rather than their lines.
-  ///
-  /// Here rather than in the cell, and by *verse* rather than by row. In the
-  /// cell it would be recycled onto whatever line scrolled into that cell next;
-  /// by row it would be a question the data has no answer to, since a nissaya
-  /// belongs to a verse and a verse is a median of three rows long.
-  private var flippedVerses: Set<Prayer.Verse.ID> = []
+  /// The line the sheet is currently carrying, which the page hides for as long
+  /// as it is up — see ``PrayerVerseLineCell/Emphasis/lifted``.
+  private var liftedLine: PrayerVerseLine.ID?
+
+  /// Told when a sheet opens and closes, so that the SwiftUI chrome floating
+  /// over the reader can get out of the way — see ``PrayerScreen``. The switcher
+  /// sits exactly where the sheet arrives, and it belongs to a view hierarchy
+  /// this one cannot draw above.
+  var onSheetChange: ((Bool) -> Void)?
 
   private lazy var tableView = UITableView(frame: .zero, style: .plain)
   private lazy var dataSource = makeDataSource()
@@ -182,24 +179,10 @@ final class PrayerViewController: UIViewController {
     }
   }
 
-  /// Puts a row's current face on a cell.
-  ///
-  /// Split out of the cell provider because the turn needs it too: a row turning
-  /// over has to be given its new face from *inside* the transition block, which
-  /// is what makes the flip a flip rather than a cut. Both callers go through
-  /// here so the two faces cannot drift apart.
   private func configure(_ cell: PrayerVerseLineCell, for item: Item) {
     guard case let .line(_, id) = item, let line = linesByID[id] else { return }
 
-    if flippedVerses.contains(id.verse), let meaning = meaningsByVerse[id.verse] {
-      cell.configure(
-        nissaya: meaning,
-        next: gapAfterVerse[id.verse] ?? .end,
-        style: style
-      )
-    } else {
-      cell.configure(with: line, style: style)
-    }
+    cell.configure(with: line, style: style)
   }
 
   // MARK: - Content
@@ -223,44 +206,15 @@ final class PrayerViewController: UIViewController {
         return meaning.isEmpty ? nil : (verse.id, meaning)
       }
     )
-
-    // The line that does *not* run on into another is the verse's last, and
-    // what follows it is what follows the verse.
-    gapAfterVerse = Dictionary(
-      uniqueKeysWithValues: lines.compactMap { line in
-        line.next == .line ? nil : (line.id.verse, line.next)
-      }
-    )
   }
 
-  /// The rows the table actually shows.
-  ///
-  /// A turned verse collapses to a single row — its first line, carrying the
-  /// nissaya on the other side. The rest of its lines leave the snapshot
-  /// entirely rather than being drawn at zero height: a self-sizing cell asked
-  /// for no height at all is a fight with its own constraints, and diffable
-  /// already knows how to animate rows out and back.
-  private var visibleLines: [PrayerVerseLine] {
-    lines.filter { !flippedVerses.contains($0.id.verse) || $0.id.line == 0 }
-  }
-
-  /// - Parameter reconfiguring: Rows whose *content* has changed as well as the
-  ///   set of rows. A turned row is the only one there ever is: its identity is
-  ///   deliberately unchanged — the same row, seen from the other side — so
-  ///   without saying so the table would keep the height it measured for the
-  ///   face that is no longer there.
-  private func applySnapshot(animated: Bool, reconfiguring items: [Item] = []) {
+  private func applySnapshot(animated: Bool) {
     var snapshot = Snapshot()
     snapshot.appendSections([.verses])
     snapshot.appendItems(
-      visibleLines.map { Item.line(prayer: prayer.id, line: $0.id) },
+      lines.map { Item.line(prayer: prayer.id, line: $0.id) },
       toSection: .verses
     )
-
-    if !items.isEmpty {
-      snapshot.reconfigureItems(items)
-    }
-
     dataSource.apply(snapshot, animatingDifferences: animated)
   }
 
@@ -379,6 +333,10 @@ final class PrayerViewController: UIViewController {
   }
 
   private func emphasis(for item: Item) -> PrayerVerseLineCell.Emphasis {
+    // Before the follow, because a lifted line is off the page entirely and a
+    // page that is not being followed still has one to hide.
+    if let liftedLine, item == .line(prayer: prayer.id, line: liftedLine) { return .lifted }
+
     guard let focusedLine else { return .none }
     return item == .line(prayer: prayer.id, line: focusedLine) ? .focused : .receded
   }
@@ -459,309 +417,85 @@ final class PrayerViewController: UIViewController {
     return CGPoint(x: current.x, y: min(max(y, top), bottom))
   }
 
-  // MARK: - Turning a row over
+  // MARK: - The inline nissaya sheet
 
-  /// The card being turned, the paper it was lifted off, and the still of the
-  /// page below it — the three views a turn puts on screen.
+  /// Grows the inline nissaya sheet out of a line.
   ///
-  /// Held rather than passed through the animation, so that a turn can be
-  /// abandoned from outside it. The switcher can land on another prayer half
-  /// way through one.
-  private var turnStage: UIView?
-  private var turnMask: UIView?
-  private var turnTail: UIView?
-
-  private var isTurning: Bool { turnStage != nil }
-
-  /// Turns a verse over between its lines and its nissaya.
+  /// The sheet opens at the exact rect that one row occupies on the page, drawn
+  /// by the same code in the same face at the same size, and travels from there
+  /// into a bottom sheet with the translation under it. See
+  /// ``PrayerNissayaSheet`` for why it is built that way rather than presented.
   ///
-  /// A card lifted off the page and rotated, not a transition applied to the
-  /// cell. The cells are transparent — the paper belongs to the table, and a
-  /// cell painting its own would tile subtly different edges down a scrolling
-  /// page — so a transition on one has nothing to turn but the glyphs, which is
-  /// text swinging in mid-air rather than a row flipping. What turns here is a
-  /// *still of the page itself*, taken from the table: opaque, paper-coloured,
-  /// and carrying everything drawn on those rows.
-  ///
-  /// In halves, hinged on the instant the card is edge-on:
-  ///
-  /// 1. The still turns from flat to edge-on, darkening as it goes out of the
-  ///    light. The perspective comes from the stage it sits on, so the near edge
-  ///    swells and the far edge falls away rather than the whole card simply
-  ///    narrowing.
-  /// 2. Edge-on, the card has no width at all — the one instant in the turn when
-  ///    the page underneath can be rebuilt without being seen doing it. The
-  ///    verse's other rows leave the snapshot, the row re-measures for the face
-  ///    it is about to show, and everything below it moves up.
-  /// 3. A second still — the new face — turns the rest of the way in, coming up
-  ///    out of the shade as it lands.
-  ///
-  /// The page below the verse really does move at that instant, and no card can
-  /// hide it: a verse of five lines turning over to one row of prose takes four
-  /// rows' height out of the page. So that part is *faded* rather than cut — a
-  /// still of the old page below is left standing where it was and dissolved out
-  /// across the second half, while the real rows settle underneath it.
-  private func turn(verse: Prayer.Verse.ID) {
-    guard meaningsByVerse[verse] != nil, !isTurning else { return }
-
-    let isTurningOver = !flippedVerses.contains(verse)
-
+  /// Given a *line* even though the nissaya it carries is the whole verse's:
+  /// the reader swiped one row, and that row is the only thing on the page the
+  /// sheet can convincingly have come from. Handing it the verse would put four
+  /// or five other lines in the sheet that are already legible on the page
+  /// behind it, and would make the rect it grows out of a block the reader never
+  /// pointed at.
+  private func openNissaya(for line: PrayerVerseLine.ID) {
     guard
+      nissayaSheet == nil,
       isViewLoaded,
-      !UIAccessibility.isReduceMotionEnabled,
-      let rows = onscreenRows(of: verse),
-      let front = still(of: rows.rect, afterScreenUpdates: false)
+      let meaning = meaningsByVerse[line.verse],
+      let verseLine = linesByID[line],
+      let source = sourceRect(of: line)
     else {
-      // Reduce Motion, or a verse that is not on the page to be turned. Either
-      // way there is no card to watch, so the change is dissolved instead —
-      // which is what Reduce Motion would have asked for regardless.
-      dissolve(verse: verse, isTurningOver: isTurningOver)
       return
     }
 
-    // The old page from the verse's top down, taken now while it still is the
-    // old page and stood up at the half way point over what has moved by then.
-    //
-    // From the verse's *top* rather than its foot, so that the strip it covers
-    // is always at least as tall as the row the card lands on. Started lower and
-    // a verse collapsing to a shorter row would leave a band between the two
-    // where the rebuilt page showed through outright.
-    turnTail = still(of: page(from: rows.rect.minY), afterScreenUpdates: false)?.view
-
-    // Blank paper where the rows are, so that what shows past the edges of a
-    // half-turned card is the page rather than the same text again, unturned.
-    //
-    // A patch over them rather than the cells hidden: the still of the new face
-    // is taken from the table itself half way through, and a table whose cells
-    // are hidden has nothing to give.
-    turnMask = makeMask(over: front.view.frame)
-
-    // The stills are pinned to the screen rather than to the content, so the
-    // page must not scroll out from under them mid-turn.
+    // The page must not move while the sheet is up: the sheet folds back into
+    // the rect it left from, and a page scrolled out from under it would have
+    // nowhere to put it.
     tableView.isScrollEnabled = false
-    turnStage = makeStage(over: front)
+    // A tap being followed would put the page back up under the sheet, and the
+    // verse the sheet came from would recede along with everything else.
+    releaseFocus()
 
-    let half = PrayerReaderMetrics.faceTurn / 2
-    let edge = CGFloat.pi / 2 * (isTurningOver ? -1 : 1)
+    // Off the page for as long as the sheet has it. Unanimated, because at this
+    // instant the panel is exactly over the row and there is nothing to see —
+    // fading it would be a fade under an opaque panel.
+    liftedLine = line
+    applyEmphasis(animated: false)
 
-    UIView.animate(withDuration: half, delay: 0, options: [.curveEaseIn]) {
-      front.view.transform3D = CATransform3DMakeRotation(edge, 0, 1, 0)
-      front.shade.alpha = PrayerReaderMetrics.turnShade
-    } completion: { [weak self] _ in
-      self?.landTurn(verse: verse, isTurningOver: isTurningOver, front: front, over: half)
+    let sheet = PrayerNissayaSheet()
+    nissayaSheet = sheet
+    onSheetChange?(true)
+
+    sheet.present(
+      in: view,
+      from: source,
+      line: verseLine,
+      meaning: meaning,
+      style: style
+    ) { [weak self] in
+      guard let self else { return }
+      self.nissayaSheet = nil
+      // Put back under the panel's last frame, which is the rect it left from,
+      // so the line is on the page again before the panel is gone from over it.
+      self.liftedLine = nil
+      self.applyEmphasis(animated: false)
+      self.tableView.isScrollEnabled = true
+      self.onSheetChange?(false)
     }
   }
 
-  /// The second half: the page rebuilt behind an edge-on card, and the new face
-  /// turned the rest of the way in.
-  private func landTurn(
-    verse: Prayer.Verse.ID,
-    isTurningOver: Bool,
-    front: PrayerTurnFace,
-    over half: TimeInterval
-  ) {
-    // Abandoned mid-turn — see ``endTurn()``.
-    guard let stage = turnStage else { return }
-
-    let faceItem = Item.line(prayer: prayer.id, line: PrayerVerseLine.ID(verse: verse, line: 0))
-
-    if isTurningOver {
-      flippedVerses.insert(verse)
-    } else {
-      flippedVerses.remove(verse)
-    }
-
-    applySnapshot(animated: false, reconfiguring: [faceItem])
-    // Forced rather than left to the next pass: the still of the new face is
-    // taken a few lines below, and there would be nothing laid out to take.
-    tableView.layoutIfNeeded()
-
-    guard let rows = onscreenRows(of: verse) else { return endTurn() }
-
-    // Everything that has to be covering the page before it is next drawn —
-    // and taking the new still is what draws it. The old page stands where it
-    // was, the paper patch moves onto the row the verse now occupies, and the
-    // card goes over both.
-    //
-    // The patch above the old page rather than below it: what shows past the
-    // edges of a half-turned card has to be paper, and the old page there is the
-    // very text the card is turning away from.
-    if let turnTail, let turnMask {
-      view.insertSubview(turnTail, belowSubview: turnMask)
-    }
-    turnMask?.frame = view.convert(rows.rect.intersection(tableView.bounds), from: tableView)
-    view.bringSubviewToFront(stage)
-
-    guard let back = still(of: rows.rect, afterScreenUpdates: true) else { return endTurn() }
-
-    // The card is a different size on its other side. Resized here, edge-on,
-    // where a change of shape cannot be seen.
-    front.view.removeFromSuperview()
-    stage.frame = back.view.frame
-    back.view.frame = stage.bounds
-    back.view.layer.isDoubleSided = false
-    stage.addSubview(back.view)
-
-    let edge = CGFloat.pi / 2 * (isTurningOver ? 1 : -1)
-    back.view.transform3D = CATransform3DMakeRotation(edge, 0, 1, 0)
-    back.shade.alpha = PrayerReaderMetrics.turnShade
-
-    UIView.animate(withDuration: half, delay: 0, options: [.curveEaseOut]) {
-      back.view.transform3D = CATransform3DIdentity
-      back.shade.alpha = 0
-      self.turnTail?.alpha = 0
-    } completion: { [weak self] _ in
-      self?.endTurn()
-    }
-  }
-
-  /// Takes the turn's stills off the screen, whether it finished or was
-  /// abandoned.
-  private func endTurn() {
-    for overlay in [turnStage, turnMask, turnTail] {
-      overlay?.removeFromSuperview()
-    }
-    turnStage = nil
-    turnMask = nil
-    turnTail = nil
-
-    tableView.isScrollEnabled = true
-  }
-
-  /// Turns the verse over without turning anything.
-  private func dissolve(verse: Prayer.Verse.ID, isTurningOver: Bool) {
-    let faceItem = Item.line(prayer: prayer.id, line: PrayerVerseLine.ID(verse: verse, line: 0))
-
-    if isTurningOver {
-      flippedVerses.insert(verse)
-    } else {
-      flippedVerses.remove(verse)
-    }
-
-    guard isViewLoaded, tableView.window != nil else {
-      applySnapshot(animated: false)
-      return
-    }
-
-    UIView.transition(
-      with: tableView,
-      duration: PrayerReaderMetrics.faceTurn,
-      options: [.transitionCrossDissolve, .allowUserInteraction],
-      animations: { self.applySnapshot(animated: false, reconfiguring: [faceItem]) }
-    )
-  }
-
-  // MARK: - The card
-
-  /// A still of part of the page, with a shade over it.
+  /// Where a line is drawn, in this controller's coordinates.
   ///
-  /// The shade is a child of the still rather than a sibling so that it turns
-  /// with it. A shade that stayed flat while the face turned would read as a
-  /// dark pane the card was passing behind.
-  private struct PrayerTurnFace {
-    let view: UIView
-    let shade: UIView
-  }
-
-  /// Lifts a still of the page off the table.
-  ///
-  /// Positioned in the controller's own coordinates rather than the table's: the
-  /// table is rebuilt half way through a turn, and a still parented to it would
-  /// be caught up in that.
-  ///
-  /// - Parameter afterScreenUpdates: `false` for the page as it is already
-  ///   drawn, `true` for a change made in this same run loop that has yet to be.
-  private func still(of rect: CGRect, afterScreenUpdates: Bool) -> PrayerTurnFace? {
-    // Clipped to what is on screen, because that is all the table has drawn —
-    // the part of a long verse below the fold has no cells behind it and would
-    // come back as a blank strip of paper.
-    let visible = rect.intersection(tableView.bounds)
-
+  /// Clipped to the page: the last row on screen is usually cut off by the
+  /// bottom of it, and a sheet that opened at the full height of one would start
+  /// by covering a strip nobody can see.
+  private func sourceRect(of line: PrayerVerseLine.ID) -> CGRect? {
     guard
-      visible.height >= 1,
-      let snapshot = tableView.resizableSnapshotView(
-        from: visible,
-        afterScreenUpdates: afterScreenUpdates,
-        withCapInsets: .zero
-      )
+      let indexPath = dataSource.indexPath(for: Item.line(prayer: prayer.id, line: line))
     else {
       return nil
     }
 
-    snapshot.frame = view.convert(visible, from: tableView)
+    let rect = tableView.rectForRow(at: indexPath).intersection(tableView.bounds)
 
-    let shade = UIView(frame: snapshot.bounds)
-    shade.backgroundColor = style.textColor
-    shade.alpha = 0
-    shade.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    snapshot.addSubview(shade)
+    guard !rect.isNull, rect.height >= 1 else { return nil }
 
-    return PrayerTurnFace(view: snapshot, shade: shade)
-  }
-
-  /// The stage a face turns on.
-  ///
-  /// It exists only to hold the perspective. A rotation with none above it is an
-  /// orthographic one — the card narrows to nothing without ever looking like it
-  /// is coming towards the reader, which is the flat and wrong version of this.
-  private func makeStage(over face: PrayerTurnFace) -> UIView {
-    let stage = UIView(frame: face.view.frame)
-    stage.isUserInteractionEnabled = false
-
-    var perspective = CATransform3DIdentity
-    perspective.m34 = -1 / PrayerReaderMetrics.turnPerspective
-    stage.layer.sublayerTransform = perspective
-
-    face.view.frame = stage.bounds
-    // There is nothing to see on the reverse of a face: the other side of this
-    // card is the other still, not this one mirrored.
-    face.view.layer.isDoubleSided = false
-    stage.addSubview(face.view)
-
-    view.addSubview(stage)
-
-    return stage
-  }
-
-  private func makeMask(over frame: CGRect) -> UIView {
-    let mask = UIView(frame: frame)
-    mask.backgroundColor = style.pageColor
-    mask.isUserInteractionEnabled = false
-    view.addSubview(mask)
-
-    return mask
-  }
-
-  // MARK: - Rows of a verse
-
-  /// The rows a verse is drawn on and the page they cover, in table
-  /// coordinates.
-  private func onscreenRows(of verse: Prayer.Verse.ID) -> (indexPaths: [IndexPath], rect: CGRect)? {
-    let indexPaths = dataSource.snapshot().itemIdentifiers
-      .filter { item in
-        guard case let .line(_, id) = item else { return false }
-        return id.verse == verse
-      }
-      .compactMap { dataSource.indexPath(for: $0) }
-
-    guard !indexPaths.isEmpty else { return nil }
-
-    let rect = indexPaths
-      .map { tableView.rectForRow(at: $0) }
-      .reduce(CGRect.null) { $0.union($1) }
-
-    return rect.isNull ? nil : (indexPaths, rect)
-  }
-
-  /// The strip of page from a given point down to the foot of the screen — the
-  /// part that moves when a verse changes height.
-  private func page(from y: CGFloat) -> CGRect {
-    CGRect(
-      x: tableView.bounds.minX,
-      y: y,
-      width: tableView.bounds.width,
-      height: max(0, tableView.bounds.maxY - y)
-    )
+    return view.convert(rect, from: tableView)
   }
 
   // MARK: - Style
@@ -812,12 +546,9 @@ final class PrayerViewController: UIViewController {
       focusRelease = nil
       focusedLine = nil
 
-      // For the same reason, and one more: a verse id is only unique within its
-      // prayer, so a turned verse 3 left standing would turn verse 3 of the new
-      // prayer over before the reader had seen either side of it.
-      flippedVerses.removeAll()
-      // Its stills are of a page that is about to stop existing.
-      endTurn()
+      // The sheet is about a verse of the prayer being replaced, and it folds
+      // back into a rect on a page that is about to stop existing.
+      nissayaSheet?.dismiss()
 
       turnPage()
     } else if isViewLoaded {
@@ -862,13 +593,8 @@ private enum PrayerLineAction {
   /// Count this line on the beads.
   case beads
 
-  /// Turn the row over to its verse's nissaya, or back to the verse.
-  ///
-  /// One action rather than two, carrying which way it currently points: the
-  /// row has two sides and this is the edge you push, so an "open" that does
-  /// nothing on an already-turned row would be a second action for the same
-  /// thing.
-  case nissaya(isTurned: Bool)
+  /// Open the verse's nissaya in the inline sheet.
+  case nissaya
 
   /// Report a mistake in this line's text or its respelling.
   case report
@@ -881,8 +607,8 @@ private enum PrayerLineAction {
     switch self {
     case .beads:
       return L10n.beads
-    case .nissaya(let isTurned):
-      return isTurned ? L10n.verse : L10n.nissaya
+    case .nissaya:
+      return L10n.nissaya
     case .report:
       return L10n.report
     }
@@ -894,10 +620,8 @@ private enum PrayerLineAction {
     switch self {
     case .beads:
       return "circle.hexagonpath"
-    case .nissaya(let isTurned):
-      // Turning back is not another way into the nissaya, so it does not wear
-      // the nissaya's glyph — it is the row being put back the way it was.
-      return isTurned ? "arrow.uturn.backward" : "character.book.closed"
+    case .nissaya:
+      return "character.book.closed"
     case .report:
       return "exclamationmark.bubble"
     }
@@ -950,7 +674,7 @@ extension PrayerViewController: UITableViewDelegate {
     forRowAt indexPath: IndexPath
   ) {
     guard
-      focusedLine != nil,
+      focusedLine != nil || liftedLine != nil,
       let cell = cell as? PrayerVerseLineCell,
       let item = dataSource.itemIdentifier(for: indexPath)
     else {
@@ -988,7 +712,7 @@ extension PrayerViewController: UITableViewDelegate {
 
     let configuration = UISwipeActionsConfiguration(
       actions: lineActions(forVerse: id.verse).map { action in
-        contextualAction(action, verse: id.verse)
+        contextualAction(action, line: id)
       }
     )
     // A full swipe would fire the first action outright, without the reader
@@ -1010,12 +734,12 @@ extension PrayerViewController: UITableViewDelegate {
   private func lineActions(forVerse verse: Prayer.Verse.ID) -> [PrayerLineAction] {
     guard meaningsByVerse[verse] != nil else { return [.beads, .report] }
 
-    return [.beads, .nissaya(isTurned: flippedVerses.contains(verse)), .report]
+    return [.beads, .nissaya, .report]
   }
 
   private func contextualAction(
     _ action: PrayerLineAction,
-    verse: Prayer.Verse.ID
+    line: PrayerVerseLine.ID
   ) -> UIContextualAction {
     let contextual = UIContextualAction(
       style: .normal,
@@ -1028,11 +752,11 @@ extension PrayerViewController: UITableViewDelegate {
 
       guard case .nissaya = action else { return }
 
-      // After the tray, not under it. The turn and the tray sliding shut are
-      // two animations over the same row, and run together they read as the row
-      // coming apart rather than as one thing following the other.
+      // After the tray, not under it. The sheet leaves from the row's own rect,
+      // and a row still sliding back from a swipe is not yet where that rect
+      // says it is.
       DispatchQueue.main.asyncAfter(deadline: .now() + PrayerReaderMetrics.trayClose) {
-        self?.turn(verse: verse)
+        self?.openNissaya(for: line)
       }
     }
 

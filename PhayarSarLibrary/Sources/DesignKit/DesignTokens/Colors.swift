@@ -61,7 +61,17 @@ public enum AppColor {
     dark: Palette.Separator.dark
   )
   
-  public static let divider = border
+  /// The rule drawn *between* rows inside a card, as opposed to `border`,
+  /// which draws the card's own edge.
+  ///
+  /// Carries more ink than `border` on purpose: an edge is read against the
+  /// canvas behind the card, while a divider has to survive on top of
+  /// `surface` — at `border`'s weight it all but disappears there, in both
+  /// appearances. This lands about where a `List` row separator does.
+  public static let divider = Color.dynamic(
+    light: Palette.Divider.light,
+    dark: Palette.Divider.dark
+  )
   
   // MARK: - States
   
@@ -259,6 +269,11 @@ fileprivate enum Palette {
   enum Separator {
     static let light = Color(hex: "#2A2420", alpha: 0.12)
     static let dark = Color(hex: "#F2EEE8", alpha: 0.14)
+  }
+
+  enum Divider {
+    static let light = Color(hex: "#2A2420", alpha: 0.22)
+    static let dark = Color(hex: "#F2EEE8", alpha: 0.20)
   }
 
   enum TextColor {
