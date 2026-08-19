@@ -179,9 +179,15 @@ public struct PrayerDetailScreen: View {
     // would compete for the same thumb. Restored on pop by the modifier itself.
     .hideTabBar()
     .appBackground()
-    // On appear rather than in `init`, which cannot see the appearance — and the
-    // paper is resolved from the appearance, so nothing may draw before this.
-    .onAppear(perform: followAppearance)
+    // A full reload rather than just the paper, and on every appearance rather
+    // than only the first. This screen's state outlives a push into the reader,
+    // where the same theme cards and the same switch are offered again and keep
+    // what they are given straight away — so coming back here has to read those
+    // choices rather than redraw the ones this screen was left holding.
+    //
+    // It also covers what `init` could not: the paper is resolved from the
+    // appearance, which is not readable there.
+    .onAppear(perform: loadConfiguration)
     // The carousel can land on a prayer with settings of its own, so both the
     // grid and the lit card have to follow it rather than stay on the prayer the
     // screen opened with.

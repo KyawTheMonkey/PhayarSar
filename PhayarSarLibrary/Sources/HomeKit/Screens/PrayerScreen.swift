@@ -164,9 +164,14 @@ public struct PrayerScreen: View {
     .sheet(isPresented: $isEditingTheme, onDismiss: loadConfiguration) {
       PrayerThemeScreen(configuration: $configuration, prayerID: selectedID)
     }
-    // On appear rather than in `init`, which cannot see the appearance — and the
-    // paper is resolved from the appearance, so nothing may draw before this.
-    .onAppear(perform: followAppearance)
+    // A full reload, for the same reason the detail screen does one: this
+    // screen's state outlives a push, and the prayer's configuration can have
+    // been changed by anything else that shows those controls while it was away.
+    //
+    // Safe against the theme sheet's pending edits — presenting a sheet does not
+    // re-run the presenter's `onAppear`, and dismissing it is handled by
+    // `onDismiss` above.
+    .onAppear(perform: loadConfiguration)
     // The switcher can land on a prayer set up quite differently, so the page has
     // to follow it rather than carry the last prayer's settings onto this one.
     .onValueChange(selectedID, perform: loadConfiguration)

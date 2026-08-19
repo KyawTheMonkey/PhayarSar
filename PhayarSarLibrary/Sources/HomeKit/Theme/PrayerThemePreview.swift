@@ -144,15 +144,29 @@ struct PrayerThemePreview: View {
     .frame(maxWidth: .infinity, alignment: settings.alignment.frame)
   }
 
-  /// A verse with no respelling to show: the recited text on its own.
+  /// A verse with no respelling to show: the recited text on its own, closed by
+  /// the same rule the reader draws under every line.
   private func Recited(_ text: String) -> some View {
-    Text(text)
-      .font(recitedFont)
-      .tracking(settings.letterSpacing)
-      .lineSpacing(settings.lineSpacing)
-      .foregroundStyle(ink)
-      .multilineTextAlignment(settings.alignment.textAlignment)
-      .frame(maxWidth: .infinity, alignment: settings.alignment.frame)
+    VStack(alignment: settings.alignment.horizontal, spacing: 0) {
+      Text(text)
+        .font(recitedFont)
+        .tracking(settings.letterSpacing)
+        .lineSpacing(settings.lineSpacing)
+        .foregroundStyle(ink)
+        .multilineTextAlignment(settings.alignment.textAlignment)
+        .frame(maxWidth: .infinity, alignment: settings.alignment.frame)
+
+      Rule()
+        .padding(.top, PrayerReaderMetrics.glossSeparatorSpacing)
+    }
+    .frame(maxWidth: .infinity, alignment: settings.alignment.frame)
+  }
+
+  /// The rule that closes a line, in both of the shapes a line can take.
+  private func Rule() -> some View {
+    Rectangle()
+      .fill(ink.opacity(0.15))
+      .frame(height: PrayerReaderMetrics.glossSeparatorThickness)
   }
 
   /// A verse as an interlinear gloss.
@@ -186,9 +200,7 @@ struct PrayerThemePreview: View {
             .lineSpacing(settings.lineSpacing / 2)
             .foregroundStyle(ink.opacity(0.6))
 
-          Rectangle()
-            .fill(ink.opacity(0.15))
-            .frame(height: PrayerReaderMetrics.glossSeparatorThickness)
+          Rule()
             // The stack's own spacing already contributes `glossPairSpacing`,
             // so only the remainder is added here — otherwise the rule would
             // sit further from the pair than the reader puts it.

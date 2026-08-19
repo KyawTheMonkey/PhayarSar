@@ -132,11 +132,19 @@ private enum PrayerThemeMetrics {
 /// On iPad both passes are shown at once: a form sheet has the room, and
 /// splitting a screenful of controls across two taps there would be ceremony.
 ///
-/// **Save is what keeps a change.** Every control writes straight through to the
-/// page behind, so the reader is always judging the real thing — but only "Save"
-/// puts it in the store. Swiping the sheet away leaves the page as the reader
-/// left it for the rest of the session and writes nothing, so trying something
-/// out costs nothing.
+/// **The two passes keep what they are given differently**, because they are
+/// asked different questions.
+///
+/// The first pass is a choice: a theme, or the respelling on or off. There is
+/// nothing to weigh up and nothing to tune, so a tap there is kept on the spot —
+/// the same as the identical controls on ``PrayerDetailScreen``, which has no
+/// Save button at all. Tapping a theme and closing the sheet has to leave the
+/// reader on that theme.
+///
+/// The second pass is an adjustment: a size, an alignment, three spacings. Those
+/// want trying against the real page before they are settled, so they reach the
+/// page as they move and reach the store only on **Save**. Swiping the sheet away
+/// leaves them on the page for the rest of the session and writes nothing.
 public struct PrayerThemeScreen: View {
   @ObserveInjection private var injectionObserver
 
@@ -323,7 +331,7 @@ public struct PrayerThemeScreen: View {
   @ViewBuilder
   private func QuickControls() -> some View {
     VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
-      PrayerPronunciationSection(isOn: binding(\.showsPronunciation))
+      PrayerPronunciationSection(isOn: pronunciation)
       PrayerThemeSection(selection: configuration.themeSlot, onSelect: select)
 
       if !isRegular {
@@ -760,6 +768,25 @@ public struct PrayerThemeScreen: View {
     // Through the resolver rather than `theme.page(for:)` directly, so that the
     // paper is decided in one place for every screen that shows a prayer.
     configuration = configuration.resolvingBackground(for: colorScheme)
+
+    // A theme is a face and a paper, so both halves of it are kept — the face
+    // even though it is otherwise the second pass's to change. The paper is not
+    // stored at all; it is resolved from the slot.
+    keep {
+      $0.themeSlot = theme.slot
+      $0.settings.font = theme.font
+    }
+  }
+
+  /// The respelling switch: writes through to the page, and keeps the choice.
+  private var pronunciation: Binding<Bool> {
+    Binding(
+      get: { settings.showsPronunciation },
+      set: { isOn in
+        settings.showsPronunciation = isOn
+        keep { $0.settings.showsPronunciation = isOn }
+      }
+    )
   }
 
   /// What the page looks like on a theme with nothing else changed — the
@@ -779,11 +806,28 @@ public struct PrayerThemeScreen: View {
     configuration = configuration.resolvingBackground(for: colorScheme)
   }
 
+  /// Keeps one of the first pass's choices, on the spot.
+  ///
+  /// Changes the *stored* configuration rather than saving the live one, which
+  /// matters when the reader has been into the second pass: a size or a spacing
+  /// they have moved but not saved is still on the page, and committing it as a
+  /// side effect of tapping a theme would take the second pass's Save away from
+  /// them. Only the fields named in `change` are kept; everything else stays as
+  /// the store already had it.
+  private func keep(_ change: (inout PrayerConfiguration) -> Void) {
+    var stored = PrayerConfigurationStore.shared.configuration(for: prayerID)
+    change(&stored)
+    PrayerConfigurationStore.shared.save(stored, for: prayerID)
+  }
+
   /// Keeps the reader's choices, against this prayer.
   ///
-  /// The only write in this sheet. Everything up to here has changed the page
-  /// behind and nothing else, which is what makes swiping the sheet away a way
-  /// to back out: the screen that presented this reloads from the store on
+  /// Writes the configuration whole, which is what settles the second pass — the
+  /// first pass's choices are already in the store by the time this runs, and
+  /// writing them again costs nothing.
+  ///
+  /// This is what makes swiping the sheet away a way to back out of an
+  /// adjustment: the screen that presented this reloads from the store on
   /// dismiss either way, so a save is picked up and an abandoned experiment is
   /// dropped, with no "did they save?" flag between them.
   private func save() {

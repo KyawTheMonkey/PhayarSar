@@ -9,7 +9,9 @@ import UIKit
 /// With the respelling on, a line is an interlinear gloss — the respelling with
 /// the Pali it stands for beneath it — because the respelling is what someone
 /// reciting is actually reading off the page. With it off, the Pali stands
-/// alone as the recited line and there is no pair for a rule to close.
+/// alone as the recited line. Either way the rule closes it: what it separates
+/// is one line of the prayer from the next, which is a thing the reader needs
+/// whether or not there is a respelling above it.
 ///
 /// Self-sizing — the table sets `automaticDimension` and the stack's
 /// constraints to the content guide are what give the cell its height.
@@ -120,7 +122,7 @@ final class PrayerVerseLineCell: UITableViewCell {
     contentView.directionalLayoutMargins = NSDirectionalEdgeInsets(
       top: 0,
       leading: PrayerReaderMetrics.horizontalInset,
-      bottom: gap(before: line.next, style: style, isGlossed: isGlossed),
+      bottom: gap(before: line.next, style: style),
       trailing: PrayerReaderMetrics.horizontalInset
     )
 
@@ -145,9 +147,6 @@ final class PrayerVerseLineCell: UITableViewCell {
       lineLabel.attributedText = style.attributedVerse(line.gloss.content)
     }
 
-    // The rule closes a pair. Without the respelling there is no pair, and a
-    // rule under every line would be scoring a plain page of text.
-    separator.isHidden = !isGlossed
     separator.backgroundColor = style.separatorColor
     focusTint.backgroundColor = style.focusColor
 
@@ -161,16 +160,14 @@ final class PrayerVerseLineCell: UITableViewCell {
   ///   clearance there, and both together would read as a hole under it.
   private func gap(
     before next: PrayerVerseLine.Next,
-    style: PrayerReadingStyle,
-    isGlossed: Bool
+    style: PrayerReadingStyle
   ) -> CGFloat {
     switch next {
     case .line:
-      // A glossed line is two lines of text closed by a rule, so it needs more
-      // air under it than the reader's leading alone would give a plain one.
-      return isGlossed
-        ? PrayerReaderMetrics.glossLineSpacing + style.lineSpacing
-        : style.lineSpacing
+      // Every line is closed by a rule, so every line needs more air under it
+      // than the reader's leading alone would give — enough that the rule stays
+      // nearer the line it closes than the one it opens.
+      return PrayerReaderMetrics.glossLineSpacing + style.lineSpacing
     case .verse:
       return style.verseSpacing
     case .end:

@@ -52,16 +52,15 @@ enum PrayerReaderMetrics {
   /// to the next pair instead.
   static let glossPairSpacing: CGFloat = 2
 
-  /// Base gap between the rule under one pair of a gloss and the next pair,
-  /// before the reader's own line-spacing setting is added to it. There is a
-  /// floor under it because a pair is two lines of text tall, and at a setting
-  /// of zero the pairs would run into each other where plain lines would only
-  /// sit close.
+  /// Base gap between the rule under one line and the line after it, before the
+  /// reader's own line-spacing setting is added to it. There is a floor under it
+  /// because the rule has to stay nearer the line it closes than the one it
+  /// opens, which it would not at a line-spacing setting of zero.
   static let glossLineSpacing: CGFloat = 8
 
-  /// Gap between a glossed pair and the rule under it. Nearer to the pair it
-  /// closes than to the one it opens, so the rule reads as ending a line rather
-  /// than as floating between two.
+  /// Gap between a line and the rule under it. Nearer to the line it closes than
+  /// to the one it opens, so the rule reads as ending a line rather than as
+  /// floating between two.
   static let glossSeparatorSpacing: CGFloat = 8
 
   /// A hairline at the densest screen the app runs on. Fixed rather than
@@ -164,8 +163,8 @@ struct PrayerReadingStyle {
   /// back so the recited line stays the loudest thing on the page.
   let secondaryTextColor: UIColor
 
-  /// The rule under each line of a gloss. Far fainter than either text: it is
-  /// there to close a line, not to be read as part of it.
+  /// The rule under each line. Far fainter than either text: it is there to
+  /// close a line, not to be read as part of it.
   let separatorColor: UIColor
 
   /// The tint behind a line the reader has tapped. Fainter still than the rule
