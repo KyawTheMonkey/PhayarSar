@@ -1144,9 +1144,9 @@ extension PrayerViewController: PrayerRemoteReader {
     let pageHeight = tableView.bounds.height - inset.top - inset.bottom
     guard pageHeight > 0 else { return }
 
-    // A push on the page is the reader taking hold of it, as far as any follow
-    // in flight is concerned — same as a finger landing on it.
-    stopFollowingScroll()
+    // A push on the page is the reader taking hold of it, as far as anything in
+    // flight is concerned — same as a finger landing on it.
+    settleForRemote()
     releaseFocus()
 
     let lowest = -inset.top
@@ -1202,6 +1202,38 @@ extension PrayerViewController: PrayerRemoteReader {
     // The tap path, exactly. The verse arrives in the middle of the page with
     // the rest of it stepped back around it, and is let go of a beat later.
     follow(lines[row].id, at: IndexPath(row: row, section: .zero))
+  }
+
+  /// Brings the page to rest where it currently *looks* like it is, dropping any
+  /// move still in flight.
+  ///
+  /// A broader version of ``stopFollowingScroll()``, which only ever cuts a
+  /// follow short. This has to cut short a previous *remote* scroll too, and the
+  /// difference matters on the commonest sequence there is: press the page-down
+  /// button, then reach for the crown before its quarter-second animation has
+  /// finished. `contentOffset` reads as the animation's destination the instant
+  /// it starts, so the crown's nudges would be measured from a place the page
+  /// has not reached, applied as model changes the running animation then
+  /// overrides, and the whole turn of the wrist would be swallowed — followed by
+  /// a jump when the animation ended.
+  ///
+  /// Checked against the layer's animations rather than against `focusedLine`,
+  /// because a remote scroll leaves no focus behind to test.
+  private func settleForRemote() {
+    guard
+      tableView.layer.animationKeys()?.isEmpty == false,
+      let presented = tableView.layer.presentation()?.bounds.origin
+    else {
+      return
+    }
+
+    UIView.performWithoutAnimation {
+      // Only the scroll animation lives on the table's own layer; the page
+      // receding through a follow is on the cells', and `releaseFocus` puts
+      // that back.
+      tableView.layer.removeAllAnimations()
+      tableView.contentOffset = presented
+    }
   }
 
   // MARK: - Where the page is
