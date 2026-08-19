@@ -83,6 +83,15 @@ public final class RemoteLink: NSObject, ObservableObject {
   private var lastContextUpdate = Date.distantPast
   private static let contextInterval: TimeInterval = 2
 
+  /// The floor between two live state sends. Ten a second is far finer than a
+  /// reader can take in off a wrist, and leaves the link room for the commands
+  /// coming the other way.
+  private static let liveStateInterval: TimeInterval = 0.1
+
+  private var lastLiveSend = Date.distantPast
+  private var pendingLiveState: PrayerRemoteState?
+  private var liveFlush: Task<Void, Never>?
+
   private override init() {
     super.init()
   }
@@ -145,14 +154,9 @@ public final class RemoteLink: NSObject, ObservableObject {
 #if canImport(WatchConnectivity)
     guard let session, session.activationState == .activated else { return }
 
-    // The live path. Without the catalog, which does not change between two
-    // verses and is the bulk of the payload.
-    if session.isReachable, let payload = coder.encode(newState.withoutCatalog) {
-      session.sendMessage(
-        [RemoteCoder.stateKey: payload],
-        replyHandler: nil,
-        errorHandler: nil
-      )
+    // The live path, throttled — see `sendLive(_:)`.
+    if session.isReachable {
+      sendLive(newState)
     }
 
     // The durable path, throttled.
@@ -167,6 +171,63 @@ public final class RemoteLink: NSObject, ObservableObject {
       // and the next publish tries again.
     }
 #endif
+  }
+
+  /// Sends the live state, at most ``liveStateInterval`` apart.
+  ///
+  /// A spun crown has the watch sending about fifteen scroll commands a second,
+  /// and the page crossing a verse nearly as often — so an unthrottled answer to
+  /// each would put thirty-odd messages a second on a link that is not built for
+  /// it, in both directions at once. `WCSession` starts refusing them, and what
+  /// it refuses is as likely to be a command as a state.
+  ///
+  /// What is dropped is only ever an *intermediate* position. The last one
+  /// always lands, because a send that arrives too soon is held rather than
+  /// discarded and goes out at the end of the window — without which the watch
+  /// would settle showing whichever verse the throttle happened to let through.
+  private func sendLive(_ newState: PrayerRemoteState) {
+#if canImport(WatchConnectivity)
+    let elapsed = Date().timeIntervalSince(lastLiveSend)
+    guard elapsed >= Self.liveStateInterval else {
+      pendingLiveState = newState
+      scheduleLiveFlush(after: Self.liveStateInterval - elapsed)
+      return
+    }
+
+    liveFlush?.cancel()
+    liveFlush = nil
+    pendingLiveState = nil
+    lastLiveSend = Date()
+
+    // Without the catalog, which does not change between two verses and is the
+    // bulk of the payload. The watch folds each update onto the catalog it
+    // already has — see `PrayerRemoteState.merging(_:)`.
+    guard
+      let session,
+      session.isReachable,
+      let payload = coder.encode(newState.withoutCatalog)
+    else {
+      return
+    }
+
+    session.sendMessage(
+      [RemoteCoder.stateKey: payload],
+      replyHandler: nil,
+      errorHandler: nil
+    )
+#endif
+  }
+
+  private func scheduleLiveFlush(after delay: TimeInterval) {
+    guard liveFlush == nil else { return }
+
+    liveFlush = Task { [weak self] in
+      try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+      guard !Task.isCancelled, let self, let pending = self.pendingLiveState else { return }
+
+      self.liveFlush = nil
+      self.sendLive(pending)
+    }
   }
 
   // MARK: - Delegate hand-offs
