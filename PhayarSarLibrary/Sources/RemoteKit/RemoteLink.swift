@@ -144,19 +144,21 @@ public final class RemoteLink: NSObject, ObservableObject {
 
   /// Publishes where the phone is.
   ///
-  /// - Parameter force: writes the application context even if the interval
-  ///   since the last one has not elapsed. Used for the changes a cold watch
-  ///   must not miss — opening or closing the reader, turning to another
-  ///   prayer — as against the steady drip of verse changes.
+  /// - Parameter force: marks a moment the watch must not miss — the reader
+  ///   opening or closing, a turn to another prayer, or the watch asking outright
+  ///   where the phone is — as against the steady drip of verse changes. Those
+  ///   go out whole and immediately: past the live path's throttle, carrying the
+  ///   catalog, and writing the application context whatever its own interval
+  ///   says.
   public func publish(_ newState: PrayerRemoteState, force: Bool = false) {
     state = newState
 
 #if canImport(WatchConnectivity)
     guard let session, session.activationState == .activated else { return }
 
-    // The live path, throttled — see `sendLive(_:)`.
+    // The live path, throttled — see `sendLive(_:force:)`.
     if session.isReachable {
-      sendLive(newState)
+      sendLive(newState, force: force)
     }
 
     // The durable path, throttled.
@@ -185,10 +187,10 @@ public final class RemoteLink: NSObject, ObservableObject {
   /// always lands, because a send that arrives too soon is held rather than
   /// discarded and goes out at the end of the window — without which the watch
   /// would settle showing whichever verse the throttle happened to let through.
-  private func sendLive(_ newState: PrayerRemoteState) {
+  private func sendLive(_ newState: PrayerRemoteState, force: Bool) {
 #if canImport(WatchConnectivity)
     let elapsed = Date().timeIntervalSince(lastLiveSend)
-    guard elapsed >= Self.liveStateInterval else {
+    guard force || elapsed >= Self.liveStateInterval else {
       pendingLiveState = newState
       scheduleLiveFlush(after: Self.liveStateInterval - elapsed)
       return
@@ -199,13 +201,20 @@ public final class RemoteLink: NSObject, ObservableObject {
     pendingLiveState = nil
     lastLiveSend = Date()
 
-    // Without the catalog, which does not change between two verses and is the
-    // bulk of the payload. The watch folds each update onto the catalog it
-    // already has — see `PrayerRemoteState.merging(_:)`.
+    // Ordinary updates go without the catalog, which does not change between
+    // two verses and is the bulk of the payload; the watch folds them onto the
+    // catalog it already has — see `PrayerRemoteState.merging(_:)`.
+    //
+    // A forced update carries it. That is what a watch launching cold is
+    // answered with, and it must not be a state whose prayer list is empty: the
+    // catalog otherwise arrives only by application context, which the system
+    // delivers "at an appropriate time" and not necessarily soon — leaving the
+    // reader tapping through to a jump list with nothing in it. Two kilobytes,
+    // on the handful of occasions that actually matter.
     guard
       let session,
       session.isReachable,
-      let payload = coder.encode(newState.withoutCatalog)
+      let payload = coder.encode(force ? newState : newState.withoutCatalog)
     else {
       return
     }
@@ -226,7 +235,7 @@ public final class RemoteLink: NSObject, ObservableObject {
       guard !Task.isCancelled, let self, let pending = self.pendingLiveState else { return }
 
       self.liveFlush = nil
-      self.sendLive(pending)
+      self.sendLive(pending, force: false)
     }
   }
 
@@ -237,18 +246,33 @@ public final class RemoteLink: NSObject, ObservableObject {
 
   fileprivate func linkDidActivate(reachable: Bool) {
     isActivated = true
-    isReachable = reachable
+    becameReachable(reachable)
   }
 
   fileprivate func reachabilityDidChange(_ reachable: Bool) {
+    becameReachable(reachable)
+  }
+
+  /// Records reachability, and asks the phone where it is whenever the link has
+  /// just become usable.
+  ///
+  /// Called from *both* delegate callbacks, which is the whole point. Activation
+  /// can complete already reachable — the phone app is up and the watch app was
+  /// opened second — and in that case `sessionReachabilityDidChange` never
+  /// fires, because nothing changed. Asking only from there left the watch
+  /// connected but never told anything: it sat on "No prayer open" with a prayer
+  /// open on the phone, until something happened to make the link drop and come
+  /// back.
+  private func becameReachable(_ reachable: Bool) {
+    let wasReachable = isReachable
     isReachable = reachable
 
-    // Coming back after a gap, the watch's picture of the phone is however old
-    // the gap was. Ask rather than assume.
 #if os(watchOS)
-    if reachable {
-      send(.requestState)
-    }
+    // Purely the transition into reachable. `isReachable` starts `false`, so
+    // activation completing already-reachable is one of these too — which is
+    // the case that was being missed.
+    guard reachable, !wasReachable else { return }
+    send(.requestState)
 #endif
   }
 

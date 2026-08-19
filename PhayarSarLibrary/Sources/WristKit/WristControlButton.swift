@@ -40,7 +40,16 @@ struct WristControlButton: View {
   }
 
   private var foreground: Color {
-    isProminent ? AppColor.textInverse : AppColor.primary
+    // `buttonPrimaryText` rather than `textInverse`, which is the wrong token
+    // here and invisibly so on the watch: `textInverse` is "the opposite of the
+    // current appearance", and since every colour resolves to its dark half on
+    // a watch (see `Color.dynamic`) it comes back as the near-black meant for
+    // light backgrounds — drawn on the accent fill, at a disabled control's
+    // opacity, that is a button with no icon on it at all.
+    //
+    // `buttonPrimaryText` is white in both appearances, which is what a filled
+    // accent button wants on either platform.
+    isProminent ? AppColor.buttonPrimaryText : AppColor.primary
   }
 
   private var background: Color {
