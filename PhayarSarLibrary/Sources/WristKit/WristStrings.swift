@@ -50,6 +50,7 @@ struct WristStrings {
   var previousPrayer: String { pick("Previous prayer", "ယခင်ဘုရားစာ") }
   var nextPrayer: String { pick("Next prayer", "နောက်ဘုရားစာ") }
   var prayers: String { pick("Prayers", "ဘုရားစာများ") }
+  var textSize: String { pick("Text size", "စာလုံးအရွယ်အစား") }
   var closeReader: String { pick("Close reader", "ဘုရားစာ ပိတ်ရန်") }
   var disconnected: String { pick("iPhone not reachable", "ဖုန်းနှင့် မချိတ်ဆက်ရသေးပါ") }
   var disconnectedHint: String {

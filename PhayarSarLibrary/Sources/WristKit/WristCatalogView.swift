@@ -22,6 +22,8 @@ struct WristCatalogView: View {
     List {
       if remote.state.isReaderOpen {
         Section {
+          textSizeStepper
+
           Button(role: .destructive) {
             remote.closeReader()
             dismiss()
@@ -66,6 +68,45 @@ struct WristCatalogView: View {
     }
     .navigationTitle(strings.prayers)
     .navigationBarTitleDisplayMode(.inline)
+  }
+
+  // MARK: - Text size
+
+  /// Sets how large the recited text is on the phone.
+  ///
+  /// Here rather than on the remote screen because it is a decision made once
+  /// at the start of a reading, and the remote screen's room belongs to the
+  /// three controls used continuously through one.
+  private var textSizeStepper: some View {
+    Stepper(value: textSize, in: WristMetrics.textSizeRange, step: WristMetrics.textSizeStep) {
+      HStack {
+        Text(strings.textSize)
+          .font(AppFont.caption)
+          .foregroundStyle(AppColor.textSecondary)
+
+        Spacer(minLength: 4)
+
+        Text("\(remote.state.textSize)")
+          .font(AppFont.bodySemibold)
+          .foregroundStyle(AppColor.textPrimary)
+          .monospacedDigit()
+      }
+    }
+    .disabled(!remote.isReachable)
+  }
+
+  /// Reads the phone's size and writes a command — with nothing in between.
+  ///
+  /// The number shown moves only once the phone has said it moved, like every
+  /// other value on this watch. It costs a round trip of lag on a control that
+  /// is pressed a handful of times, and buys the guarantee that the watch never
+  /// shows a size the page is not actually set at — which is what an optimistic
+  /// local copy would do every time a command was dropped.
+  private var textSize: Binding<Int> {
+    Binding(
+      get: { remote.state.textSize },
+      set: { remote.setTextSize($0) }
+    )
   }
 }
 #endif

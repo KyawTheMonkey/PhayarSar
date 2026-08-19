@@ -24,8 +24,18 @@ struct WristReaderView: View {
   var body: some View {
     VStack(spacing: WristMetrics.sectionSpacing) {
       header
+
+      // The one element that gives. Everything else on this screen has a fixed
+      // height, and the total of those heights plus three lines of verse
+      // overflows a 41mm watch — so the verse takes whatever is left over and
+      // shows as much of itself as fits, which on a 41mm is about two lines and
+      // on an Ultra is four.
+      //
+      // Hand-tuning the numbers to fit the smallest watch was the alternative,
+      // and it would have wasted a third of the Ultra's screen to do it.
       glance
-      Spacer(minLength: 0)
+        .frame(maxHeight: .infinity)
+
       controls
       prayerSteps
     }
@@ -79,10 +89,38 @@ struct WristReaderView: View {
             .foregroundStyle(AppColor.textSecondary)
             .monospacedDigit()
         }
+
+        progressBar
       }
       .frame(maxWidth: .infinity)
     }
     .buttonStyle(.plain)
+  }
+
+  /// How far through the prayer the page is.
+  ///
+  /// The count above it is the exact answer and this is the felt one — a reader
+  /// glancing down mid-recitation reads a bar in less time than two numbers, and
+  /// "nearly there" is usually all they were asking.
+  @ViewBuilder
+  private var progressBar: some View {
+    if let progress = state.progress {
+      GeometryReader { proxy in
+        ZStack(alignment: .leading) {
+          Capsule()
+            .fill(AppColor.primarySoft)
+
+          Capsule()
+            .fill(AppColor.primary)
+            .frame(width: proxy.size.width * progress)
+        }
+      }
+      .frame(height: WristMetrics.progressHeight)
+      // Animated because the page it tracks moves continuously under the crown,
+      // and a bar that jumped verse to verse would read as a different control
+      // from the one the reader is turning.
+      .animation(.easeOut(duration: 0.2), value: progress)
+    }
   }
 
   // MARK: - Glance
@@ -95,12 +133,31 @@ struct WristReaderView: View {
   @ViewBuilder
   private var glance: some View {
     if let text = state.verseText, !text.isEmpty {
-      Text(text)
-        .font(AppFont.jasmine(size: WristMetrics.verseSize))
-        .foregroundStyle(AppColor.textPrimary.opacity(0.9))
-        .multilineTextAlignment(.center)
-        .lineLimit(WristMetrics.verseLineLimit)
-        .frame(maxWidth: .infinity)
+      VStack(spacing: 3) {
+        // Only some verses are named, and only the named ones show it — see
+        // `Prayer.Verse.name`. Where there is one it is the fastest way to know
+        // which part of a long prayer the page is in, faster than reading the
+        // verse itself.
+        if let name = state.verseName, !name.isEmpty {
+          Text(name)
+            .font(AppFont.jasmine(size: WristMetrics.verseNameSize))
+            .foregroundStyle(AppColor.primary)
+            .lineLimit(1)
+        }
+
+        Text(text)
+          .font(AppFont.jasmine(size: WristMetrics.verseSize))
+          .foregroundStyle(AppColor.textPrimary.opacity(0.9))
+          .multilineTextAlignment(.center)
+          // A ceiling, not a target — the flexible frame above decides how many
+          // lines there is actually room for. This only stops a very long verse
+          // from claiming the whole screen on an Ultra.
+          .lineLimit(WristMetrics.verseLineLimit)
+          // Burmese sets long, and a verse whose first word will not fit the
+          // width would otherwise truncate to nothing legible.
+          .minimumScaleFactor(WristMetrics.verseMinimumScale)
+      }
+      .frame(maxWidth: .infinity)
     } else if !state.isReaderOpen {
       Text(strings.readerClosed)
         .font(AppFont.caption)

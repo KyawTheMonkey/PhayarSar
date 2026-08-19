@@ -40,12 +40,39 @@ enum WristMetrics {
 
   // MARK: - Layout
 
-  /// The reading glance — how many lines of the current verse are shown before
-  /// it truncates. Three fits the 41mm screen with the controls still on it.
-  static let verseLineLimit = 3
+  /// A ceiling on the glance, so one long verse cannot take an Ultra's whole
+  /// screen. How many lines actually show is decided by the room left after the
+  /// fixed rows — see `WristReaderView.body`.
+  static let verseLineLimit = 4
+
+  /// How far the verse may shrink to fit the width before it truncates instead.
+  static let verseMinimumScale: CGFloat = 0.8
+
+  /// How thick the bar under the title is. A hairline: it says how far through
+  /// the prayer the page is and nothing else, and anything heavier competes
+  /// with the verse it sits above.
+  static let progressHeight: CGFloat = 2
+
+  // MARK: - Text size
+
+  /// What the size stepper offers, mirroring the phone's own compact range.
+  ///
+  /// Advisory rather than authoritative. `PrayerScreen` clamps whatever arrives
+  /// from the wrist against `PrayerThemeMetrics` before applying it, because
+  /// only the phone knows whether it is laid out compact or regular. These
+  /// bounds exist so the stepper stops where the phone would have stopped it,
+  /// rather than letting the reader press a button that does nothing.
+  static let textSizeRange = 14...32
+
+  /// Two points a step, matching the phone's slider — one point is a change
+  /// nobody can see.
+  static let textSizeStep = 2
 
   static let controlSpacing: CGFloat = 6
-  static let sectionSpacing: CGFloat = 10
+
+  /// Between the four rows of the remote. Tight, because on a 41mm watch every
+  /// point spent here is a point the verse does not get.
+  static let sectionSpacing: CGFloat = 8
 
   /// The tap targets. Apple's floor is 44pt square on the phone; on the watch
   /// the useful floor is lower but the buttons here are the whole point of the
@@ -59,6 +86,9 @@ enum WristMetrics {
 
   static let titleSize: CGFloat = 15
   static let verseSize: CGFloat = 16
-  static let captionSize: CGFloat = 12
+
+  /// The verse's name, where it has one. Smaller than the verse it titles and
+  /// set in the accent, so it reads as a label rather than as a first line.
+  static let verseNameSize: CGFloat = 12
 }
 #endif
