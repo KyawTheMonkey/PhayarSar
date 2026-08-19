@@ -283,7 +283,6 @@ public struct PrayerDetailScreen: View {
     [
       ("calendar.badge.plus", L10n.addToPlan, nil),
       ("character.book.closed", L10n.nissaya, .nissaya(prayerID: prayer.id)),
-      ("paintpalette", L10n.themeAndSettings, nil),
       ("exclamationmark.bubble", L10n.reportError, nil)
     ]
   }
@@ -319,9 +318,10 @@ public struct PrayerDetailScreen: View {
   /// What this prayer is currently set to be read with.
   ///
   /// A two-column grid of specs rather than the labelled rows the sections
-  /// above use — this is a spec sheet, not a menu. Nothing here is tappable
-  /// ("Theme & settings" above is where these get changed), so rows that looked
-  /// like the tappable ones would be promising something they don't do.
+  /// above use — this is a spec sheet, not a menu. Nothing here is tappable:
+  /// these are changed from inside the reader, where the page they describe is
+  /// on screen to judge them against, so rows that looked like the tappable ones
+  /// would be promising something they don't do.
   ///
   /// The numbers are unitless on purpose: they are the reader's own scale, and
   /// labelling them "pt" would imply a precision the sliders don't have.
@@ -671,14 +671,6 @@ private struct SpecCell: View {
     // Read as "Text size, 28" rather than as separate stops.
     .accessibilityElement(children: .combine)
     .accessibilityLabel("\(label), \(value)")
-  }
-}
-
-extension Double {
-  /// A reader setting as it appears in the summary: `15`, not `15.0`, but
-  /// `2.5` kept intact if a slider ever lands between two whole numbers.
-  fileprivate var settingValueText: String {
-    self == rounded() ? String(Int(self)) : String(format: "%.1f", self)
   }
 }
 

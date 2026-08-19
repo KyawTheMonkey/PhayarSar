@@ -147,18 +147,6 @@
     "En": "Classic",
     "Mm": "ပုံမှန်"
   },
-  "page_yellow": {
-    "En": "Yellow",
-    "Mm": "အဝါ"
-  },
-  "page_grey": {
-    "En": "Grey",
-    "Mm": "မီးခိုး"
-  },
-  "page_black": {
-    "En": "Black",
-    "Mm": "အနက်"
-  },
   "prayer_not_found": {
     "En": "This prayer is no longer available.",
     "Mm": "ဤဘုရားစာကို ရှာမတွေ့ပါ။"
@@ -426,5 +414,89 @@
   "sign_out_confirm_message": {
     "En": "Your data stays in iCloud. This device goes back to storing everything locally.",
     "Mm": "သင့်အချက်အလက်များသည် iCloud တွင် ကျန်ရှိနေမည်ဖြစ်ပြီး ဤစက်တွင်မူ စက်တွင်း၌သာ ပြန်လည်သိမ်းဆည်းပါမည်။"
+  },
+  "font": {
+    "En": "Font",
+    "Mm": "စာလုံးပုံစံ"
+  },
+  "font_jasmine": {
+    "En": "Jasmine",
+    "Mm": "ဂျက်စမင်း"
+  },
+  "font_panglong": {
+    "En": "PangLong",
+    "Mm": "ပန်းလောင်"
+  },
+  "font_square": {
+    "En": "Square",
+    "Mm": "လေးထောင့်"
+  },
+  "font_yoe_yar": {
+    "En": "YoeYar",
+    "Mm": "ရိုးရာ"
+  },
+  "theme_presets": {
+    "En": "Themes",
+    "Mm": "အပြင်အဆင်များ"
+  },
+  "spacing": {
+    "En": "Spacing",
+    "Mm": "အကွာအဝေး"
+  },
+  "show_pronunciation": {
+    "En": "Show pronunciation",
+    "Mm": "အသံထွက်ပြပါ"
+  },
+  "reset_to_default": {
+    "En": "Reset to default",
+    "Mm": "မူလအတိုင်း ပြန်ထားပါ"
+  },
+  "preview": {
+    "En": "Preview",
+    "Mm": "အစမ်းကြည့်ရှုရန်"
+  },
+  "pronunciation_footer": {
+    "En": "Shows the Burmese respelling above each line. Some prayers have none yet.",
+    "Mm": "စာကြောင်းတိုင်း၏ အပေါ်တွင် အသံထွက်ကို ပြပါမည်။ အချို့ဘုရားစာများတွင် အသံထွက် မထည့်ရသေးပါ။"
+  },
+  "theme_pairing_footer": {
+    "En": "Every theme has a light and a dark version. Your choice follows when the appearance changes.",
+    "Mm": "အပြင်အဆင်တိုင်းတွင် အလင်းနှင့် အမှောင် ပုံစံနှစ်မျိုးရှိပါသည်။ အသွင်အပြင်ပြောင်းသောအခါ သင်ရွေးထားသည့်အတိုင်း လိုက်ပါပြောင်းလဲပါမည်။"
+  },
+  "save": {
+    "En": "Save",
+    "Mm": "သိမ်းဆည်းပါ"
+  },
+  "customize": {
+    "En": "Customize",
+    "Mm": "စိတ်ကြိုက် ပြင်ဆင်ရန်"
+  },
+  "customize_theme": {
+    "En": "Customize theme",
+    "Mm": "အပြင်အဆင် ပြင်ဆင်ရန်"
+  },
+  "reset_theme": {
+    "En": "Reset theme",
+    "Mm": "အပြင်အဆင် ပြန်လည်သတ်မှတ်ရန်"
+  },
+  "page_parchment": {
+    "En": "Parchment",
+    "Mm": "စက္ကူဟောင်း"
+  },
+  "page_paper": {
+    "En": "Paper",
+    "Mm": "စက္ကူ"
+  },
+  "page_midnight": {
+    "En": "Midnight",
+    "Mm": "သန်းခေါင်"
+  },
+  "page_charcoal": {
+    "En": "Charcoal",
+    "Mm": "မီးသွေး"
+  },
+  "page_ink": {
+    "En": "Ink",
+    "Mm": "မှင်"
   }
 }

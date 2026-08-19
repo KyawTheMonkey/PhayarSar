@@ -97,17 +97,52 @@ public enum AppColor {
   
   // MARK: - Reading page
 
-  /// The paper colours a prayer can be read on.
+  /// The paper colours a prayer can be read on — three light, three dark.
   ///
-  /// Deliberately *not* `Color.dynamic`: these are a reading preference, not a
-  /// theme. Someone who picks the black page wants it black in daylight too,
-  /// and a "page colour" that changed with the system appearance would make the
-  /// setting meaningless.
+  /// Deliberately *not* `Color.dynamic`: an individual paper is a fixed colour,
+  /// and one that changed with the system appearance would be meaningless.
+  /// Which of the six is in use follows the appearance, but that is a decision
+  /// made a level up, by the theme — see `PrayerTheme`.
+  ///
+  /// The three in each set are separated by **hue**, not just by lightness.
+  /// Three warm off-whites at slightly different brightnesses are three papers
+  /// nobody can tell apart on a phone in daylight, which is what the earlier
+  /// four-colour set amounted to once two themes had to share.
   public enum Page {
+    /// Warm near-white. The default, and the brightest of the three.
     public static let classic = Palette.PageColor.classic
-    public static let yellow = Palette.PageColor.yellow
-    public static let grey = Palette.PageColor.grey
-    public static let black = Palette.PageColor.black
+
+    /// Amber cream — the sepia page. Clearly deeper and more saturated than
+    /// ``classic`` rather than a shade off it.
+    public static let parchment = Palette.PageColor.parchment
+
+    /// Cool grey-green — a soft sage. The only light paper with no warmth in it,
+    /// and the darkest of the three. Both are needed: at a lighter tint it read
+    /// as another off-white beside ``classic`` rather than as its own stock.
+    public static let paper = Palette.PageColor.paper
+
+    /// Deep blue-black. Reads as night rather than as a dimmed page.
+    public static let midnight = Palette.PageColor.midnight
+
+    /// Warm near-black, the darkest end of the app's own grey ramp.
+    public static let charcoal = Palette.PageColor.charcoal
+
+    /// True black, for OLED and for anyone who wants the page to disappear.
+    public static let ink = Palette.PageColor.ink
+
+    /// The ink each paper carries.
+    ///
+    /// Paired rather than shared: pure black on cream is harsher than the paper
+    /// deserves, and pure white on true black blooms. Each of these is pulled a
+    /// little way toward its own paper, and each clears 10:1 against it.
+    public enum Ink {
+      public static let classic = Palette.PageInk.classic
+      public static let parchment = Palette.PageInk.parchment
+      public static let paper = Palette.PageInk.paper
+      public static let midnight = Palette.PageInk.midnight
+      public static let charcoal = Palette.PageInk.charcoal
+      public static let ink = Palette.PageInk.ink
+    }
   }
 
   // MARK: - Grey
@@ -157,14 +192,28 @@ public enum AppColor {
 /// TextSecondary, TextTertiary) — do not use these directly, go through
 /// `AppColor`.
 fileprivate enum Palette {
-  /// Fixed paper colours — see `AppColor.Page` for why these have no
-  /// light/dark pair. The two light pages are warm rather than pure white, to
-  /// sit with the rest of the palette; the two dark ones carry light text.
+  /// Fixed paper colours — see `AppColor.Page` for why these have no light/dark
+  /// pair, and for why the three in each set differ in hue rather than only in
+  /// brightness.
   enum PageColor {
-    static let classic = Color(hex: "#FBF7F0")
-    static let yellow = Color(hex: "#F5E9C8")
-    static let grey = Color(hex: "#2C2A28")
-    static let black = Color(hex: "#000000")
+    static let classic = Color(hex: "#FFFAF3")
+    static let parchment = Color(hex: "#F0E1BE")
+    static let paper = Color(hex: "#F5F5F5")
+
+    static let midnight = Color(hex: "#141922")
+    static let charcoal = Color(hex: "#2B2725")
+    static let ink = Color(hex: "#000000")
+  }
+
+  /// The ink for each paper above, in the same order.
+  enum PageInk {
+    static let classic = Color(hex: "#22201D")
+    static let parchment = Color(hex: "#2E2517")
+    static let paper = Color(hex: "#1E2320")
+
+    static let midnight = Color(hex: "#E4EAF4")
+    static let charcoal = Color(hex: "#F0EAE2")
+    static let ink = Color(hex: "#E6E6E6")
   }
 
   enum Grey {

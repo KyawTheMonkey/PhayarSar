@@ -1,6 +1,9 @@
 import DesignKit
 import LocalisationKit
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// How one prayer is laid out on the reading screen.
 ///
@@ -12,6 +15,8 @@ import SwiftUI
 public struct PrayerSettings: Hashable, Sendable {
   /// Point size of the recited text.
   public var textSize: Int
+  /// The Burmese face the recited text is set in.
+  public var font: Face
   public var alignment: Alignment
   public var background: Background
   /// Extra tracking between characters.
@@ -29,6 +34,7 @@ public struct PrayerSettings: Hashable, Sendable {
 
   public init(
     textSize: Int = 28,
+    font: Face = .jasmine,
     alignment: Alignment = .left,
     background: Background = .classic,
     letterSpacing: Double = 2,
@@ -37,6 +43,7 @@ public struct PrayerSettings: Hashable, Sendable {
     showsPronunciation: Bool = true
   ) {
     self.textSize = textSize
+    self.font = font
     self.alignment = alignment
     self.background = background
     self.letterSpacing = letterSpacing
@@ -47,6 +54,71 @@ public struct PrayerSettings: Hashable, Sendable {
 
   /// What a prayer opens with before the reader has changed anything.
   public static let standard = PrayerSettings()
+}
+
+// MARK: - Face
+
+extension PrayerSettings {
+  /// The Burmese face a prayer is set in.
+  ///
+  /// All four ship with the app and are registered at launch by
+  /// `Typography.registerFonts()`, so any of them can be asked for at any time
+  /// without a load. The Latin faces in `AppFont` are deliberately absent: this
+  /// is the setting for the *recited* text, which is always Burmese, and none of
+  /// Lora or Inter can draw it.
+  public enum Face: String, CaseIterable, Hashable, Sendable, Codable {
+    case jasmine
+    case panglong
+    case square
+    case yoeYar
+
+    public var displayText: String {
+      switch self {
+      case .jasmine:
+        return L10n.fontJasmine
+      case .panglong:
+        return L10n.fontPanglong
+      case .square:
+        return L10n.fontSquare
+      case .yoeYar:
+        return L10n.fontYoeYar
+      }
+    }
+
+    /// The face at a given point size, tracking Dynamic Type from there.
+    ///
+    /// Takes a size rather than reading ``PrayerSettings/textSize`` itself, so
+    /// the same face can be drawn small for a picker row and large for the page.
+    public func font(size: CGFloat) -> Font {
+      switch self {
+      case .jasmine:
+        return AppFont.jasmine(size: size)
+      case .panglong:
+        return AppFont.panlong(size: size)
+      case .square:
+        return AppFont.mSquare(size: size)
+      case .yoeYar:
+        return AppFont.yoeYar(size: size)
+      }
+    }
+
+    #if canImport(UIKit)
+    /// The UIKit counterpart of ``font(size:)``, for the reader — which draws
+    /// its page with `NSAttributedString` and cannot take a SwiftUI `Font`.
+    public func uiFont(size: CGFloat) -> UIFont {
+      switch self {
+      case .jasmine:
+        return AppUIFont.jasmine(size: size)
+      case .panglong:
+        return AppUIFont.panlong(size: size)
+      case .square:
+        return AppUIFont.mSquare(size: size)
+      case .yoeYar:
+        return AppUIFont.yoeYar(size: size)
+      }
+    }
+    #endif
+  }
 }
 
 // MARK: - Alignment
@@ -98,22 +170,33 @@ extension PrayerSettings {
 
 extension PrayerSettings {
   /// The paper a prayer is read on.
+  ///
+  /// Six of them, three light and three dark, paired into themes by
+  /// `PrayerTheme`. Nothing here knows about that pairing — a paper is just a
+  /// colour and the ink that goes on it.
   public enum Background: String, CaseIterable, Hashable, Sendable, Codable {
     case classic
-    case yellow
-    case grey
-    case black
+    case parchment
+    case paper
+
+    case midnight
+    case charcoal
+    case ink
 
     public var displayText: String {
       switch self {
       case .classic:
         return L10n.pageClassic
-      case .yellow:
-        return L10n.pageYellow
-      case .grey:
-        return L10n.pageGrey
-      case .black:
-        return L10n.pageBlack
+      case .parchment:
+        return L10n.pageParchment
+      case .paper:
+        return L10n.pagePaper
+      case .midnight:
+        return L10n.pageMidnight
+      case .charcoal:
+        return L10n.pageCharcoal
+      case .ink:
+        return L10n.pageInk
       }
     }
 
@@ -121,22 +204,38 @@ extension PrayerSettings {
       switch self {
       case .classic:
         return AppColor.Page.classic
-      case .yellow:
-        return AppColor.Page.yellow
-      case .grey:
-        return AppColor.Page.grey
-      case .black:
-        return AppColor.Page.black
+      case .parchment:
+        return AppColor.Page.parchment
+      case .paper:
+        return AppColor.Page.paper
+      case .midnight:
+        return AppColor.Page.midnight
+      case .charcoal:
+        return AppColor.Page.charcoal
+      case .ink:
+        return AppColor.Page.ink
       }
     }
 
     /// Text colour that stays legible on ``color``.
+    ///
+    /// One ink per paper rather than one shared by all the light pages and one
+    /// by all the dark: pure black on cream is harsher than the paper deserves,
+    /// and pure white on true black blooms.
     public var foreground: Color {
       switch self {
-      case .classic, .yellow:
-        return AppColor.Page.black
-      case .grey, .black:
-        return AppColor.Page.classic
+      case .classic:
+        return AppColor.Page.Ink.classic
+      case .parchment:
+        return AppColor.Page.Ink.parchment
+      case .paper:
+        return AppColor.Page.Ink.paper
+      case .midnight:
+        return AppColor.Page.Ink.midnight
+      case .charcoal:
+        return AppColor.Page.Ink.charcoal
+      case .ink:
+        return AppColor.Page.Ink.ink
       }
     }
   }

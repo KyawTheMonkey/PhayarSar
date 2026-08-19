@@ -51,9 +51,16 @@ public struct PrayerScreen: View {
   @State private var selectedID: Prayer.ID
 
   /// Held as state rather than read fresh each time, so that the reading
-  /// settings sheet has something to bind to when it lands. Until then these
-  /// are whatever ``PrayerSettings/settings(for:)`` returns and never change.
+  /// settings sheet has something to bind to.
+  ///
+  /// ``PrayerThemeScreen`` writes straight through this binding, which is what
+  /// makes the page react as the reader moves a control. It still starts at
+  /// whatever ``PrayerSettings/settings(for:)`` returns — a stub — so a change
+  /// lasts as long as this screen does and no longer.
   @State private var settings: PrayerSettings
+
+  /// Whether the theme editor is up.
+  @State private var isEditingTheme = false
 
   /// How far the switcher is open: 0 a pill, 1 a tray, and every value between
   /// a state a finger can hold it at.
@@ -123,6 +130,29 @@ public struct PrayerScreen: View {
     // always: a resumed session or a notification can open this screen
     // directly, with the tab bar still showing.
     .hideTabBar()
+    // The back button is the system's, and the bar keeps its own background:
+    // this screen is a level down like any other, and a reader who has learned
+    // where Back is should not have to find it again here.
+    .toolbar {
+      // A menu rather than a single button, because this is where the rest of
+      // the reader's own actions belong as they arrive — bookmarking, reporting
+      // a spelling, adding to a plan. One item in it today.
+      ToolbarItem(placement: .primaryAction) {
+        Menu {
+          Button {
+            isEditingTheme = true
+          } label: {
+            Label(L10n.themeAndSettings, systemImage: "textformat.size")
+          }
+        } label: {
+          Image(systemName: "line.3.horizontal.decrease.circle")
+            .accessibilityLabel(L10n.quickActions)
+        }
+      }
+    }
+    .sheet(isPresented: $isEditingTheme) {
+      PrayerThemeScreen(settings: $settings)
+    }
     .onDisappear { swapWork?.cancel() }
     .enableInjection()
   }
@@ -136,7 +166,10 @@ public struct PrayerScreen: View {
       // fading through an exchange has to reveal paper; without this it would
       // be showing the void the reader was covering.
       settings.background.color
-        .ignoresSafeArea(edges: .bottom)
+        // Every edge, not just the bottom. The navigation bar's own background
+        // is translucent, so what sits behind it shows through — and that should
+        // be the page the reader is on, not a strip of app background above it.
+        .ignoresSafeArea()
 
       PrayerReader(prayer: prayer, settings: settings)
         // The page colour runs to every edge — a reader with a strip of app
@@ -155,6 +188,25 @@ public struct PrayerScreen: View {
         Color.clear
           .contentShape(Rectangle())
           .onTapGesture { close() }
+      }
+
+      if isEditingTheme {
+        // The same catcher, for the theme sheet.
+        //
+        // The sheet leaves the page live on purpose — see
+        // `undimmedThroughMediumDetent` — which is what lets the reader watch it
+        // reflow as they move a control. The cost is that the strip of page
+        // above the sheet is still the reader's own tap target, so a tap meant
+        // as "put this away" would land on a verse and carry the page off to
+        // centre it. This takes those taps and closes the sheet instead, which
+        // is what a tap outside a sheet means everywhere else.
+        //
+        // Above the reader and below the switcher: the switcher is mostly behind
+        // the sheet anyway, and what shows of it should stay itself rather than
+        // become more backdrop.
+        Color.clear
+          .contentShape(Rectangle())
+          .onTapGesture { isEditingTheme = false }
       }
 
       PrayerPageSwitcher(
