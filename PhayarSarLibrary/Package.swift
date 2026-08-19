@@ -46,6 +46,10 @@ let package = Package(
       name: "SettingsKit",
       targets: ["SettingsKit"]
     ),
+    .library(
+      name: "MiscKit",
+      targets: ["MiscKit"]
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/krzysztofzablocki/Inject.git", exact: "1.6.0")
@@ -110,6 +114,10 @@ let package = Package(
     .target(
       name: "SettingsKit",
       dependencies: ["EnvironmentKit", "DesignKit", "AuthKit"]
+    ),
+    .target(
+      name: "MiscKit",
+      dependencies: ["EnvironmentKit", "DesignKit"]
     )
   ]
 )

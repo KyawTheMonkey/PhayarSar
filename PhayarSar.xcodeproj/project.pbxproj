@@ -82,6 +82,7 @@
 		C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C23030A10000000002 /* SettingsKit */; };
 		C8A1B2C43030A10000000004 /* KloudKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C33030A10000000003 /* KloudKit */; };
 		C8A1B2C63030A10000000006 /* AuthKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C53030A10000000005 /* AuthKit */; };
+		C8A1B2C73030A10000000007 /* MiscKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8A1B2C83030A10000000008 /* MiscKit */; };
 		C8A342522B3E70C800B24F7C /* HapticKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A342512B3E70C800B24F7C /* HapticKit.swift */; };
 		C8A661CE2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A661CD2B556AE100F2A553 /* AdaptToSoftwareKeyboard.swift */; };
 		C8A661D02B55795600F2A553 /* NavigationBarColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A661CF2B55795600F2A553 /* NavigationBarColor.swift */; };
@@ -319,6 +320,7 @@
 				C8A1B2C13030A10000000001 /* SettingsKit in Frameworks */,
 				C8A1B2C43030A10000000004 /* KloudKit in Frameworks */,
 				C8A1B2C63030A10000000006 /* AuthKit in Frameworks */,
+				C8A1B2C73030A10000000007 /* MiscKit in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -677,6 +679,7 @@
 				C8A1B2C23030A10000000002 /* SettingsKit */,
 				C8A1B2C33030A10000000003 /* KloudKit */,
 				C8A1B2C53030A10000000005 /* AuthKit */,
+				C8A1B2C83030A10000000008 /* MiscKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1414,6 +1417,10 @@
 		C8A1B2C53030A10000000005 /* AuthKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuthKit;
+		};
+		C8A1B2C83030A10000000008 /* MiscKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MiscKit;
 		};
 		C8D166453028D20600FA4895 /* PrayersKit */ = {
 			isa = XCSwiftPackageProductDependency;
