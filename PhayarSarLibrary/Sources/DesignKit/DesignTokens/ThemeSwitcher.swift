@@ -56,7 +56,13 @@ enum ThemeOverride {
 
 extension Color {
   static func dynamic(light: Color, dark: Color) -> Color {
-    #if canImport(UIKit)
+    #if os(watchOS)
+    // The watch has no light appearance to resolve against, and no
+    // `UIColor(dynamicProvider:)` to resolve it with. Every token is its dark
+    // half, which is not a fallback but the right answer: the dark ramp is what
+    // the app's colours were tuned to look like against black.
+    dark
+    #elseif canImport(UIKit)
     Color(UIColor { trait in
       switch ThemeOverride.current {
       case .light:   return UIColor(light)

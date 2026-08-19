@@ -10,6 +10,7 @@ import DesignKit
 import EnvironmentKit
 import FirebaseCore
 import FirebaseMessaging
+import HomeKit
 import KloudKit
 import LocalisationKit
 import PrayersKit
@@ -70,6 +71,14 @@ struct PhayarSarApp: App {
         // which inherit a color scheme set further in. `nil` for `.system`,
         // which hands the decision back to the device.
         .preferredColorScheme(theme.currentTheme.colorScheme)
+        // Brings the watch session up and hands it the navigator it needs to
+        // open a prayer from the wrist.
+        //
+        // Here rather than in `init`, where `navigator` is not yet installed on
+        // a view and reading it is undefined — and at the root rather than in
+        // the reader, because the watch can ask for a prayer while the phone is
+        // still sitting on the home screen.
+        .task { PrayerRemoteHost.shared.start(navigator: navigator) }
     }
   }
 

@@ -86,6 +86,23 @@ enum PrayerReaderMetrics {
   /// there it is" beat, before the page comes back up around it.
   static let focusLinger: TimeInterval = 0.35
 
+  /// How long a scroll asked for from the watch takes.
+  ///
+  /// Shorter than ``focusScroll``: that one is a move the reader is meant to
+  /// *follow*, from a line they tapped to the middle of the page, while this is
+  /// the page simply going where it was pushed. Long enough not to be a cut,
+  /// short enough that a second press does not queue up behind it.
+  static let remoteScroll: TimeInterval = 0.28
+
+  /// The smallest scroll that is worth animating, as a fraction of a page.
+  ///
+  /// Below this the request came from the Digital Crown, which sends a stream
+  /// of small nudges as it turns; animating each one would have every nudge
+  /// interrupting the last and the page moving in a stutter rather than under
+  /// the finger. Above it the request was a button press, which wants to be
+  /// seen as a movement.
+  static let remoteScrollAnimationThreshold: Double = 0.08
+
   /// How long the page takes to come back up. Slow enough to be seen as a
   /// movement rather than a cut.
   static let focusFade: TimeInterval = 0.28

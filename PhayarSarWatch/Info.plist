@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>PhayarSar</string>
+	<key>WKApplication</key>
+	<true/>
+	<key>WKCompanionAppBundleIdentifier</key>
+	<string>com.kyaw.PhayarSar</string>
+	<key>WKWatchOnly</key>
+	<false/>
+	<!--
+	  Required by `WristRuntimeSession`. Without it, starting a
+	  `WKExtendedRuntimeSession` fails immediately and the remote goes back to
+	  the watch face part-way through every prayer.
+
+	  `mindfulness` is the session type the app actually runs: a period of quiet
+	  attention the user began deliberately. The alternative that also grants
+	  long runtime is a workout session, which would claim the reader is
+	  exercising and would run the heart-rate sensor for a screen with no use
+	  for it.
+	-->
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>mindfulness</string>
+	</array>
+</dict>
+</plist>

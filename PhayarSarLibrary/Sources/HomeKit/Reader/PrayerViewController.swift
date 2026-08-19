@@ -61,6 +61,29 @@ final class PrayerViewController: UIViewController {
   /// The prayer's lines in reading order, which is what the table shows.
   private var lines: [PrayerVerseLine] = []
 
+  /// The prayer's verses, deduplicated exactly as ``lines`` was built from
+  /// them.
+  ///
+  /// Kept because the watch remote addresses the page by *verse* while the
+  /// table is a list of lines — see ``remoteStepVerse(_:)``. Taken from the same
+  /// filtered array rather than from `prayer.body` so an ordinal means the same
+  /// thing on both sides of that translation, duplicates and all.
+  private var verses: [Prayer.Verse] = []
+
+  /// Where each verse's first line sits in ``lines``, so stepping to a verse is
+  /// a lookup rather than a scan of the whole prayer on every turn of the crown.
+  private var firstLineByVerse: [Prayer.Verse.ID: Int] = [:]
+
+  /// Each verse's 0-based position in ``verses``, for the reverse trip — the
+  /// line under the middle of the page back to the verse it belongs to. Looked
+  /// up on every scroll event, which is why it is a dictionary and not a scan.
+  private var ordinalByVerse: [Prayer.Verse.ID: Int] = [:]
+
+  /// The verse last reported to the watch, so that a scroll which stays inside
+  /// one verse says nothing. Scrolling reports at frame rate; the watch only
+  /// cares when the answer changes.
+  private var centredVerse: Int?
+
   /// Line by identity, for the cell provider. A dictionary rather than
   /// `lines[indexPath.row]`: the cell provider is handed an identifier, and
   /// looking it up is what keeps the two from drifting apart mid-update.
@@ -125,6 +148,21 @@ final class PrayerViewController: UIViewController {
       name: UIContentSizeCategory.didChangeNotification,
       object: nil
     )
+  }
+
+  // Registered here rather than in `viewDidLoad` so the host is driving the
+  // reader that is actually on screen. A reader built for a push that the user
+  // then cancelled mid-swipe is loaded but never appears, and must not take the
+  // wrist from the one they swiped back to.
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    PrayerRemoteHost.shared.attach(reader: self)
+    reportPosition()
+  }
+
+  override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    PrayerRemoteHost.shared.detach(reader: self)
   }
 
   // MARK: - Set up
@@ -214,6 +252,7 @@ final class PrayerViewController: UIViewController {
     var seen: Set<Prayer.Verse.ID> = []
     let verses = prayer.body.filter { seen.insert($0.id).inserted }
 
+    self.verses = verses
     lines = PrayerVerseLine.lines(in: verses)
     linesByID = Dictionary(uniqueKeysWithValues: lines.map { ($0.id, $0) })
 
@@ -231,6 +270,19 @@ final class PrayerViewController: UIViewController {
         line.next == .line ? nil : (line.id.verse, line.next)
       }
     )
+
+    // First occurrence wins, which is the verse's opening line — the one the
+    // remote centres when it is asked for that verse.
+    firstLineByVerse = [:]
+    for (row, line) in lines.enumerated() where firstLineByVerse[line.id.verse] == nil {
+      firstLineByVerse[line.id.verse] = row
+    }
+
+    ordinalByVerse = Dictionary(
+      uniqueKeysWithValues: verses.enumerated().map { ($0.element.id, $0.offset) }
+    )
+
+    centredVerse = nil
   }
 
   /// The rows the table actually shows.
@@ -1040,6 +1092,150 @@ extension PrayerViewController: UITableViewDelegate {
     contextual.backgroundColor = action.tint
 
     return contextual
+  }
+
+  /// Keeps the watch in step with the page however the page came to move —
+  /// under a finger, under the crown, or under a follow's own animation.
+  ///
+  /// Cheap enough to sit on the scroll path: it is a dictionary lookup and an
+  /// `Int` comparison, and it tells the host nothing at all until the verse
+  /// under the middle of the page actually changes.
+  func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    reportPosition()
+  }
+
+}
+
+// MARK: - The watch remote
+
+/// The reader's half of the watch remote.
+///
+/// The commands arrive already translated into the reader's own vocabulary —
+/// see `PrayerRemoteHost`, which is the only caller. Nothing here knows a watch
+/// exists; it is the same page being moved the same way, and a verse centred
+/// from the wrist lands exactly where a tapped one does because it goes through
+/// the same ``follow(_:at:)``.
+extension PrayerViewController: PrayerRemoteReader {
+
+  /// The verse under the middle of the page, which is what the watch shows.
+  var remoteVerse: PrayerRemoteVerse? {
+    guard let ordinal = centredVerseOrdinal, verses.indices.contains(ordinal) else { return nil }
+
+    let verse = verses[ordinal]
+    return PrayerRemoteVerse(
+      index: ordinal,
+      count: verses.count,
+      name: verse.name,
+      text: verse.content
+    )
+  }
+
+  /// Moves the page by a fraction of its own height.
+  ///
+  /// A fraction rather than a distance because the watch cannot know how big
+  /// this page is — see `PrayerRemoteCommand.scroll(fraction:)`. Here is where
+  /// it becomes points, against the *inset* page, so a "screenful" is a
+  /// screenful of readable text rather than one that counts the strip the page
+  /// switcher floats over.
+  func remoteScroll(fraction: Double) {
+    guard isViewLoaded, fraction != 0 else { return }
+
+    let inset = tableView.adjustedContentInset
+    let pageHeight = tableView.bounds.height - inset.top - inset.bottom
+    guard pageHeight > 0 else { return }
+
+    // A push on the page is the reader taking hold of it, as far as any follow
+    // in flight is concerned — same as a finger landing on it.
+    stopFollowingScroll()
+    releaseFocus()
+
+    let lowest = -inset.top
+    let highest = max(
+      lowest,
+      tableView.contentSize.height - tableView.bounds.height + inset.bottom
+    )
+    let target = tableView.contentOffset.y + pageHeight * CGFloat(fraction)
+    let offset = CGPoint(x: 0, y: min(max(target, lowest), highest))
+
+    guard abs(fraction) >= PrayerReaderMetrics.remoteScrollAnimationThreshold else {
+      // A nudge from the crown. Set outright: see
+      // `remoteScrollAnimationThreshold` for why animating these reads as a
+      // stutter rather than as a scroll.
+      tableView.contentOffset = offset
+      return
+    }
+
+    UIView.animate(
+      withDuration: PrayerReaderMetrics.remoteScroll,
+      delay: 0,
+      // The same options a follow uses, and for the same reasons: a second
+      // press mid-move carries on from where the page is, and the reader can
+      // take it back with a finger at any point.
+      options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction],
+      animations: {
+        self.tableView.contentOffset = offset
+      }
+    )
+  }
+
+  /// Carries the verse `delta` along from the middle of the page into it.
+  ///
+  /// Clamped rather than wrapped: the end of a prayer is a place to stop, and a
+  /// crown turned past it should rest there rather than throw the reader back to
+  /// the opening line.
+  func remoteStepVerse(_ delta: Int) {
+    guard isViewLoaded, !verses.isEmpty, delta != 0 else { return }
+
+    let current = centredVerseOrdinal ?? 0
+    // Equal after clamping means the page is already at the end the step was
+    // heading for, and there is nothing to move.
+    let target = min(max(current + delta, 0), verses.count - 1)
+    guard target != current else { return }
+
+    guard
+      let row = firstLineByVerse[verses[target].id],
+      lines.indices.contains(row)
+    else {
+      return
+    }
+
+    // The tap path, exactly. The verse arrives in the middle of the page with
+    // the rest of it stepped back around it, and is let go of a beat later.
+    follow(lines[row].id, at: IndexPath(row: row, section: .zero))
+  }
+
+  // MARK: - Where the page is
+
+  /// The 0-based verse nearest the middle of the readable page.
+  private var centredVerseOrdinal: Int? {
+    guard isViewLoaded, !lines.isEmpty else { return nil }
+
+    let inset = tableView.adjustedContentInset
+    let pageHeight = tableView.bounds.height - inset.top - inset.bottom
+    guard pageHeight > 0 else { return nil }
+
+    let midY = tableView.contentOffset.y + inset.top + pageHeight / 2
+
+    guard let indexPath = tableView.indexPathForRow(at: CGPoint(x: 0, y: midY)) else {
+      // The middle of the page is in one of the insets rather than on a row,
+      // which is what the top of the first verse and the tail of the last one
+      // look like. Both ends are a real answer — the reader is at the start or
+      // at the finish — so they resolve rather than reporting nothing.
+      return midY < 0 ? .zero : ordinalByVerse[lines[lines.count - 1].id.verse]
+    }
+
+    guard lines.indices.contains(indexPath.row) else { return nil }
+    return ordinalByVerse[lines[indexPath.row].id.verse]
+  }
+
+  /// Tells the host where the page is, if it has moved to a different verse
+  /// since the last time it was asked.
+  fileprivate func reportPosition() {
+    let ordinal = centredVerseOrdinal
+    guard ordinal != centredVerse else { return }
+
+    centredVerse = ordinal
+    PrayerRemoteHost.shared.readerDidMove()
   }
 }
 

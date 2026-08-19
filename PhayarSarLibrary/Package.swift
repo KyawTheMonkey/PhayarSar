@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
   name: "PhayarSarLibrary",
-  platforms: [.iOS(.v16), .macOS(.v13)],
+  platforms: [.iOS(.v16), .macOS(.v13), .watchOS(.v10)],
   products: [
     .library(
       name: "UtilKit",
@@ -49,6 +49,14 @@ let package = Package(
     .library(
       name: "MiscKit",
       targets: ["MiscKit"]
+    ),
+    .library(
+      name: "RemoteKit",
+      targets: ["RemoteKit"]
+    ),
+    .library(
+      name: "WristKit",
+      targets: ["WristKit"]
     ),
   ],
   dependencies: [
@@ -95,6 +103,9 @@ let package = Package(
     .target(
       name: "KloudKit"
     ),
+    .target(
+      name: "RemoteKit"
+    ),
 
     // MARK: - Features
     .target(
@@ -104,7 +115,7 @@ let package = Package(
     ),
     .target(
       name: "HomeKit",
-      dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit", "AuthKit"]
+      dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit", "AuthKit", "RemoteKit"]
     ),
     .target(
       name: "PrayersKit",
@@ -114,6 +125,15 @@ let package = Package(
     .target(
       name: "SettingsKit",
       dependencies: ["EnvironmentKit", "DesignKit", "AuthKit", "KloudKit"]
+    ),
+    // Deliberately *not* dependent on LocalisationKit — see `WristStrings`.
+    // Its build-tool plugin gets one output directory per package target rather
+    // than per platform, so a build that compiles it for both iOS and watchOS
+    // (which embedding the watch app makes unavoidable) fails on two commands
+    // writing the same generated file.
+    .target(
+      name: "WristKit",
+      dependencies: ["RemoteKit", "DesignKit"]
     ),
     .target(
       name: "MiscKit",

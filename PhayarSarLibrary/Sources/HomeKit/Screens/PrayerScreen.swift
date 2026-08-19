@@ -177,6 +177,20 @@ public struct PrayerScreen: View {
     .onValueChange(selectedID, perform: loadConfiguration)
     .onValueChange(colorScheme, perform: followAppearance)
     .onDisappear { swapWork?.cancel() }
+    // The watch remote. Attached here rather than inside the reader because
+    // these are the two things the reader has no say over — which prayer is up,
+    // and how large it is set. See `PrayerRemoteHost` for why the handle only
+    // ever writes.
+    .onAppear {
+      PrayerRemoteHost.shared.attach(screen: remoteHandle)
+      publishToRemote()
+    }
+    .onDisappear { PrayerRemoteHost.shared.attach(screen: nil) }
+    // Both of these tell the watch what it is looking at. `selectedID` covers
+    // the page switcher and the wrist's own prayer steps; `textSize` covers the
+    // theme sheet, so a size changed on the phone moves the watch's control too.
+    .onValueChange(selectedID, perform: publishToRemote)
+    .onValueChange(configuration.settings.textSize, perform: publishToRemote)
     .enableInjection()
   }
 
@@ -265,6 +279,59 @@ public struct PrayerScreen: View {
   /// is a pure function of the stored theme and the appearance.
   private func followAppearance() {
     configuration = configuration.resolvingBackground(for: colorScheme)
+  }
+
+  // MARK: - The watch remote
+
+  /// What the watch is allowed to change on this screen.
+  ///
+  /// Writes only, and every one of them through the same path the equivalent
+  /// gesture takes — the wrist has no privileges the finger does not, which is
+  /// what keeps the two from producing different states.
+  private var remoteHandle: PrayerRemoteScreenHandle {
+    PrayerRemoteScreenHandle(
+      show: { id in
+        // Straight through the switcher's own commit, so a prayer chosen on the
+        // wrist dissolves in exactly as one scrubbed to does, and lands in the
+        // same state — nothing pushed, nothing popped, Back unchanged.
+        guard let target = prayers.firstIndex(where: { $0.id == id }) else { return }
+        commit(target, .settled)
+      },
+      setTextSize: { size in
+        // Clamped to what the theme sheet itself offers. The watch has no way to
+        // know whether the phone is showing a compact or a regular layout, so it
+        // sends a number and this decides whether the number is allowed.
+        let clamped = min(
+          max(size, Int(PrayerThemeMetrics.minTextSize)),
+          Int(PrayerThemeMetrics.compactMaxTextSize)
+        )
+        guard clamped != configuration.settings.textSize else { return }
+
+        // Built whole and then assigned, rather than mutated in place and read
+        // back. Writes to `@State` are not necessarily visible to a read in the
+        // same synchronous block, so `save(configuration:)` after an in-place
+        // mutation could persist the size the reader had *before* this.
+        var updated = configuration
+        updated.settings.textSize = clamped
+        configuration = updated
+
+        // Persisted, unlike the theme sheet's live edits: there is no Save on a
+        // watch and no sheet to abandon, so a size set from the wrist is a
+        // decision rather than an experiment.
+        PrayerConfigurationStore.shared.save(updated, for: selectedID)
+      }
+    )
+  }
+
+  /// Tells the host which prayer is up and how large it is set.
+  ///
+  /// The host keeps this rather than reading it back, because there is nothing
+  /// here to read it back *from* — see `PrayerRemoteHost`.
+  private func publishToRemote() {
+    PrayerRemoteHost.shared.screenDidChange(
+      prayerID: selectedID,
+      textSize: configuration.settings.textSize
+    )
   }
 
   // MARK: - The turn
