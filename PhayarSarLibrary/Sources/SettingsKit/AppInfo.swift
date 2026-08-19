@@ -6,6 +6,12 @@ import Foundation
 /// linked into the app, so the interesting values are the host app's, not the
 /// resource bundle's.
 public enum AppInfo {
+  /// The App Store's numeric ID for this app.
+  ///
+  /// Hardcoded rather than read from the bundle: nothing in Info.plist carries
+  /// it, and it is fixed for the life of the listing.
+  public static let appStoreID = "6475991817"
+
   /// Display name if the app sets one, otherwise the bundle name.
   public static var name: String {
     string(for: "CFBundleDisplayName")

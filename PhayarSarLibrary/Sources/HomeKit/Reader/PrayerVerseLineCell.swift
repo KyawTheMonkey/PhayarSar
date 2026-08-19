@@ -153,6 +153,51 @@ final class PrayerVerseLineCell: UITableViewCell {
     lineLabel.accessibilityLabel = accessibilityLabel(for: line, isGlossed: isGlossed)
   }
 
+  /// Draws the verse's nissaya in place of its lines — the face the row turns
+  /// over to.
+  ///
+  /// The same three views as the front, given different things to say, rather
+  /// than a second face built alongside them. Two stacks in one cell would both
+  /// have to be kept in step with every reading setting, and only one of them
+  /// is ever on screen.
+  ///
+  /// - Parameter next: What follows the *verse*, not the line — a turned row
+  ///   stands for the whole verse, so the air under it is the air that would
+  ///   have been under its last line.
+  func configure(
+    nissaya meaning: String,
+    next: PrayerVerseLine.Next,
+    style: PrayerReadingStyle
+  ) {
+    contentView.directionalLayoutMargins = NSDirectionalEdgeInsets(
+      top: 0,
+      leading: PrayerReaderMetrics.horizontalInset,
+      bottom: gap(before: next, style: style),
+      trailing: PrayerReaderMetrics.horizontalInset
+    )
+
+    // Where the verse's name would be, and in its place. A turned row looks
+    // enough like an ordinary one that without this the reader has no way to
+    // tell the nissaya from a verse set in Burmese — and it is also what says
+    // there is another side to swipe back to.
+    nameLabel.attributedText = NSAttributedString(
+      string: L10n.nissayaMeaning.uppercased(),
+      attributes: [
+        .font: style.nameFont,
+        .foregroundColor: style.secondaryTextColor,
+        .paragraphStyle: style.paragraphStyle(lineSpacing: 0)
+      ]
+    )
+    nameLabel.isHidden = false
+
+    lineLabel.attributedText = style.attributedMeaning(meaning)
+
+    separator.backgroundColor = style.separatorColor
+    focusTint.backgroundColor = style.focusColor
+
+    lineLabel.accessibilityLabel = "\(L10n.nissayaMeaning), \(meaning)"
+  }
+
   /// The gap under this line.
   ///
   /// - Parameter next: What follows it. The last line of the prayer drops the

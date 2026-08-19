@@ -113,7 +113,7 @@ let package = Package(
     ),
     .target(
       name: "SettingsKit",
-      dependencies: ["EnvironmentKit", "DesignKit", "AuthKit"]
+      dependencies: ["EnvironmentKit", "DesignKit", "AuthKit", "KloudKit"]
     ),
     .target(
       name: "MiscKit",

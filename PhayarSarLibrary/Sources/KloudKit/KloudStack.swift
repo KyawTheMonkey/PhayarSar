@@ -27,6 +27,38 @@ public enum KloudSyncMode: Equatable, Sendable {
   }
 }
 
+/// How a manual ``KloudStack/syncNow()`` ended.
+///
+/// Distinct from ``KloudSyncState``, which describes what the mirror is doing at
+/// any moment. This is the answer to one question the user actually asked, and
+/// it is worth being able to say "your iCloud is full" rather than redrawing a
+/// status line and hoping they notice.
+public enum KloudSyncOutcome: Equatable, Sendable {
+  /// The mirror ran and settled with nothing outstanding.
+  case completed
+
+  /// The store is local, so there is nothing to sync. Not a failure — a guest
+  /// gets this every time, and the UI should say so rather than apologise.
+  case notSyncing
+
+  /// The device cannot reach the private database. Carries the reason, because
+  /// "no iCloud account" and "your account needs attention in Settings" send the
+  /// user to two different places.
+  case accountUnavailable(KloudAccountStatus)
+
+  /// The account is out of space. Retrying will not clear it — see
+  /// ``KloudSyncState/quotaExceeded``.
+  case quotaExceeded
+
+  /// Something else went wrong, usually transient.
+  case failed(String)
+
+  /// Still going when we stopped watching. Mirroring carries on in the
+  /// background; only the waiting gave up, so this is not an error to report as
+  /// one.
+  case stillRunning
+}
+
 /// The app's one persistent store, and the only thing in the codebase that
 /// knows Core Data is what backs it.
 ///
@@ -56,6 +88,21 @@ public final class KloudStack: ObservableObject {
   /// What CloudKit mirroring is currently doing. Always ``KloudSyncState/idle``
   /// in `.local` mode — there is nothing to sync.
   @Published public private(set) var syncState: KloudSyncState = .idle
+
+  /// When the last manual sync finished, or `nil` if one never has.
+  ///
+  /// Only ``syncNow()`` writes it. Background mirroring deliberately does not:
+  /// the mirror runs constantly and a timestamp that changed on its own would be
+  /// reporting something the user did not ask for and cannot rely on.
+  ///
+  /// Persisted, so "Last synced" still means something after a relaunch.
+  // `KloudStack.` rather than `Self.` — a stored property initializer cannot
+  // reference the covariant `Self`.
+  @Published public private(set) var lastSyncedAt: Date? = KloudStack.storedLastSyncedAt
+
+  /// Whether a manual sync is in flight. Guards against a second tap stacking a
+  /// second store reload on top of the first.
+  @Published public private(set) var isSyncing = false
 
   private var container: NSPersistentCloudKitContainer?
   private var schema: KloudSchema?
@@ -112,6 +159,130 @@ public final class KloudStack: ObservableObject {
     guard mode.isCloud else { return }
     load(mode: .local)
     syncState = .idle
+
+    // The next account's "last synced" is not this one's.
+    lastSyncedAt = nil
+    Self.storedLastSyncedAt = nil
+  }
+
+  // MARK: - Manual sync
+
+  /// Runs a sync now, and waits for it to settle.
+  ///
+  /// **`NSPersistentCloudKitContainer` has no "sync now" API.** Mirroring is
+  /// scheduled by the system, and nothing in the framework will make an import
+  /// or an export happen on demand. What can be done — and what this does — is:
+  ///
+  /// 1. Check the iCloud account, which catches the single most common reason
+  ///    nothing is syncing before anything else is attempted.
+  /// 2. Flush pending edits out of ``viewContext``, so the export has all of
+  ///    them rather than whatever happened to be saved.
+  /// 3. Reload the store, which tears down the mirroring engine and builds a new
+  ///    one. That forces a fresh setup → import → export cycle, and is the only
+  ///    supported way to get the *import* half on demand.
+  /// 4. Watch ``syncState`` until it settles, so the caller can report an
+  ///    outcome rather than leaving a spinner up forever.
+  ///
+  /// Step 3 is the same operation ``signIn(to:)`` and ``signOut()`` already
+  /// perform, so nothing here is a path the app does not already take. It is
+  /// still the heaviest thing in this type: it replaces the container, which
+  /// invalidates every managed object handed out before it. Nothing in the app
+  /// holds one across a call — reads go through a store each time — and
+  /// `PrayerConfigurationStore` already drops its cache when ``mode`` is
+  /// republished, which a reload does.
+  ///
+  /// Safe to call when signed out; it answers ``KloudSyncOutcome/notSyncing``
+  /// without touching anything.
+  @discardableResult
+  public func syncNow() async -> KloudSyncOutcome {
+    guard case let .cloud(containerIdentifier) = mode else { return .notSyncing }
+    guard !isSyncing else { return .stillRunning }
+
+    isSyncing = true
+    defer { isSyncing = false }
+
+    let status = await KloudAccount.status(containerIdentifier: containerIdentifier)
+    guard status == .available else {
+      syncState = .unavailable
+      return .accountUnavailable(status)
+    }
+
+    // Anything sitting unsaved in the view context is not the mirror's yet.
+    if let container, container.viewContext.hasChanges {
+      try? container.viewContext.save()
+    }
+
+    // Set before the reload rather than waiting for the first event, so a status
+    // row reads "Syncing…" from the moment the user taps rather than a beat
+    // later.
+    syncState = .syncing
+    load(mode: mode)
+
+    let outcome = await settled()
+
+    if outcome == .completed {
+      let now = Date.now
+      lastSyncedAt = now
+      Self.storedLastSyncedAt = now
+    }
+
+    return outcome
+  }
+
+  /// Waits for the mirror to stop moving.
+  ///
+  /// Polled rather than driven off the event stream, because what is being
+  /// waited for is not an event: the container runs three activity types
+  /// independently and "finished" is the *absence* of anything outstanding — a
+  /// quiet period, which `KloudSyncMonitor` already collapses into
+  /// ``KloudSyncState/idle``. Watching that settle is a read of one value, and a
+  /// poll expresses it without a second layer of bookkeeping to keep in step.
+  ///
+  /// Only ``syncNow()`` calls this, and only after setting ``syncState`` to
+  /// ``KloudSyncState/syncing`` — so an `idle` seen here is always the mirror
+  /// having finished, never a mirror that has not started yet.
+  private func settled() async -> KloudSyncOutcome {
+    let deadline = Date.now.addingTimeInterval(Self.syncTimeout)
+
+    while Date.now < deadline {
+      switch syncState {
+      case .quotaExceeded:
+        return .quotaExceeded
+
+      case let .failed(message):
+        return .failed(message)
+
+      case .unavailable:
+        // The account was available when it was checked a moment ago, so this is
+        // the container having become unreachable since — which is what
+        // `unknown` means: worth retrying, not worth explaining.
+        return .accountUnavailable(.unknown)
+
+      case .idle:
+        return .completed
+
+      case .syncing:
+        break
+      }
+
+      try? await Task.sleep(nanoseconds: Self.pollInterval)
+    }
+
+    return .stillRunning
+  }
+
+  /// Long enough for a first sync on a slow connection, short enough that a
+  /// stuck mirror does not hold a spinner up indefinitely. Passing it is
+  /// reported as ``KloudSyncOutcome/stillRunning``, not as a failure.
+  private static let syncTimeout: TimeInterval = 30
+
+  private static let pollInterval: UInt64 = 300_000_000
+
+  private static let lastSyncedAtKey = "KloudKit.lastSyncedAt"
+
+  private static var storedLastSyncedAt: Date? {
+    get { UserDefaults.standard.object(forKey: lastSyncedAtKey) as? Date }
+    set { UserDefaults.standard.set(newValue, forKey: lastSyncedAtKey) }
   }
 
   // MARK: - Contexts

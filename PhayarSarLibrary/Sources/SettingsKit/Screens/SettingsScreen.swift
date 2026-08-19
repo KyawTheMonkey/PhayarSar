@@ -2,6 +2,7 @@ import AuthKit
 import DesignKit
 import EnvironmentKit
 import Inject
+import KloudKit
 import LocalisationKit
 import SwiftUI
 
@@ -21,6 +22,7 @@ public struct SettingsScreen: View {
   /// are written to.
   @ObservedObject private var localisation = LocalisationManager.shared
   @ObservedObject private var theme = ThemeSwitcher.shared
+  @ObservedObject private var kloud = KloudStack.shared
 
   @EnvironmentObject private var navigator: AppNavigatorModel
 
@@ -32,9 +34,23 @@ public struct SettingsScreen: View {
   /// the same kind of sheet, and two independent flags can both be true.
   @State private var optionSheet: OptionSheet?
 
+  /// How the last manual sync ended, or `nil` before one has been asked for.
+  ///
+  /// Kept on the screen rather than on `KloudStack`: it is the answer to a
+  /// question this screen asked, and it should not outlive the visit — coming
+  /// back to Settings tomorrow to "Everything is up to date" from yesterday
+  /// would be reporting a fact about a sync the user no longer remembers
+  /// requesting. The durable half of the story is `kloud.lastSyncedAt`, which
+  /// the row's detail line shows.
+  @State private var syncOutcome: KloudSyncOutcome?
+
   private enum OptionSheet: String, Identifiable {
     case appearance
     case language
+    /// Not a preference like the other two — it lists the developer's links
+    /// rather than a value to pick — but it is the same sheet in the same
+    /// place, and the state that says "a sheet is up" should stay singular.
+    case developer
 
     var id: String { rawValue }
   }
@@ -45,6 +61,7 @@ public struct SettingsScreen: View {
     ScrollView {
       VStack(alignment: .leading, spacing: AppSettingsRowMetrics.groupSpacing) {
         AccountSection(onAccountSettings: openAccountSettings)
+        syncGroup
         preferencesGroup
         resourcesGroup
         AccountSignOutRow()
@@ -84,7 +101,131 @@ public struct SettingsScreen: View {
         label: { $0.displayName }
       )
       .optionSheetDetent(for: Language.allCases.count)
+
+    case .developer:
+      AppActionPickerSheet(
+        title: L10n.followDeveloper,
+        options: DeveloperLink.allCases,
+        label: { $0.displayName },
+        systemImage: { $0.symbolName },
+        action: { open($0.url) }
+      )
+      .optionSheetDetent(for: DeveloperLink.allCases.count)
     }
+  }
+
+  // MARK: - iCloud
+
+  /// Sync on demand, for the user who has just changed something on another
+  /// device and does not want to wait for the system to get around to it.
+  ///
+  /// Separate from the read-only status line in ``AccountSection`` and directly
+  /// under it: that one says what the mirror is doing, this one is the only
+  /// thing on the screen that can make it do anything.
+  private var syncGroup: some View {
+    AppSettingsGroup(L10n.icloudSync) {
+      AppSettingsRow(
+        L10n.syncNow,
+        systemImage: "arrow.triangle.2.circlepath",
+        detail: syncDetail,
+        // Nothing is pushed and nothing leaves the app — a chevron would promise
+        // a screen that does not exist.
+        accessory: .none,
+        action: startSync
+      )
+      .disabled(kloud.isSyncing)
+
+      syncFooter
+    }
+  }
+
+  /// The trailing text on the row: what is happening now if anything is, and
+  /// otherwise when this last worked.
+  private var syncDetail: String {
+    if kloud.isSyncing {
+      return L10n.syncInProgress
+    }
+
+    // A guest has a local store and nothing to sync. Saying so here rather than
+    // only after a tap — the row stays visible so the feature is findable, and
+    // tapping it explains what to do about it.
+    guard kloud.mode.containerIdentifier != nil else {
+      return L10n.syncOff
+    }
+
+    guard let lastSyncedAt = kloud.lastSyncedAt else {
+      return L10n.syncNever
+    }
+
+    return L10n.syncLastSynced(Self.timestamp(lastSyncedAt))
+  }
+
+  /// The outcome of the last tap, in the colour that outcome deserves.
+  ///
+  /// Under the row rather than in an alert. Every one of these is something the
+  /// user can read and act on at their own pace — a modal for "your iCloud is
+  /// full" interrupts them to tell them something they cannot fix from here.
+  @ViewBuilder
+  private var syncFooter: some View {
+    if let syncOutcome, !kloud.isSyncing {
+      Text(Self.message(for: syncOutcome))
+        .font(AppFont.caption)
+        .foregroundStyle(Self.tint(for: syncOutcome))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 4)
+    }
+  }
+
+  private static func message(for outcome: KloudSyncOutcome) -> String {
+    switch outcome {
+    case .completed:
+      return L10n.syncCompleted
+    case .notSyncing:
+      return L10n.syncNotSyncing
+    case .quotaExceeded:
+      return L10n.icloudFull
+    case .stillRunning:
+      return L10n.syncStillRunning
+    case .failed:
+      // The underlying message is a CloudKit string in the device's language,
+      // not the app's, and it names records rather than prayers. It belongs in a
+      // crash report, not on this row.
+      return L10n.syncFailed
+    case let .accountUnavailable(status):
+      return status == .needsAttention ? L10n.icloudNeedsAttention : L10n.icloudUnavailable
+    }
+  }
+
+  private static func tint(for outcome: KloudSyncOutcome) -> Color {
+    switch outcome {
+    case .completed:
+      return AppColor.success
+    case .stillRunning, .notSyncing:
+      return AppColor.textSecondary
+    case .quotaExceeded, .accountUnavailable:
+      return AppColor.warning
+    case .failed:
+      return AppColor.error
+    }
+  }
+
+  /// The date in both languages, so the row reads in whichever one the app is
+  /// set to rather than whichever one the device is set to.
+  ///
+  /// `L10n.Arg` exists for exactly this — see the accessibility label in
+  /// `PrayerPageSwitcher`, which passes numbers through it for the same reason.
+  private static func timestamp(_ date: Date) -> L10n.Arg {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .short
+
+    formatter.locale = Locale(identifier: "en_US")
+    let english = formatter.string(from: date)
+
+    formatter.locale = Locale(identifier: "my_MM")
+    let myanmar = formatter.string(from: date)
+
+    return L10n.Arg(en: english, mm: myanmar)
   }
 
   // MARK: - Preferences
@@ -146,16 +287,17 @@ public struct SettingsScreen: View {
   /// that is worth saying before the tap rather than after it.
   private var resourcesGroup: some View {
     AppSettingsGroup(L10n.resources) {
-      AppSettingsRow(L10n.contactSupport, systemImage: "envelope", accessory: .externalLink) {
-        open(SettingsLink.support)
-      }
+      AppSettingsRow(L10n.contactSupport, systemImage: "envelope", accessory: .externalLink, action: contactSupport)
 
       AppSettingsRow(L10n.rateInAppStore, systemImage: "star", accessory: .externalLink) {
         open(SettingsLink.appStoreReview)
       }
 
-      AppSettingsRow(L10n.followUs, systemImage: "heart", accessory: .externalLink) {
-        open(SettingsLink.social)
+      // A chevron rather than the external-link arrow its two neighbours carry:
+      // this one opens a sheet still inside the app. The links in it are marked
+      // as leaving.
+      AppSettingsRow(L10n.followDeveloper, systemImage: "heart") {
+        optionSheet = .developer
       }
 
       AppSettingsRow(L10n.dataSources, systemImage: "text.book.closed", action: openDataSources)
@@ -202,6 +344,22 @@ public struct SettingsScreen: View {
     navigator.navigate(to: .profile)
   }
 
+  /// Asks the store to sync and keeps the answer.
+  ///
+  /// The previous outcome is cleared first, so a second tap does not sit under
+  /// yesterday's verdict while it works.
+  ///
+  /// No error handling here because `syncNow()` does not throw — every way this
+  /// can end is a ``KloudSyncOutcome`` worth showing, including the ones that
+  /// are not failures.
+  private func startSync() {
+    syncOutcome = nil
+
+    Task {
+      syncOutcome = await kloud.syncNow()
+    }
+  }
+
   /// No-ops until their screens exist. Named rather than inlined as empty
   /// closures so that "what is still missing" is one search away.
   private func openNotifications() {
@@ -210,6 +368,25 @@ public struct SettingsScreen: View {
 
   private func openDataSources() {
     // TODO: Push the data sources / attribution screen once it exists.
+  }
+
+  /// Hands the user a pre-addressed mail, with the build and device already in
+  /// it, and a blank line at the top to write on.
+  ///
+  /// `mailto:` first, because it goes wherever the user has said their mail
+  /// should go. It is refused on a device with no default mail client — Mail
+  /// deleted, everything read in Gmail — and rather than a tap that visibly
+  /// does nothing, that case falls through to Gmail's own scheme. If Gmail is
+  /// not installed either, the second open is refused too and the row is
+  /// genuinely inert; there is no third thing to try that would not be worse
+  /// than silence.
+  private func contactSupport() {
+    guard let mailto = SupportMail.mailtoURL else { return }
+
+    openURL(mailto) { accepted in
+      guard !accepted, let gmail = SupportMail.gmailURL else { return }
+      openURL(gmail)
+    }
   }
 
   /// Opens a ``SettingsLink``, or does nothing if it has not been filled in yet.

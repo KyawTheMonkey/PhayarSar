@@ -90,6 +90,38 @@ enum PrayerReaderMetrics {
   /// movement rather than a cut.
   static let focusFade: TimeInterval = 0.28
 
+  /// How long a row takes to turn over between its verse and its nissaya.
+  ///
+  /// Slower than a fade of the same content would be. The turn is doing work a
+  /// fade cannot: it says the two faces are the *same* row seen from two sides,
+  /// which is exactly the relationship between a line of Pali and what it
+  /// means. Rushed, it reads as a glitch rather than as a card being turned.
+  static let faceTurn: TimeInterval = 0.5
+
+  /// Distance from the eye to the page, for the perspective the turn is seen
+  /// in. Smaller is a wider lens: the near edge of the card swells as it comes
+  /// forward and the far edge falls away hard.
+  ///
+  /// Near enough to be seen as depth rather than as a card being squashed
+  /// horizontally, far enough that a full-width row does not bow like a
+  /// fisheye at the moment it starts to move.
+  static let turnPerspective: CGFloat = 900
+
+  /// How far the face is taken down as it turns edge-on.
+  ///
+  /// The whole reason the turn reads as a *surface* rather than as text
+  /// narrowing. A page is flat and untextured, so shape alone gives the eye
+  /// nothing to hold; a face that darkens as it turns out of the light is what
+  /// says there is a card there at all.
+  static let turnShade: CGFloat = 0.45
+
+  /// How long UIKit takes to slide a swipe tray shut.
+  ///
+  /// Theirs, not ours — measured, because there is no constant to read it from.
+  /// The turn waits this long so that it does not start under a tray still on
+  /// its way out, which would be two animations over one row.
+  static let trayClose: TimeInterval = 0.25
+
   /// How long the page takes to soften before one prayer is exchanged for
   /// another, and how long it takes to come back.
   ///
@@ -226,6 +258,23 @@ struct PrayerReadingStyle {
         .font: verseFont,
         .foregroundColor: textColor,
         .kern: kern,
+        .paragraphStyle: paragraphStyle(lineSpacing: lineSpacing)
+      ]
+    )
+  }
+
+  /// A verse's nissaya, for the face a row turns over to.
+  ///
+  /// The recited size and the page's full ink, because on that face this *is*
+  /// the row's text rather than a note under it — but none of the tracking:
+  /// letter-spacing is a setting about chanting a line of Pali, and a paragraph
+  /// of Burmese prose set with it comes apart.
+  func attributedMeaning(_ text: String) -> NSAttributedString {
+    NSAttributedString(
+      string: text,
+      attributes: [
+        .font: verseFont,
+        .foregroundColor: textColor,
         .paragraphStyle: paragraphStyle(lineSpacing: lineSpacing)
       ]
     )

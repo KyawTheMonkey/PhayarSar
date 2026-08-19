@@ -87,6 +87,18 @@
     "En": "Report error",
     "Mm": "အမှားတင်ပြရန်"
   },
+  "beads": {
+    "En": "Beads",
+    "Mm": "ပုတီးစိပ်"
+  },
+  "report": {
+    "En": "Report",
+    "Mm": "တင်ပြရန်"
+  },
+  "verse": {
+    "En": "Verse",
+    "Mm": "ပိုဒ်"
+  },
   "start_reading": {
     "En": "Start",
     "Mm": "စတင်ဖတ်ရန်"
@@ -399,9 +411,21 @@
     "En": "Rate in App Store",
     "Mm": "App Store တွင် အဆင့်သတ်မှတ်ရန်"
   },
-  "follow_us": {
-    "En": "Follow Us",
-    "Mm": "ကျွန်ုပ်တို့ကို Follow လုပ်ရန်"
+  "follow_developer": {
+    "En": "Follow Developer",
+    "Mm": "ရေးသားသူကို Follow လုပ်ရန်"
+  },
+  "website": {
+    "En": "Website",
+    "Mm": "ဝဘ်ဆိုက်"
+  },
+  "linkedin": {
+    "En": "LinkedIn",
+    "Mm": "LinkedIn"
+  },
+  "twitter": {
+    "En": "X (Twitter)",
+    "Mm": "X (Twitter)"
   },
   "data_sources": {
     "En": "Data Sources",
@@ -498,5 +522,29 @@
   "page_ink": {
     "En": "Ink",
     "Mm": "မှင်"
+  },
+  "sync_now": {
+    "En": "Sync Now",
+    "Mm": "ယခု စင့်ခ်လုပ်မည်"
+  },
+  "sync_never": {
+    "En": "Never synced",
+    "Mm": "စင့်ခ် မလုပ်ရသေးပါ"
+  },
+  "sync_last_synced": {
+    "En": "Last synced {0}",
+    "Mm": "နောက်ဆုံး စင့်ခ်လုပ်ချိန် {0}"
+  },
+  "sync_completed": {
+    "En": "Everything is up to date.",
+    "Mm": "အားလုံး နောက်ဆုံးအခြေအနေ ဖြစ်ပါပြီ။"
+  },
+  "sync_still_running": {
+    "En": "Still syncing in the background.",
+    "Mm": "နောက်ကွယ်တွင် စင့်ခ်လုပ်နေဆဲ ဖြစ်ပါသည်။"
+  },
+  "sync_not_syncing": {
+    "En": "Sign in to sync your data with iCloud.",
+    "Mm": "အချက်အလက်များကို iCloud နှင့် စင့်ခ်လုပ်ရန် အကောင့်ဝင်ပါ။"
   }
 }
