@@ -54,10 +54,21 @@ public struct PrayerScreen: View {
   /// settings sheet has something to bind to.
   ///
   /// ``PrayerThemeScreen`` writes straight through this binding, which is what
-  /// makes the page react as the reader moves a control. It still starts at
-  /// whatever ``PrayerSettings/settings(for:)`` returns — a stub — so a change
-  /// lasts as long as this screen does and no longer.
-  @State private var settings: PrayerSettings
+  /// makes the page react as the reader moves a control. Only its Save button
+  /// puts the result in ``PrayerConfigurationStore``; this screen reloads from
+  /// there on dismiss, so an abandoned experiment is dropped.
+  @State private var configuration: PrayerConfiguration
+
+  /// The drawing half of ``configuration``, which is all the page itself needs.
+  private var settings: PrayerSettings { configuration.settings }
+
+  /// The appearance the app is actually in, whether that came from the system or
+  /// from the reader's own override.
+  ///
+  /// The reader had none until the paper became something to resolve rather than
+  /// something to store — which is why a theme chosen in daylight used to keep
+  /// its light paper here after dark while the detail screen swapped correctly.
+  @Environment(\.colorScheme) private var colorScheme
 
   /// Whether the theme editor is up.
   @State private var isEditingTheme = false
@@ -97,7 +108,7 @@ public struct PrayerScreen: View {
     self.sectionStarts = starts
 
     _selectedID = State(initialValue: prayerID)
-    _settings = State(initialValue: PrayerSettings.settings(for: prayerID))
+    _configuration = State(initialValue: PrayerConfigurationStore.shared.configuration(for: prayerID))
   }
 
   private var prayer: Prayer? {
@@ -150,9 +161,16 @@ public struct PrayerScreen: View {
         }
       }
     }
-    .sheet(isPresented: $isEditingTheme) {
-      PrayerThemeScreen(settings: $settings)
+    .sheet(isPresented: $isEditingTheme, onDismiss: loadConfiguration) {
+      PrayerThemeScreen(configuration: $configuration, prayerID: selectedID)
     }
+    // On appear rather than in `init`, which cannot see the appearance — and the
+    // paper is resolved from the appearance, so nothing may draw before this.
+    .onAppear(perform: followAppearance)
+    // The switcher can land on a prayer set up quite differently, so the page has
+    // to follow it rather than carry the last prayer's settings onto this one.
+    .onValueChange(selectedID, perform: loadConfiguration)
+    .onValueChange(colorScheme, perform: followAppearance)
     .onDisappear { swapWork?.cancel() }
     .enableInjection()
   }
@@ -220,6 +238,28 @@ public struct PrayerScreen: View {
       .appHorizontalInset()
       .padding(.bottom, PrayerPageSwitcherMetrics.bottomPadding)
     }
+  }
+
+  // MARK: - Configuration
+
+  /// Reads back the prayer the switcher has landed on.
+  ///
+  /// Also the dismiss handler for the theme sheet, which is what makes Save and
+  /// swipe-away behave differently without a flag between them: Save has already
+  /// written, so this reads it back, and an abandoned experiment has not, so this
+  /// drops it.
+  private func loadConfiguration() {
+    configuration = PrayerConfigurationStore.shared
+      .configuration(for: selectedID)
+      .resolvingBackground(for: colorScheme)
+  }
+
+  /// Puts the page on the right half of its theme.
+  ///
+  /// Not persisted: it answers the system rather than the reader, and the paper
+  /// is a pure function of the stored theme and the appearance.
+  private func followAppearance() {
+    configuration = configuration.resolvingBackground(for: colorScheme)
   }
 
   // MARK: - The turn

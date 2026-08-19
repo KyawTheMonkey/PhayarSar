@@ -132,23 +132,30 @@ private enum PrayerThemeMetrics {
 /// On iPad both passes are shown at once: a form sheet has the room, and
 /// splitting a screenful of controls across two taps there would be ceremony.
 ///
-/// **Nothing is persisted yet.** Changes reach the reader for as long as it is
-/// open and go no further — ``PrayerSettings/settings(for:)`` is still a stub.
-/// "Save" is where the write goes when there is somewhere to write to.
+/// **Save is what keeps a change.** Every control writes straight through to the
+/// page behind, so the reader is always judging the real thing — but only "Save"
+/// puts it in the store. Swiping the sheet away leaves the page as the reader
+/// left it for the rest of the session and writes nothing, so trying something
+/// out costs nothing.
 public struct PrayerThemeScreen: View {
   @ObserveInjection private var injectionObserver
 
-  /// The reader's own settings. Written straight through, which is what makes
-  /// the page behind react.
-  @Binding private var settings: PrayerSettings
+  /// The reader's own configuration. Written straight through, which is what
+  /// makes the page behind react.
+  @Binding private var configuration: PrayerConfiguration
 
-  /// Which theme the page was last built from, or `nil` if the settings match
-  /// none of them.
+  /// Which prayer is being set, so ``save()`` knows what to write against.
+  private let prayerID: Prayer.ID
+
+  /// The drawing half of ``configuration``, which is all most of this sheet
+  /// touches — the theme cards are the only controls that also move the slot.
   ///
-  /// Held here rather than alongside ``settings`` because it is a fact about
-  /// this editing session, not about the page: the reader neither knows nor
-  /// needs to know which preset a paper and a face came from.
-  @State private var slot: PrayerThemeSlot?
+  /// `nonmutating` because it writes through the binding rather than into this
+  /// view, so the page behind still reacts to every control.
+  private var settings: PrayerSettings {
+    get { configuration.settings }
+    nonmutating set { configuration.settings = newValue }
+  }
 
   /// The second pass, when it is open.
   @State private var path: [Pass] = []
@@ -176,8 +183,9 @@ public struct PrayerThemeScreen: View {
   private var isRegular: Bool { horizontalSizeClass == .regular }
   #endif
 
-  public init(settings: Binding<PrayerSettings>) {
-    _settings = settings
+  public init(configuration: Binding<PrayerConfiguration>, prayerID: Prayer.ID) {
+    _configuration = configuration
+    self.prayerID = prayerID
   }
 
   /// The second pass, as a route rather than a flag, so the sheet's back button
@@ -195,14 +203,11 @@ public struct PrayerThemeScreen: View {
       }
     }
     .background(PrayerThemeMetrics.sheetBackground.ignoresSafeArea())
-    .onAppear {
-      adoptMatchingTheme()
-      clampTextSize()
-    }
+    .onAppear(perform: clampTextSize)
     .onValueChange(colorScheme, perform: followAppearance)
     // Only the discrete choices tick. A slider crossing a detent every few
     // milliseconds under the finger would be a buzz, not feedback.
-    .appSelectionFeedback(trigger: DiscreteChoices(slot: slot, settings: settings))
+    .appSelectionFeedback(trigger: DiscreteChoices(configuration: configuration))
     .enableInjection()
   }
 
@@ -319,7 +324,7 @@ public struct PrayerThemeScreen: View {
   private func QuickControls() -> some View {
     VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
       PrayerPronunciationSection(isOn: binding(\.showsPronunciation))
-      PrayerThemeSection(selection: slot, onSelect: select)
+      PrayerThemeSection(selection: configuration.themeSlot, onSelect: select)
 
       if !isRegular {
         CustomizeRow()
@@ -674,8 +679,9 @@ public struct PrayerThemeScreen: View {
   /// something to undo.
   @ViewBuilder
   private func Reset() -> some View {
-    let first = PrayerTheme.theme(.one)
-    let isDefault = slot == .one && settings == defaultSettings(for: first)
+    let first = PrayerTheme.first
+    let isDefault = configuration.themeSlot == .one
+      && settings == defaultSettings(for: first)
 
     // `.plain`, not `.secondary`: the action bar pinned below this already has a
     // tinted button in it, and two slabs a few points apart would give undoing
@@ -687,7 +693,7 @@ public struct PrayerThemeScreen: View {
     ) {
       // Not `select(first)`, which would only change the face — reset has to put
       // the size, alignment and spacings back as well.
-      slot = first.slot
+      configuration.themeSlot = first.slot
       settings = defaultSettings(for: first)
     }
     .disabled(isDefault)
@@ -727,7 +733,8 @@ public struct PrayerThemeScreen: View {
 
   /// Changes one setting.
   ///
-  /// Note what this does *not* do: it does not clear ``slot``. A theme is a
+  /// Note what this does *not* do: it does not clear
+  /// ``PrayerConfiguration/themeSlot``. A theme is a
   /// preset, so picking Classic and then setting it in PangLong leaves the
   /// reader on Classic — in PangLong. The card stays lit because the theme is
   /// still what the page was built from.
@@ -748,9 +755,11 @@ public struct PrayerThemeScreen: View {
   /// and a face, so someone trying all three keeps the size, alignment and
   /// spacing they have tuned.
   private func select(_ theme: PrayerTheme) {
-    slot = theme.slot
+    configuration.themeSlot = theme.slot
     settings.font = theme.font
-    settings.background = theme.page(for: colorScheme)
+    // Through the resolver rather than `theme.page(for:)` directly, so that the
+    // paper is decided in one place for every screen that shows a prayer.
+    configuration = configuration.resolvingBackground(for: colorScheme)
   }
 
   /// What the page looks like on a theme with nothing else changed — the
@@ -762,41 +771,23 @@ public struct PrayerThemeScreen: View {
     return resolved
   }
 
-  /// Lights the card the page already matches, so the sheet opens agreeing with
-  /// what is behind it.
-  ///
-  /// Matched on paper *and* face, which is all a theme is. Leaves ``slot`` `nil`
-  /// when nothing matches — a page nobody's theme describes should show no card
-  /// selected rather than the nearest one.
-  ///
-  /// Runs on appear rather than in `init`, which cannot see the appearance.
-  private func adoptMatchingTheme() {
-    slot = PrayerTheme.all.first { theme in
-      theme.font == settings.font
-        && theme.page(for: colorScheme) == settings.background
-    }?.slot
-  }
-
   /// Moves the page to the other half of its theme when the appearance changes.
   ///
   /// The pairing, in one line: a reader on the second theme in daylight is on
   /// the second theme after dark too, and only the paper under them changes.
-  /// Does nothing when no theme is selected — a page the reader has taken off a
-  /// theme is theirs, and swapping its paper would be the app overruling them.
   private func followAppearance() {
-    guard let slot else { return }
-
-    settings.background = PrayerTheme.theme(slot).page(for: colorScheme)
+    configuration = configuration.resolvingBackground(for: colorScheme)
   }
 
-  /// Keeps the reader's choices.
+  /// Keeps the reader's choices, against this prayer.
   ///
-  /// **The keeping half does not exist yet.** ``PrayerSettings/settings(for:)``
-  /// is still a stub that hands every prayer back ``PrayerSettings/standard``,
-  /// so there is nowhere for this to write to — the changes are already on the
-  /// page behind, and they last as long as the reader stays open. Wiring a store
-  /// behind that stub is what makes them outlive it.
+  /// The only write in this sheet. Everything up to here has changed the page
+  /// behind and nothing else, which is what makes swiping the sheet away a way
+  /// to back out: the screen that presented this reloads from the store on
+  /// dismiss either way, so a save is picked up and an abandoned experiment is
+  /// dropped, with no "did they save?" flag between them.
   private func save() {
+    PrayerConfigurationStore.shared.save(configuration, for: prayerID)
     dismiss()
   }
 
@@ -809,16 +800,16 @@ public struct PrayerThemeScreen: View {
   /// changes, and a haptic for something the reader did not just do would read
   /// as the app twitching.
   private struct DiscreteChoices: Equatable {
-    let slot: PrayerThemeSlot?
+    let slot: PrayerThemeSlot
     let font: PrayerSettings.Face
     let alignment: PrayerSettings.Alignment
     let showsPronunciation: Bool
 
-    init(slot: PrayerThemeSlot?, settings: PrayerSettings) {
-      self.slot = slot
-      font = settings.font
-      alignment = settings.alignment
-      showsPronunciation = settings.showsPronunciation
+    init(configuration: PrayerConfiguration) {
+      slot = configuration.themeSlot
+      font = configuration.settings.font
+      alignment = configuration.settings.alignment
+      showsPronunciation = configuration.settings.showsPronunciation
     }
   }
 }
@@ -854,7 +845,7 @@ extension View {
 }
 
 private struct PrayerThemeScreenPreview: View {
-  @State private var settings: PrayerSettings = .standard
+  @State private var configuration: PrayerConfiguration = .standard
 
   /// Fonts are normally registered in `PhayarSarApp.init()`, which previews skip.
   init() {
@@ -862,6 +853,6 @@ private struct PrayerThemeScreenPreview: View {
   }
 
   var body: some View {
-    PrayerThemeScreen(settings: $settings)
+    PrayerThemeScreen(configuration: $configuration, prayerID: "Khandha")
   }
 }

@@ -12,6 +12,7 @@ import FirebaseCore
 import FirebaseMessaging
 import KloudKit
 import LocalisationKit
+import PrayersKit
 import SwiftUI
 import UserNotifications
 
@@ -87,10 +88,10 @@ struct PhayarSarApp: App {
     )
 
     KloudStack.shared.start(
-      // Every entity in the app goes in this list. Only AuthKit has one so far;
-      // a feature module that adds one has to be named here too, because this is
-      // the only place that links them all.
-      schema: KloudSchema([AuthProfileRecord.self]),
+      // Every entity in the app goes in this list. A feature module that adds
+      // one has to be named here too, because this is the only place that links
+      // them all.
+      schema: KloudSchema([AuthProfileRecord.self, PrayerConfigurationRecord.self]),
       mode: AuthManager.shared.preferredSyncMode
     )
   }

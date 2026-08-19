@@ -10,8 +10,9 @@ import UIKit
 /// A value type, and per-prayer rather than global: someone reading ပဋ္ဌာန်းအကျယ်
 /// at a large size on a black page may still want ငါးပါးသီလ small and classic.
 ///
-/// Nothing persists these yet — every prayer reads back ``standard`` until a
-/// store is wired up behind ``settings(for:)``.
+/// Kept, along with the theme it was built from, by ``PrayerConfiguration`` —
+/// which is the whole of what gets persisted. ``background`` is the exception:
+/// see ``PrayerConfiguration/themeSlot``.
 public struct PrayerSettings: Hashable, Sendable {
   /// Point size of the recited text.
   public var textSize: Int
@@ -105,16 +106,20 @@ extension PrayerSettings {
     #if canImport(UIKit)
     /// The UIKit counterpart of ``font(size:)``, for the reader — which draws
     /// its page with `NSAttributedString` and cannot take a SwiftUI `Font`.
-    public func uiFont(size: CGFloat) -> UIFont {
+    ///
+    /// - Parameter style: The text style to track Dynamic Type from. The reader
+    ///   sets its verses against `.body` and the respelling under them against
+    ///   `.footnote`, so that the two grow at the rates their sizes imply.
+    public func uiFont(size: CGFloat, relativeTo style: UIFont.TextStyle = .body) -> UIFont {
       switch self {
       case .jasmine:
-        return AppUIFont.jasmine(size: size)
+        return AppUIFont.jasmine(size: size, relativeTo: style)
       case .panglong:
-        return AppUIFont.panlong(size: size)
+        return AppUIFont.panlong(size: size, relativeTo: style)
       case .square:
-        return AppUIFont.mSquare(size: size)
+        return AppUIFont.mSquare(size: size, relativeTo: style)
       case .yoeYar:
-        return AppUIFont.yoeYar(size: size)
+        return AppUIFont.yoeYar(size: size, relativeTo: style)
       }
     }
     #endif
@@ -238,23 +243,5 @@ extension PrayerSettings {
         return AppColor.Page.Ink.ink
       }
     }
-  }
-}
-
-// MARK: - Lookup
-
-extension PrayerSettings {
-  /// The settings a prayer is currently read with.
-  ///
-  /// A stub: it returns ``standard`` for every prayer. It exists so the screens
-  /// that show or edit these settings can be built against their real call
-  /// site, and so wiring up a store later is a change in one place rather than
-  /// in every view that reads a setting.
-  ///
-  /// - Parameter prayerID: ``Prayer/id``, the same key the rest of the app
-  ///   stores per-prayer state against.
-  public static func settings(for prayerID: Prayer.ID) -> PrayerSettings {
-    _ = prayerID
-    return .standard
   }
 }

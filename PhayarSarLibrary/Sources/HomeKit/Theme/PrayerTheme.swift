@@ -2,19 +2,6 @@ import LocalisationKit
 import PrayersKit
 import SwiftUI
 
-/// Which of the three themes this is, independent of appearance.
-///
-/// The slot is what a reader's choice is actually stored against — not the
-/// variant they happened to pick it in. Choosing the second theme in daylight
-/// and then turning the lights off should land on the second theme again, in
-/// its dark form, rather than dropping the choice or carrying a light page into
-/// the dark.
-enum PrayerThemeSlot: String, CaseIterable, Hashable, Sendable, Codable {
-  case one
-  case two
-  case three
-}
-
 /// One theme, in both appearances.
 ///
 /// **A theme is a paper and a face, and nothing else.** Everything else about
@@ -95,16 +82,39 @@ extension PrayerTheme {
     )
   ]
 
-  /// The theme in a given slot.
+  /// The theme in a given slot, falling back to ``first``.
   ///
-  /// Force-unwrapped against ``all``: the slots and the array are written
-  /// together in this file, and a slot with no theme behind it is a mistake in
-  /// the table above rather than a state to recover from at runtime.
+  /// This used to trap on a slot with no theme behind it, which was fair while
+  /// the enum and the table above were written together in this file. The enum
+  /// is in PrayersKit now because it is persisted, so a slot can also arrive out
+  /// of a stored record — including one synced from a build that had a fourth
+  /// preset this one does not. Opening a prayer on the first theme is a far
+  /// better answer to that than crashing on a CloudKit import.
   static func theme(_ slot: PrayerThemeSlot) -> PrayerTheme {
-    guard let theme = all.first(where: { $0.slot == slot }) else {
-      preconditionFailure("No theme defined for slot \(slot.rawValue)")
-    }
+    all.first { $0.slot == slot } ?? first
+  }
 
-    return theme
+  /// The theme a prayer opens on.
+  static var first: PrayerTheme { all[0] }
+}
+
+// MARK: - Resolving the paper
+
+extension PrayerConfiguration {
+  /// The same configuration, wearing the paper its theme calls for in this
+  /// appearance.
+  ///
+  /// **The one place an appearance becomes a paper.** ``PrayerSettings/background``
+  /// is derived rather than stored — see ``PrayerConfiguration/themeSlot`` — so
+  /// this has to run on every load and on every appearance change, before
+  /// anything draws with it.
+  ///
+  /// It lives in HomeKit, on a PrayersKit type, because the light/dark pairing is
+  /// ``PrayerTheme``'s and nothing in PrayersKit knows it: a slot is an identity
+  /// there, and only the table above says what it looks like.
+  func resolvingBackground(for colorScheme: ColorScheme) -> PrayerConfiguration {
+    var resolved = self
+    resolved.settings.background = PrayerTheme.theme(themeSlot).page(for: colorScheme)
+    return resolved
   }
 }

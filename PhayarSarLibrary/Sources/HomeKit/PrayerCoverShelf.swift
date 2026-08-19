@@ -289,7 +289,10 @@ private struct PrayerCoverShelfPreview: View {
     PrayerCoverCarousel(
       prayers: prayers,
       openingID: selectedID,
-      selectedID: $selectedID
+      selectedID: $selectedID,
+      // Nowhere to open to in a preview: the reader is pushed onto a navigation
+      // stack this has none of.
+      onOpen: {}
     )
     .frame(maxHeight: .infinity)
     .background(AppColor.background.ignoresSafeArea())

@@ -70,6 +70,15 @@ enum PrayerCoverMetrics {
   /// Past this many covers out, there is nothing left worth drawing.
   static let hiddenCovers: Double = 5
 
+  /// How near the middle the front cover has to be, in points, for the strip to
+  /// count as standing still.
+  ///
+  /// Loose rather than exact. What it has to separate is a cover parked at the
+  /// front from one sailing past it, and those differ by tens of points — while
+  /// an exact zero would depend on the scroll view landing on a whole number,
+  /// and a front cover a fraction of a point out would silently stop opening.
+  static let settledTolerance: CGFloat = 4
+
   /// Height of the mirrored reflection under each cover.
   ///
   /// Measured off the shelf's top surface rather than off the cover, because the
@@ -189,7 +198,9 @@ struct PrayerCover: View {
 ///
 /// Swiping settles on a neighbouring prayer and writes it back through
 /// `selectedID`, which is what re-points the rest of the screen — title, chips,
-/// about, specs and the navigation title all follow from that one value.
+/// about, specs and the navigation title all follow from that one value. Tapping
+/// does the same for a cover in the wall; on the cover already at the front there
+/// is nothing left to select, so it opens the prayer instead — see ``onOpen``.
 ///
 /// The loop is real rather than drawn: the strip holds
 /// ``PrayerCoverMetrics/copies`` runs of the catalog end to end, the reader is
@@ -213,6 +224,13 @@ struct PrayerCoverCarousel: View {
   let openingID: Prayer.ID
   @Binding var selectedID: Prayer.ID
 
+  /// What tapping the cover already facing the reader does.
+  ///
+  /// A closure rather than a route, because where a cover leads is the screen's
+  /// business — the carousel's is only knowing which cover is at the front, and
+  /// it is the only thing that does.
+  let onOpen: () -> Void
+
   var body: some View {
     ZStack(alignment: .top) {
       // Outside the scroll view, so it holds still while the covers slide past
@@ -229,10 +247,18 @@ struct PrayerCoverCarousel: View {
   @ViewBuilder
   private func Covers() -> some View {
     if #available(iOS 17.0, macOS 14.0, *) {
-      PagingCovers(prayers: prayers, openingID: openingID, selectedID: $selectedID)
+      PagingCovers(
+        prayers: prayers,
+        openingID: openingID,
+        selectedID: $selectedID,
+        onOpen: onOpen
+      )
     } else {
+      // The single cover this falls back to is always the selected one, so it is
+      // always the one a tap opens.
       PrayerCover()
         .frame(height: PrayerCoverMetrics.height)
+        .onTapGesture(perform: onOpen)
     }
   }
 }
@@ -249,10 +275,28 @@ private struct LoopCell: Identifiable {
   let prayer: Prayer
 }
 
+/// How far the cover at the front is from the middle of the viewport, in points.
+private struct CentreOffsetKey: PreferenceKey {
+  static var defaultValue: CGFloat { 0 }
+
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    // Furthest out wins. Only one cover reports at a time, but during the frame
+    // the reader moves from one cover to the next there can briefly be two — and
+    // of two answers the conservative one is whichever says the strip is still
+    // moving.
+    let next = nextValue()
+
+    if abs(next) > abs(value) {
+      value = next
+    }
+  }
+}
+
 @available(iOS 17.0, macOS 14.0, *)
 private struct PagingCovers: View {
   let prayers: [Prayer]
   @Binding var selectedID: Prayer.ID
+  let onOpen: () -> Void
 
   /// The catalog repeated end to end. Built once per view value rather than in
   /// `body`, which runs far more often.
@@ -266,14 +310,32 @@ private struct PagingCovers: View {
   /// re-centring uses.
   @State private var scrolledCell: Int?
 
+  /// Whether the strip is standing still with a cover squarely at the front.
+  ///
+  /// Only a settled strip can be tapped open. Mid-fling the cover under the
+  /// thumb is whichever one happens to be passing, and the tap that stops the
+  /// scroll would open it — a screen the reader did not ask for, chosen by
+  /// where their thumb landed. Stopping the scroll is all that tap does.
+  ///
+  /// Held as a `Bool` rather than as the measured offset: the offset changes
+  /// every frame of a scroll, and storing it would re-evaluate a hundred covers
+  /// a frame to draw exactly the same thing. This changes twice a scroll.
+  @State private var isSettled = true
+
   /// Whether the opening prayer has been scrolled to. One-shot: `onAppear` also
   /// fires on the way back from a pushed screen, and re-anchoring then would
   /// throw away whatever the reader had paged to before leaving.
   @State private var hasAnchored = false
 
-  init(prayers: [Prayer], openingID: Prayer.ID, selectedID: Binding<Prayer.ID>) {
+  init(
+    prayers: [Prayer],
+    openingID: Prayer.ID,
+    selectedID: Binding<Prayer.ID>,
+    onOpen: @escaping () -> Void
+  ) {
     self.prayers = prayers
     self._selectedID = selectedID
+    self.onOpen = onOpen
 
     let count = prayers.count
     self.cells = (0 ..< count * PrayerCoverMetrics.copies).map { position in
@@ -317,6 +379,20 @@ private struct PagingCovers: View {
           HStack(spacing: PrayerCoverMetrics.spacing) {
             ForEach(cells) { cell in
               PrayerCover()
+                // Only the front cover is measured, and only while it is the
+                // front cover — one reader in the strip rather than one per
+                // cover, all but one of which would be reporting about a cover
+                // nobody is about to tap.
+                .background {
+                  if cell.id == scrolledCell {
+                    GeometryReader { proxy in
+                      Color.clear.preference(
+                        key: CentreOffsetKey.self,
+                        value: proxy.frame(in: .global).midX - viewportCentreX
+                      )
+                    }
+                  }
+                }
                 // `visualEffect` rather than `scrollTransition`, because this
                 // needs real geometry. A transition phase is normalised to the
                 // visible region — it says "most of the way out", not "167pt
@@ -361,12 +437,26 @@ private struct PagingCovers: View {
                     .offset(x: place.x - travel)
                     .opacity(place.opacity)
                 }
-                // Writing to the `scrollPosition` binding is what moves the
-                // scroll view, so selecting a neighbour and tapping one are the
-                // same operation. Tapping the centred cover resolves to itself
-                // and does nothing.
+                // Two taps in one, told apart by where the cover is standing.
+                //
+                // A cover in the wall is a *selection*: writing to the
+                // `scrollPosition` binding is what moves the scroll view, so
+                // tapping a neighbour and swiping to it are the same operation.
+                // The cover already at the front has nowhere to be scrolled to,
+                // and tapping the artwork you are looking at can only mean one
+                // thing — so it opens the prayer, exactly as the CTA does.
+                //
+                // Matched on the cell rather than on the prayer: the same prayer
+                // has a cover in each run of the looping strip, and only this one
+                // is the one at the front.
                 .onTapGesture {
-                  withAnimation(.prayerContentSwap) { scrolledCell = cell.id }
+                  if cell.id == scrolledCell {
+                    guard isSettled else { return }
+
+                    onOpen()
+                  } else {
+                    withAnimation(.prayerContentSwap) { scrolledCell = cell.id }
+                  }
                 }
                 // Nearest the centre draws on top. The spacing above is set so
                 // covers never actually cross, and this is the backstop for that
@@ -395,6 +485,15 @@ private struct PagingCovers: View {
         .scrollIndicators(.hidden)
         .onAppear { anchorToOpeningPrayer(scroller) }
         .onChange(of: scrolledCell) { _, cell in settle(on: cell) }
+        // Safe from feeding back into itself: what this changes is whether a tap
+        // opens anything, which cannot move the strip it is measuring.
+        .onPreferenceChange(CentreOffsetKey.self) { offset in
+          let settled = abs(offset) < PrayerCoverMetrics.settledTolerance
+
+          if settled != isSettled {
+            isSettled = settled
+          }
+        }
       }
     }
     .frame(height: PrayerCoverMetrics.height)

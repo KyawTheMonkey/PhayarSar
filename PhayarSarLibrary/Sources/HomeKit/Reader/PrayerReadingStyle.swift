@@ -185,10 +185,8 @@ struct PrayerReadingStyle {
   init(settings: PrayerSettings) {
     let size = CGFloat(settings.textSize)
 
-    // Jasmine for the recited text: the settings model has no font picker yet,
-    // so this is the reader's one face until it does.
-    verseFont = AppUIFont.jasmine(size: size, relativeTo: .body)
-    pronunciationFont = AppUIFont.jasmine(
+    verseFont = settings.font.uiFont(size: size, relativeTo: .body)
+    pronunciationFont = settings.font.uiFont(
       size: max(
         size * PrayerReaderMetrics.pronunciationScale,
         PrayerReaderMetrics.minimumPronunciationSize

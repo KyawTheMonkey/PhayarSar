@@ -118,23 +118,19 @@ public struct PrayerDetailScreen: View {
 
   /// How this prayer is set to be read.
   ///
-  /// Held as state rather than read fresh from ``PrayerSettings/settings(for:)``
-  /// on every `body`, because the theme cards below write to it — a theme picked
-  /// here has to show up in the spec grid under it, which is the only
-  /// confirmation this screen can give that the tap landed.
+  /// Held as state rather than read fresh on every `body`, because the theme
+  /// cards below write to it — a theme picked here has to show up in the spec
+  /// grid under it, which is the only confirmation this screen can give that the
+  /// tap landed.
   ///
-  /// **Nothing keeps it yet.** ``PrayerSettings/settings(for:)`` is still a stub
-  /// that hands every prayer back ``PrayerSettings/standard``, so a theme chosen
-  /// here lasts as long as the screen does and the reader opens on the standard
-  /// page regardless. Wiring a store behind that stub is what joins the two.
-  @State private var settings: PrayerSettings
+  /// This screen has no Save button, so every change here is written to
+  /// ``PrayerConfigurationStore`` as it is made. That is also what carries a
+  /// theme chosen here into the reader.
+  @State private var configuration: PrayerConfiguration
 
-  /// Which theme ``settings`` was last built from, or `nil` when it matches none
-  /// of them.
-  ///
-  /// Kept apart from ``settings`` for the same reason ``PrayerThemeScreen`` does:
-  /// it is a fact about this screen's session, not about the page.
-  @State private var themeSlot: PrayerThemeSlot?
+  /// The drawing half of ``configuration``, which is what the grid and the
+  /// sections below read.
+  private var settings: PrayerSettings { configuration.settings }
 
   /// The appearance the app is actually in, whether that came from the system or
   /// from the reader's own override.
@@ -156,7 +152,7 @@ public struct PrayerDetailScreen: View {
     self.isKnownPrayer = PrayerCatalog.shared.prayer(id: prayerID) != nil
     self.openingID = prayerID
     _selectedID = State(initialValue: prayerID)
-    _settings = State(initialValue: PrayerSettings.settings(for: prayerID))
+    _configuration = State(initialValue: PrayerConfigurationStore.shared.configuration(for: prayerID))
   }
 
   private var prayer: Prayer? {
@@ -183,17 +179,18 @@ public struct PrayerDetailScreen: View {
     // would compete for the same thumb. Restored on pop by the modifier itself.
     .hideTabBar()
     .appBackground()
-    // On appear rather than in `init`, which cannot see the appearance.
-    .onAppear(perform: adoptMatchingTheme)
+    // On appear rather than in `init`, which cannot see the appearance — and the
+    // paper is resolved from the appearance, so nothing may draw before this.
+    .onAppear(perform: followAppearance)
     // The carousel can land on a prayer with settings of its own, so both the
     // grid and the lit card have to follow it rather than stay on the prayer the
     // screen opened with.
-    .onValueChange(selectedID, perform: loadSettings)
+    .onValueChange(selectedID, perform: loadConfiguration)
     .onValueChange(colorScheme, perform: followAppearance)
     // Both controls tick, from one value rather than one modifier each — see
     // `appSelectionFeedback(trigger:)`, which asks to be applied to whatever owns
     // the selection.
-    .appSelectionFeedback(trigger: DiscreteChoices(slot: themeSlot, settings: settings))
+    .appSelectionFeedback(trigger: DiscreteChoices(configuration: configuration))
     .enableInjection()
   }
 
@@ -209,7 +206,10 @@ public struct PrayerDetailScreen: View {
         PrayerCoverCarousel(
           prayers: prayers,
           openingID: openingID,
-          selectedID: $selectedID
+          selectedID: $selectedID,
+          // The cover at the front is the prayer this screen is about, so
+          // tapping it is the CTA — see `StartBar`, which routes identically.
+          onOpen: { navigator.navigate(to: .prayer(prayerID: prayer.id)) }
         )
 
         VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
@@ -369,11 +369,20 @@ public struct PrayerDetailScreen: View {
   /// whether the respelling is there at all is a question about how the reader
   /// reads, which they can answer without seeing it.
   ///
-  /// Writes to the same ``settings`` the grid reads, so the Pronunciation cell
-  /// under it follows the switch.
+  /// Writes to the same ``configuration`` the grid reads, so the Pronunciation
+  /// cell under it follows the switch — and straight on to the store, since this
+  /// screen has no Save button to defer to.
   @ViewBuilder
   private func Pronunciation() -> some View {
-    PrayerPronunciationSection(isOn: $settings.showsPronunciation)
+    PrayerPronunciationSection(
+      isOn: Binding(
+        get: { settings.showsPronunciation },
+        set: {
+          configuration.settings.showsPronunciation = $0
+          persist()
+        }
+      )
+    )
   }
 
   // MARK: - Themes
@@ -387,7 +396,7 @@ public struct PrayerDetailScreen: View {
   /// sheet rather than a second editor.
   @ViewBuilder
   private func Themes() -> some View {
-    PrayerThemeSection(selection: themeSlot, onSelect: select)
+    PrayerThemeSection(selection: configuration.themeSlot, onSelect: select)
   }
 
   // MARK: - Reading settings
@@ -416,25 +425,28 @@ public struct PrayerDetailScreen: View {
   /// The same rule the editor follows — see ``PrayerThemeScreen`` — so that a
   /// size or a spacing the reader has tuned survives trying all three.
   private func select(_ theme: PrayerTheme) {
-    themeSlot = theme.slot
-    settings.font = theme.font
-    settings.background = theme.page(for: colorScheme)
+    configuration.themeSlot = theme.slot
+    configuration.settings.font = theme.font
+    // Through the resolver rather than `theme.page(for:)` directly, so the paper
+    // is decided in one place for every screen that shows a prayer.
+    configuration = configuration.resolvingBackground(for: colorScheme)
+    persist()
   }
 
   /// Reads back the prayer the carousel has landed on.
-  private func loadSettings() {
-    settings = PrayerSettings.settings(for: selectedID)
-    adoptMatchingTheme()
+  private func loadConfiguration() {
+    configuration = PrayerConfigurationStore.shared
+      .configuration(for: selectedID)
+      .resolvingBackground(for: colorScheme)
   }
 
-  /// Lights the card the settings already match, on paper *and* face — which is
-  /// all a theme is. Leaves ``themeSlot`` `nil` when nothing matches, so a page
-  /// no theme describes shows no card lit rather than the nearest one.
-  private func adoptMatchingTheme() {
-    themeSlot = PrayerTheme.all.first { theme in
-      theme.font == settings.font
-        && theme.page(for: colorScheme) == settings.background
-    }?.slot
+  /// Keeps what the reader just changed.
+  ///
+  /// Immediately, unlike ``PrayerThemeScreen``, because there is no Save button
+  /// here to defer to — the cards and the switch are the whole interaction, and
+  /// leaving this screen is not an act of confirmation.
+  private func persist() {
+    PrayerConfigurationStore.shared.save(configuration, for: selectedID)
   }
 
   /// What a tap on this screen can change.
@@ -444,22 +456,27 @@ public struct PrayerDetailScreen: View {
   /// haptic for something the reader did not just do would read as the app
   /// twitching. Same shape, and the same reasoning, as ``PrayerThemeScreen``'s.
   private struct DiscreteChoices: Equatable {
-    let slot: PrayerThemeSlot?
+    let slot: PrayerThemeSlot
     let showsPronunciation: Bool
 
-    init(slot: PrayerThemeSlot?, settings: PrayerSettings) {
-      self.slot = slot
-      showsPronunciation = settings.showsPronunciation
+    init(configuration: PrayerConfiguration) {
+      slot = configuration.themeSlot
+      showsPronunciation = configuration.settings.showsPronunciation
     }
   }
 
-  /// Moves to the other half of the chosen theme when the appearance changes,
-  /// so the choice survives the lights going out. Does nothing when no theme is
-  /// chosen — settings nobody's theme describes are the reader's.
+  /// Puts the page on the right half of its theme.
+  ///
+  /// Runs on appear as well as on a change, because the paper is derived rather
+  /// than stored — a prayer opened cold in the dark has to resolve its dark paper
+  /// before it draws, not only once the appearance changes under it.
+  ///
+  /// Deliberately does **not** persist. It answers the system, not the reader,
+  /// and the paper is a pure function of the stored theme and the appearance —
+  /// writing here would stamp the record and push a CloudKit export every time
+  /// the lights go out.
   private func followAppearance() {
-    guard let themeSlot else { return }
-
-    settings.background = PrayerTheme.theme(themeSlot).page(for: colorScheme)
+    configuration = configuration.resolvingBackground(for: colorScheme)
   }
 
   // MARK: - Start CTA
