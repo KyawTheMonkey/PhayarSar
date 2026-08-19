@@ -159,7 +159,10 @@ private enum AppFonts: String, CaseIterable {
 // can't use SwiftUI's `Font` (UIKit view controllers, UIAppearance proxies,
 // attributed strings, etc).
 
-#if canImport(UIKit)
+// Not `canImport(UIKit)`: the watch has UIKit, but it has no `UIFontMetrics`
+// to scale against — and nothing on the watch draws with `NSAttributedString`
+// anyway. The SwiftUI scale above serves it.
+#if os(iOS) || os(tvOS)
 import UIKit
 
 public enum AppUIFont {

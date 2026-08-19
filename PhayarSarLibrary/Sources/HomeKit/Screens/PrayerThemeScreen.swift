@@ -6,7 +6,13 @@ import SwiftUI
 import UtilKit
 
 /// Layout constants for `PrayerThemeScreen`.
-private enum PrayerThemeMetrics {
+///
+/// Internal rather than private because the text-size bounds are no longer this
+/// screen's alone: the watch remote can set a size too, and `PrayerScreen`
+/// clamps what arrives from the wrist to exactly what this sheet offers. Two
+/// copies of those numbers would drift, and the drift would show as a slider
+/// pinned at its maximum over a page that is larger than the track admits.
+enum PrayerThemeMetrics {
   /// Width at which the specimen moves alongside the controls instead of
   /// sitting above them. Only the combined layout can reach it — the two-pass
   /// sheet is never this wide.

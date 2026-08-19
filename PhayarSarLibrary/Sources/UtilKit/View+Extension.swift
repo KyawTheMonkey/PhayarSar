@@ -12,16 +12,17 @@ extension View {
 private struct HideNavBar: ViewModifier {
   func body(content: Content) -> some View {
     // `ToolbarPlacement.navigationBar` doesn't exist on macOS — there's no
-    // navigation bar to hide there, so this is a no-op.
-    #if os(macOS)
-    content
-    #else
+    // navigation bar to hide there — and the watch's navigation chrome is not
+    // the screen's to hide. A no-op on both.
+    #if os(iOS)
     if #available(iOS 18.0, *) {
       content.toolbarVisibility(.hidden, for: .navigationBar)
     } else {
       // Fallback on earlier versions
       content.navigationBarHidden(true)
     }
+    #else
+    content
     #endif
   }
 }
@@ -56,15 +57,16 @@ private struct HideTabBar: ViewModifier {
 
   func body(content: Content) -> some View {
     // `ToolbarPlacement.tabBar` is unavailable on macOS, where the sidebar
-    // stands in for the tab bar and is not the pushed screen's business.
-    #if os(macOS)
-    content
-    #else
+    // stands in for the tab bar and is not the pushed screen's business, and on
+    // watchOS, which has no tab bar at all.
+    #if os(iOS)
     if #available(iOS 18.0, *) {
       content.toolbarVisibility(hidden ? .hidden : .visible, for: .tabBar)
     } else {
       content.toolbar(hidden ? .hidden : .visible, for: .tabBar)
     }
+    #else
+    content
     #endif
   }
 }
@@ -165,7 +167,7 @@ extension View {
 
 private struct ToolBarButtonCircularGlass: ViewModifier {
   func body(content: Content) -> some View {
-    if #available(iOS 26.0, macOS 26.0, *) {
+    if #available(iOS 26.0, macOS 26.0, watchOS 26.0, *) {
       content.glassEffect(.clear.interactive(), in: .circle)
     } else {
       content
@@ -192,7 +194,7 @@ private struct CapsuleGlass: ViewModifier {
   let interactive: Bool
 
   func body(content: Content) -> some View {
-    if #available(iOS 26.0, macOS 26.0, *) {
+    if #available(iOS 26.0, macOS 26.0, watchOS 26.0, *) {
       content.glassEffect(interactive ? .regular.interactive() : .regular, in: .capsule)
     } else {
       content
