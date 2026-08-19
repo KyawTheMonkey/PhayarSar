@@ -64,22 +64,6 @@ private enum PrayerThemeMetrics {
   static let headerBottomPadding: CGFloat = 4
   static let closeButtonDiameter: CGFloat = 32
 
-  // MARK: - Theme cards
-
-  /// A theme card's height. Squarer and far larger than the chips this replaced
-  /// — the card *is* the specimen for its theme, so the face has to be readable
-  /// at a glance rather than merely present.
-  static let themeCardHeight: CGFloat = 96
-  static let themeCardCornerRadius: CGFloat = 14
-  static let themeCardSpacing: CGFloat = 12
-
-  /// Size of the `အက` shown on a theme card.
-  static let themeCardSpecimenSize: CGFloat = 30
-
-  /// The selected card's border. Heavy enough to read as a ring rather than as
-  /// the hairline every unselected card already carries.
-  static let themeCardSelectedBorderWidth: CGFloat = 3
-
   // MARK: - Font rows
 
   /// Size of the `ကခဂ` specimen beside a font's name. Large enough to tell the
@@ -215,7 +199,7 @@ public struct PrayerThemeScreen: View {
       adoptMatchingTheme()
       clampTextSize()
     }
-    .onColorSchemeChange(colorScheme, perform: followAppearance)
+    .onValueChange(colorScheme, perform: followAppearance)
     // Only the discrete choices tick. A slider crossing a detent every few
     // milliseconds under the finger would be a buzz, not feedback.
     .appSelectionFeedback(trigger: DiscreteChoices(slot: slot, settings: settings))
@@ -334,8 +318,8 @@ public struct PrayerThemeScreen: View {
   @ViewBuilder
   private func QuickControls() -> some View {
     VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
-      Pronunciation()
-      ThemeCards()
+      PrayerPronunciationSection(isOn: binding(\.showsPronunciation))
+      PrayerThemeSection(selection: slot, onSelect: select)
 
       if !isRegular {
         CustomizeRow()
@@ -468,69 +452,6 @@ public struct PrayerThemeScreen: View {
         .contentShape(Circle())
     }
     .buttonStyle(PressableButtonStyle())
-  }
-
-  // MARK: - Theme cards
-
-  /// The three themes, shown in whichever appearance the app is currently in.
-  ///
-  /// Only one set is ever on screen: the light themes are unreachable in the
-  /// dark and vice versa, because a light page chosen in the dark would be the
-  /// thing the appearance switch exists to avoid.
-  @ViewBuilder
-  private func ThemeCards() -> some View {
-    AppListSection(L10n.themePresets, footer: L10n.themePairingFooter) {
-      HStack(spacing: PrayerThemeMetrics.themeCardSpacing) {
-        ForEach(PrayerTheme.all) { theme in
-          ThemeCard(theme)
-        }
-      }
-    }
-  }
-
-  @ViewBuilder
-  private func ThemeCard(_ theme: PrayerTheme) -> some View {
-    let page = theme.page(for: colorScheme)
-    // Against the slot, not against the settings. A reader who picked Classic
-    // and then changed the face is still on Classic, and the card has to say so
-    // — comparing values would drop the highlight the moment anything moved.
-    let isSelected = slot == theme.slot
-    let shape = RoundedRectangle(
-      cornerRadius: PrayerThemeMetrics.themeCardCornerRadius,
-      style: .continuous
-    )
-
-    Button {
-      select(theme)
-    } label: {
-      VStack(spacing: 2) {
-        // The theme's own face, not the one currently in use — the card has to
-        // show what tapping it would give you.
-        Text("အက")
-          .font(theme.font.font(size: PrayerThemeMetrics.themeCardSpecimenSize))
-
-        Text(page.displayText)
-          .font(AppFont.caption)
-          .lineLimit(1)
-          .minimumScaleFactor(0.8)
-      }
-      // The paper's own ink for both, so the card reads as a scrap of the page
-      // it stands for rather than as a swatch with a label stuck on it.
-      .foregroundStyle(page.foreground)
-      .frame(maxWidth: .infinity)
-      .frame(height: PrayerThemeMetrics.themeCardHeight)
-      .background(page.color, in: shape)
-      .overlay {
-        shape.strokeBorder(
-          isSelected ? AppColor.primary : AppColor.border,
-          lineWidth: isSelected ? PrayerThemeMetrics.themeCardSelectedBorderWidth : 0.5
-        )
-      }
-      .contentShape(shape)
-    }
-    .buttonStyle(PressableButtonStyle())
-    .accessibilityLabel(page.displayText)
-    .accessibilityAddTraits(isSelected ? [.isSelected] : [])
   }
 
   /// The way into the second pass.
@@ -743,20 +664,6 @@ public struct PrayerThemeScreen: View {
     }
   }
 
-  // MARK: - Pronunciation
-
-  @ViewBuilder
-  private func Pronunciation() -> some View {
-    AppListSection(footer: L10n.pronunciationFooter) {
-      Toggle(isOn: binding(\.showsPronunciation)) {
-        Text(L10n.showPronunciation)
-          .font(AppFont.subheadline)
-          .foregroundStyle(AppColor.textPrimary)
-      }
-      .tint(AppColor.primary)
-    }
-  }
-
   // MARK: - Reset
 
   /// Back to the first theme, untouched.
@@ -936,33 +843,6 @@ extension View {
       presentationBackgroundInteraction(.enabled(upThrough: .medium))
     } else {
       self
-    }
-  }
-
-  /// Runs `perform` whenever the appearance changes.
-  ///
-  /// Takes the scheme as a parameter rather than reading the environment itself,
-  /// so the caller's own `@Environment` is the single source of it.
-  ///
-  /// A shim, because `onChange(of:)` has a different signature either side of
-  /// iOS 17 — the same split `AppSelectionSoundModifier` in `UtilKit` straddles.
-  fileprivate func onColorSchemeChange(
-    _ colorScheme: ColorScheme,
-    perform: @escaping () -> Void
-  ) -> some View {
-    modifier(OnColorSchemeChange(colorScheme: colorScheme, perform: perform))
-  }
-}
-
-private struct OnColorSchemeChange: ViewModifier {
-  let colorScheme: ColorScheme
-  let perform: () -> Void
-
-  func body(content: Content) -> some View {
-    if #available(iOS 17.0, macOS 14.0, *) {
-      content.onChange(of: colorScheme) { _, _ in perform() }
-    } else {
-      content.onChange(of: colorScheme) { _ in perform() }
     }
   }
 }

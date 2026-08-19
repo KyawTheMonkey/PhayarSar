@@ -116,6 +116,30 @@ public struct PrayerDetailScreen: View {
   /// and everything else on the screen reads from it.
   @State private var selectedID: Prayer.ID
 
+  /// How this prayer is set to be read.
+  ///
+  /// Held as state rather than read fresh from ``PrayerSettings/settings(for:)``
+  /// on every `body`, because the theme cards below write to it — a theme picked
+  /// here has to show up in the spec grid under it, which is the only
+  /// confirmation this screen can give that the tap landed.
+  ///
+  /// **Nothing keeps it yet.** ``PrayerSettings/settings(for:)`` is still a stub
+  /// that hands every prayer back ``PrayerSettings/standard``, so a theme chosen
+  /// here lasts as long as the screen does and the reader opens on the standard
+  /// page regardless. Wiring a store behind that stub is what joins the two.
+  @State private var settings: PrayerSettings
+
+  /// Which theme ``settings`` was last built from, or `nil` when it matches none
+  /// of them.
+  ///
+  /// Kept apart from ``settings`` for the same reason ``PrayerThemeScreen`` does:
+  /// it is a fact about this screen's session, not about the page.
+  @State private var themeSlot: PrayerThemeSlot?
+
+  /// The appearance the app is actually in, whether that came from the system or
+  /// from the reader's own override.
+  @Environment(\.colorScheme) private var colorScheme
+
   /// How tall the CTA turned out to be, so the content's fade can be anchored
   /// to it. `0` until the first layout pass.
   ///
@@ -132,6 +156,7 @@ public struct PrayerDetailScreen: View {
     self.isKnownPrayer = PrayerCatalog.shared.prayer(id: prayerID) != nil
     self.openingID = prayerID
     _selectedID = State(initialValue: prayerID)
+    _settings = State(initialValue: PrayerSettings.settings(for: prayerID))
   }
 
   private var prayer: Prayer? {
@@ -158,6 +183,17 @@ public struct PrayerDetailScreen: View {
     // would compete for the same thumb. Restored on pop by the modifier itself.
     .hideTabBar()
     .appBackground()
+    // On appear rather than in `init`, which cannot see the appearance.
+    .onAppear(perform: adoptMatchingTheme)
+    // The carousel can land on a prayer with settings of its own, so both the
+    // grid and the lit card have to follow it rather than stay on the prayer the
+    // screen opened with.
+    .onValueChange(selectedID, perform: loadSettings)
+    .onValueChange(colorScheme, perform: followAppearance)
+    // Both controls tick, from one value rather than one modifier each — see
+    // `appSelectionFeedback(trigger:)`, which asks to be applied to whatever owns
+    // the selection.
+    .appSelectionFeedback(trigger: DiscreteChoices(slot: themeSlot, settings: settings))
     .enableInjection()
   }
 
@@ -195,7 +231,18 @@ public struct PrayerDetailScreen: View {
           // routes behind them have to follow the carousel.
           QuickActions(prayer)
 
-          ReadingSettings(prayer)
+          // Above the themes rather than below them: this decides how much text
+          // is on the page, and a theme only decides what that text looks like.
+          Pronunciation()
+
+          // No transition either, and for a sharper reason than the rows above:
+          // the three cards are the same three whichever prayer is showing, and
+          // blur-swapping them would animate nine identical elements to say
+          // nothing. What does change across a swipe — which card is lit — is
+          // the one thing a replacement would restart rather than carry.
+          Themes()
+
+          ReadingSettings()
             .prayerContentTransition(id: prayer.id)
         }
         .padding(.top, PrayerDetailMetrics.heroSpacing)
@@ -313,6 +360,36 @@ public struct PrayerDetailScreen: View {
     }
   }
 
+  // MARK: - Pronunciation
+
+  /// The respelling switch, the same one the reader's editor carries.
+  ///
+  /// The one reading setting worth deciding before opening a prayer: everything
+  /// else in the spec grid below is judged against the page it applies to, but
+  /// whether the respelling is there at all is a question about how the reader
+  /// reads, which they can answer without seeing it.
+  ///
+  /// Writes to the same ``settings`` the grid reads, so the Pronunciation cell
+  /// under it follows the switch.
+  @ViewBuilder
+  private func Pronunciation() -> some View {
+    PrayerPronunciationSection(isOn: $settings.showsPronunciation)
+  }
+
+  // MARK: - Themes
+
+  /// Setting the page before opening it.
+  ///
+  /// The same cards the reader's own editor shows (``PrayerThemeSection``), so
+  /// that choosing a theme here and changing it mid-prayer are visibly the same
+  /// act. Only the theme, though — the six controls behind it belong with the
+  /// page they are judged against, which is why the grid below this is a spec
+  /// sheet rather than a second editor.
+  @ViewBuilder
+  private func Themes() -> some View {
+    PrayerThemeSection(selection: themeSlot, onSelect: select)
+  }
+
   // MARK: - Reading settings
 
   /// What this prayer is currently set to be read with.
@@ -326,10 +403,63 @@ public struct PrayerDetailScreen: View {
   /// The numbers are unitless on purpose: they are the reader's own scale, and
   /// labelling them "pt" would imply a precision the sliders don't have.
   @ViewBuilder
-  private func ReadingSettings(_ prayer: Prayer) -> some View {
+  private func ReadingSettings() -> some View {
     AppListSection(L10n.prayerSettings) {
-      PrayerSpecGrid(settings: PrayerSettings.settings(for: prayer.id))
+      PrayerSpecGrid(settings: settings)
     }
+  }
+
+  // MARK: - Editing
+
+  /// Applies a theme: its face and its paper, and nothing else.
+  ///
+  /// The same rule the editor follows — see ``PrayerThemeScreen`` — so that a
+  /// size or a spacing the reader has tuned survives trying all three.
+  private func select(_ theme: PrayerTheme) {
+    themeSlot = theme.slot
+    settings.font = theme.font
+    settings.background = theme.page(for: colorScheme)
+  }
+
+  /// Reads back the prayer the carousel has landed on.
+  private func loadSettings() {
+    settings = PrayerSettings.settings(for: selectedID)
+    adoptMatchingTheme()
+  }
+
+  /// Lights the card the settings already match, on paper *and* face — which is
+  /// all a theme is. Leaves ``themeSlot`` `nil` when nothing matches, so a page
+  /// no theme describes shows no card lit rather than the nearest one.
+  private func adoptMatchingTheme() {
+    themeSlot = PrayerTheme.all.first { theme in
+      theme.font == settings.font
+        && theme.page(for: colorScheme) == settings.background
+    }?.slot
+  }
+
+  /// What a tap on this screen can change.
+  ///
+  /// Grouped into one value so the tick fires from a single place. The paper is
+  /// deliberately absent: it moves on its own when the appearance changes, and a
+  /// haptic for something the reader did not just do would read as the app
+  /// twitching. Same shape, and the same reasoning, as ``PrayerThemeScreen``'s.
+  private struct DiscreteChoices: Equatable {
+    let slot: PrayerThemeSlot?
+    let showsPronunciation: Bool
+
+    init(slot: PrayerThemeSlot?, settings: PrayerSettings) {
+      self.slot = slot
+      showsPronunciation = settings.showsPronunciation
+    }
+  }
+
+  /// Moves to the other half of the chosen theme when the appearance changes,
+  /// so the choice survives the lights going out. Does nothing when no theme is
+  /// chosen — settings nobody's theme describes are the reader's.
+  private func followAppearance() {
+    guard let themeSlot else { return }
+
+    settings.background = PrayerTheme.theme(themeSlot).page(for: colorScheme)
   }
 
   // MARK: - Start CTA

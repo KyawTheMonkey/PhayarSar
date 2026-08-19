@@ -70,17 +70,38 @@ enum PrayerCoverMetrics {
   /// Past this many covers out, there is nothing left worth drawing.
   static let hiddenCovers: Double = 5
 
-  /// Height of the mirrored reflection under each cover, as a fraction of the
-  /// cover. The floor is half the iTunes look.
-  static let reflectionFraction: CGFloat = 0.35
+  /// Height of the mirrored reflection under each cover.
+  ///
+  /// Measured off the shelf's top surface rather than off the cover, because the
+  /// reflection lies *on* that surface — reflecting the iTunes third of a cover
+  /// would run the image over the front lip and down the face of the slab. Kept
+  /// a little shorter still, so the near strip of shelf stays clear and the
+  /// surface reads as continuing in front of the artwork.
+  static var reflectionHeight: CGFloat { PrayerShelfMetrics.topDepth - 7 }
 
-  static var reflectionHeight: CGFloat { size * reflectionFraction }
+  /// How much of the artwork's colour the shelf gives back.
+  ///
+  /// Faint, and fainter than a mirror would be: the slab is a matte surface with
+  /// a sheen, not glass, and at this size a strong reflection stops reading as
+  /// an image in the shelf and starts reading as a second object lying on it.
+  static let reflectionStrength: Double = 0.16
+
+  /// How far the reflection is smeared.
+  ///
+  /// The other half of matte. A sharp mirror image carries the cover's corners
+  /// and edges intact, and a crisp shape below a cover is a shape, whatever its
+  /// opacity — this is what turns it back into a sheen.
+  static let reflectionBlur: CGFloat = 2
 
   /// Room above the covers, for the flare perspective gives a turned cover's
-  /// near edge, and below them for the reflection. A `ScrollView` clips to its
+  /// near edge, and below them for the shelf. A `ScrollView` clips to its
   /// bounds, so whatever isn't budgeted here gets sliced off.
   static let topInset: CGFloat = 20
-  static var bottomInset: CGFloat { reflectionHeight + 12 }
+  static var bottomInset: CGFloat { PrayerShelfMetrics.height }
+
+  /// Where the covers stand, measured down from the top of the carousel. The
+  /// shelf's own top surface starts on this line.
+  static var shelfLine: CGFloat { topInset + size }
 
   /// How many times the catalog is repeated to build the looping strip: one
   /// run of padding cells before, the real run, one run after.
@@ -115,9 +136,15 @@ struct PrayerCover: View {
       }
   }
 
-  private var face: some View {
+  /// The artwork, with nothing on it.
+  private var art: some View {
     RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous)
       .fill(AppColor.grey300)
+      .frame(width: PrayerCoverMetrics.size, height: PrayerCoverMetrics.size)
+  }
+
+  private var face: some View {
+    art
       // The covers in the wall overlap by design, and until there is real
       // artwork they are all the same flat grey — so without a lit edge to
       // separate one from the next the whole stack reads as a single shape.
@@ -125,21 +152,30 @@ struct PrayerCover: View {
         RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous)
           .strokeBorder(.white.opacity(0.55), lineWidth: 1)
       )
-      .frame(width: PrayerCoverMetrics.size, height: PrayerCoverMetrics.size)
   }
 
-  /// The cover flipped top to bottom, cropped to the near part of it, and faded
-  /// out downwards — the floor the gallery stands on.
+  /// What the shelf gives back of the cover standing on it: the artwork flipped
+  /// about the line where the two meet, cropped to the near strip of surface,
+  /// smeared, and faded out as it goes.
+  ///
+  /// ``art`` rather than ``face``, and this is the whole difference between a
+  /// reflection and a plate lying on the shelf. The lit edge is a highlight on
+  /// the sleeve, not part of the picture on it; mirrored along with everything
+  /// else it drew a crisp outline around the reflection — and an outlined shape
+  /// with rounded corners under a cover reads as an object, however faint it is.
   private var reflection: some View {
-    face
+    art
       .scaleEffect(x: 1, y: -1)
+      // Before the crop, so the smear is cut off by the edge of the strip rather
+      // than bleeding up over the cover standing on it.
+      .blur(radius: PrayerCoverMetrics.reflectionBlur)
       // Taken from the top of the flipped copy, which is the bottom edge of the
       // cover: a reflection continues from where the object meets the floor.
       .frame(height: PrayerCoverMetrics.reflectionHeight, alignment: .top)
       .clipped()
       .mask(
         LinearGradient(
-          colors: [.black.opacity(0.4), .clear],
+          colors: [.black.opacity(PrayerCoverMetrics.reflectionStrength), .clear],
           startPoint: .top,
           endPoint: .bottom
         )
@@ -178,6 +214,20 @@ struct PrayerCoverCarousel: View {
   @Binding var selectedID: Prayer.ID
 
   var body: some View {
+    ZStack(alignment: .top) {
+      // Outside the scroll view, so it holds still while the covers slide past
+      // it. Inside, it would scroll with them and the gallery would look like it
+      // was carrying its own floor around.
+      PrayerCoverShelf()
+        .padding(.top, PrayerCoverMetrics.shelfLine)
+
+      Covers()
+    }
+    .frame(height: PrayerCoverMetrics.height)
+  }
+
+  @ViewBuilder
+  private func Covers() -> some View {
     if #available(iOS 17.0, macOS 14.0, *) {
       PagingCovers(prayers: prayers, openingID: openingID, selectedID: $selectedID)
     } else {
@@ -292,7 +342,11 @@ private struct PagingCovers: View {
                   )
 
                   return content
-                    .scaleEffect(place.scale)
+                    // Anchored at the bottom, which is the shelf line: scaling
+                    // about the middle instead would lift a flanking cover's
+                    // base clear of the surface by the height it lost, and the
+                    // wall would be standing on nothing.
+                    .scaleEffect(place.scale, anchor: .bottom)
                     .rotation3DEffect(
                       .degrees(place.turn),
                       axis: (x: 0, y: 1, z: 0),
