@@ -98,12 +98,6 @@ enum NissayaListMetrics {
   /// takes there is nothing to see.
   static let foldDuration: TimeInterval = 0.62
 
-  /// How much spring is left in the paper: how far under 1 the fold's damping
-  /// ratio is. Just under critical, so the sheet arrives with a single small
-  /// overshoot and no second bounce — a stiff sheet settling, not a flapping
-  /// one. See `NissayaListViewController.ease(_:)`.
-  static let foldDamping: Double = 0.78
-
   /// How long the page waits before opening its first verse.
   ///
   /// Long enough that the push has settled and the reader is looking at the

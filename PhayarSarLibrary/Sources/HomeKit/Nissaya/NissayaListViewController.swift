@@ -471,37 +471,21 @@ final class NissayaListViewController: UIViewController {
     }
   }
 
-  /// The curve the paper moves on: a spring, and the same one in both
+  /// The curve the paper moves on: ease-in-out, and the same one in both
   /// directions — a sheet unfolds and folds by the same hinges.
   ///
-  /// The step response of a damped spring, written out rather than handed to
-  /// `UIView.animate`, because the fold is stepped by hand and what it needs is
-  /// a *function of time* — where the sheet is at this instant — not an
-  /// animation it can hand a view over to.
+  /// Half a cosine. It eases at each end and its acceleration is continuous the
+  /// whole way, which is what a hand opening a sheet does; the cubic this was
+  /// first written with spends so little time near the middle that the paper
+  /// appears to snap through it. It is also the curve
+  /// `UIView.AnimationOptions.curveEaseInOut` approximates, so the chevron
+  /// turning over the row keeps step with it.
   ///
-  /// `zeta` is the damping ratio, just under 1, so the sheet overshoots once by
-  /// a couple of per cent and settles; `settle` is how many e-foldings of decay
-  /// fit in the duration, which is what ties the spring to
-  /// ``NissayaListMetrics/foldDuration`` instead of letting it ring on past it.
-  /// At 5 there is well under a per cent of travel left by the end, and the
-  /// last of it is taken up by ``NissayaFoldView/finishFold()`` handing the
-  /// height back to the text.
-  ///
-  /// The overshoot is why the sheet is backed with paper — see
-  /// ``NissayaMeaningCell``. For a moment the row is a few points taller than
-  /// what is written on it.
+  /// A curve and not a spring — that was tried. Paper has weight and no bounce,
+  /// and the overshoot put the row a few points taller than what was written on
+  /// it at the moment it should have been settling.
   private static func ease(_ time: Double) -> Double {
-    let zeta = NissayaListMetrics.foldDamping
-    let settle = 5.0
-
-    // Per unit of the fold's duration, because `time` is already normalised.
-    let frequency = settle / zeta
-    let damped = frequency * (1 - zeta * zeta).squareRoot()
-    let decay = exp(-zeta * frequency * time)
-
-    return 1 - decay * (
-      cos(damped * time) + (zeta * frequency / damped) * sin(damped * time)
-    )
+    (1 - cos(.pi * time)) / 2
   }
 
   // MARK: - Every verse at once

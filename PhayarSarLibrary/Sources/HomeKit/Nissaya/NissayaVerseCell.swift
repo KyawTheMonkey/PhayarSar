@@ -196,14 +196,12 @@ final class NissayaVerseCell: UITableViewCell {
     UIView.animate(
       withDuration: NissayaListMetrics.foldDuration,
       delay: 0,
-      // The same spring the sheet below is folding on, so the two read as one
-      // movement rather than as a control and a consequence.
-      usingSpringWithDamping: NissayaListMetrics.foldDamping,
-      initialSpringVelocity: 0,
+      // The same ease-in-out the sheet below is folding on, so the two read as
+      // one movement rather than as a control and a consequence.
       // `beginFromCurrentState` so a row tapped twice in a second carries on
       // from wherever the chevron has got to; `allowUserInteraction` so the
       // page can still be scrolled while it turns.
-      options: [.beginFromCurrentState, .allowUserInteraction],
+      options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction],
       animations: turn
     )
   }

@@ -54,12 +54,11 @@ final class NissayaMeaningCell: UITableViewCell {
     sheet.translatesAutoresizingMaskIntoConstraints = false
     sheet.content.addSubview(page)
 
-    // Paper behind the paper, and two things need it. The panels that have gone
-    // furthest back are drawn a shade short by the perspective divide, so the
-    // zigzag can end a point above the bottom of the row it is folding inside;
-    // and the spring the fold rides on overshoots, so for a moment the row is a
-    // few points taller than the sheet in it. Through either gap the reader
-    // would otherwise see the canvas, mid-fold, at the edge of a moving sheet.
+    // Paper behind the paper. The panels that have gone furthest back are drawn
+    // a shade short by the perspective divide, so the zigzag can end a point
+    // above the bottom of the row it is folding inside — and through that
+    // sliver the reader would see the canvas, mid-fold, at the edge of a moving
+    // sheet.
     let backing = NissayaPageView()
     backing.showsRule = false
     backing.translatesAutoresizingMaskIntoConstraints = false
