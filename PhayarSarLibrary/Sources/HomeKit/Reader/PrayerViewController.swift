@@ -135,6 +135,16 @@ final class PrayerViewController: UIViewController {
   /// on every step, so the timer and the step it schedules cannot disagree.
   private var speed: PrayerPlaybackSpeed = .normal
 
+  /// Whether the current pause was the app going away rather than the reader
+  /// asking for one.
+  ///
+  /// The distinction is the whole of it: a reading interrupted by a phone call
+  /// should pick itself up when the call ends, and one the reader paused on
+  /// purpose before putting the phone down should still be paused when they take
+  /// it out again. Cleared by every other way into and out of a pause, so only
+  /// the interruption itself can set it.
+  private var resumesWhenActive = false
+
   /// Told when playback changes on its own account, so the shell's controls can
   /// follow. Never called for a change the shell itself asked for — it already
   /// knows about those, and the round trip would only be a chance to disagree.
@@ -173,6 +183,25 @@ final class PrayerViewController: UIViewController {
       self,
       selector: #selector(contentSizeCategoryDidChange),
       name: UIContentSizeCategory.didChangeNotification,
+      object: nil
+    )
+
+    // Resigning active rather than entering the background, which is the wider
+    // net and the right one. Backgrounding stops the run loop, so the timer
+    // would go quiet on its own — but a control centre pulled halfway down, an
+    // incoming call, or the app switcher leaves the app running with the page
+    // half covered, and a reading that carries on behind that is a reading the
+    // reader has missed.
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(applicationWillResignActive),
+      name: UIApplication.willResignActiveNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(applicationDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
       object: nil
     )
   }
@@ -511,6 +540,8 @@ final class PrayerViewController: UIViewController {
   /// page the two are the same thing, which is the common case answering
   /// correctly for free.
   private func startPlayback() {
+    resumesWhenActive = false
+
     // Both of these are the page doing something else with the same line. A tap
     // still being followed would fight the first step for the scroll, and the
     // sheet is about one verse of a prayer the page is about to walk out of.
@@ -544,6 +575,8 @@ final class PrayerViewController: UIViewController {
   /// commonest way to pause is to have grabbed the page — so the line playback
   /// is on is usually no longer where the reader left it.
   private func resumePlayback() {
+    resumesWhenActive = false
+
     guard let resumingAt = recitedRow else { return startPlayback() }
 
     // Nothing left to go on to. A reading that ran out has already stopped and
@@ -568,6 +601,11 @@ final class PrayerViewController: UIViewController {
   private func pausePlayback(reporting: Bool) {
     guard playback == .playing else { return }
 
+    // Set again by the interruption itself, if that is what this is. Anything
+    // else reaching here — a hand on the page, the pause button, the end of the
+    // prayer — is a pause the app has no business undoing later.
+    resumesWhenActive = false
+
     playbackTimer?.invalidate()
     playbackTimer = nil
     // The step that was in flight stops where it has got to rather than
@@ -586,6 +624,8 @@ final class PrayerViewController: UIViewController {
   ///   way playback ends that the shell did not ask for — the prayer running
   ///   out, a page being swapped under it, the screen going away.
   private func endPlayback(reporting: Bool) {
+    resumesWhenActive = false
+
     guard playback != .stopped else { return }
 
     playbackTimer?.invalidate()
@@ -680,6 +720,36 @@ final class PrayerViewController: UIViewController {
     )
     animator.addAnimations(change)
     animator.startAnimation()
+  }
+
+  /// The app is going away, or being covered over.
+  ///
+  /// Reported like any other pause, so the bar shows what is true — and so the
+  /// reader who comes back to a paused page and presses play themselves gets
+  /// exactly what they asked for rather than a page that starts twice.
+  @objc private func applicationWillResignActive() {
+    guard playback == .playing else { return }
+
+    pausePlayback(reporting: true)
+    resumesWhenActive = true
+  }
+
+  /// And coming back.
+  ///
+  /// Only for the reader still looking at this page. A reader who left the
+  /// screen has already stopped playback on the way out — see
+  /// ``viewDidDisappear(_:)`` — and the window check covers the rest: a reader
+  /// pushed forward to another screen leaves this one loaded, and it must not
+  /// start reading to itself underneath whatever they went to.
+  @objc private func applicationDidBecomeActive() {
+    guard resumesWhenActive else { return }
+
+    resumesWhenActive = false
+
+    guard playback == .paused, view.window != nil else { return }
+
+    resumePlayback()
+    onPlaybackChange?(.playing)
   }
 
   /// Puts the page back at the opening line.
