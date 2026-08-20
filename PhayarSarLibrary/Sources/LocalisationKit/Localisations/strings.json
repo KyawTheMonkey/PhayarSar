@@ -207,6 +207,26 @@
     "En": "No translation yet",
     "Mm": "ဘာသာပြန် မရှိသေးပါ"
   },
+  "show_meaning": {
+    "En": "Show meaning",
+    "Mm": "အနက်ကြည့်ရန်"
+  },
+  "hide_meaning": {
+    "En": "Hide meaning",
+    "Mm": "အနက်ချုံ့ရန်"
+  },
+  "copy": {
+    "En": "Copy",
+    "Mm": "ကူးယူရန်"
+  },
+  "expand_all": {
+    "En": "Expand all",
+    "Mm": "အားလုံးဖွင့်ရန်"
+  },
+  "collapse_all": {
+    "En": "Collapse all",
+    "Mm": "အားလုံးချုံ့ရန်"
+  },
   "previous_verse": {
     "En": "Previous verse",
     "Mm": "ယခင်ပိုဒ်"
