@@ -45,6 +45,15 @@ public final class PrayerConfigurationRecord: NSManagedObject, KloudEntity {
   /// and the current appearance, and is not stored.
   @NSManaged public var themeSlot: String?
 
+  /// How fast the page reads itself, as ``PrayerPlaybackSpeed/rawValue`` — the
+  /// multiple, not the interval. What a multiple works out to in seconds belongs
+  /// to the reader and may be retuned; what the reader *chose* must not change
+  /// under them because of it.
+  ///
+  /// Boxed like the other scalars: `0` is not a legal pace, so a null read back
+  /// as one would be indistinguishable from a row this build wrote.
+  @NSManaged public var playbackSpeed: NSNumber?
+
   /// When this row was last written. Read to break ties between two devices that
   /// both inserted before they had synced — see
   /// ``PrayerConfigurationStore/loadIfNeeded()``.
@@ -84,6 +93,7 @@ public final class PrayerConfigurationRecord: NSManagedObject, KloudEntity {
       KloudAttribute.make("verseSpacing", .doubleAttributeType),
       KloudAttribute.make("showsPronunciation", .booleanAttributeType),
       KloudAttribute.make("themeSlot", .stringAttributeType),
+      KloudAttribute.make("playbackSpeed", .doubleAttributeType),
       KloudAttribute.make("updatedAt", .dateAttributeType),
     ]
     return entity
@@ -125,7 +135,12 @@ extension PrayerConfigurationRecord {
     return PrayerConfiguration(
       settings: settings,
       themeSlot: themeSlot.flatMap(PrayerThemeSlot.init(rawValue:))
-        ?? PrayerConfiguration.standard.themeSlot
+        ?? PrayerConfiguration.standard.themeSlot,
+      // A pace this build does not have — one dropped from the list, or one a
+      // later build added — reads back as the ordinary one rather than as
+      // nothing, which is the same rule every other column here follows.
+      playbackSpeed: playbackSpeed.flatMap { PrayerPlaybackSpeed(rawValue: $0.doubleValue) }
+        ?? PrayerConfiguration.standard.playbackSpeed
     )
   }
 
@@ -143,6 +158,7 @@ extension PrayerConfigurationRecord {
     verseSpacing = NSNumber(value: settings.verseSpacing)
     showsPronunciation = NSNumber(value: settings.showsPronunciation)
     themeSlot = configuration.themeSlot.rawValue
+    playbackSpeed = NSNumber(value: configuration.playbackSpeed.rawValue)
     updatedAt = .now
   }
 }

@@ -86,6 +86,144 @@ enum PrayerReaderMetrics {
   /// there it is" beat, before the page comes back up around it.
   static let focusLinger: TimeInterval = 0.35
 
+  /// How long the page rests on a line before moving to the next one, while the
+  /// page is reading itself.
+  ///
+  /// A line rather than a verse, so this is the beat of an *unhurried* line
+  /// read aloud — long enough that a reader can follow the Pali across, short
+  /// enough that the page never feels stalled. It is the one number in playback
+  /// a reader would want a say in, and when they get one this becomes its
+  /// default rather than the whole of it.
+  static let playbackInterval: TimeInterval = 2
+
+  /// How long each step takes to carry the next line into the middle of the
+  /// page.
+  ///
+  /// Comfortably shorter than ``playbackInterval``: the move has to be finished
+  /// and the line still for most of its turn, or the reader is reading a page
+  /// that is never quite at rest.
+  static let playbackScroll: TimeInterval = 0.45
+
+  /// The curve every movement playback makes is drawn on.
+  ///
+  /// A page does not start at speed and stop dead — nothing does. It is lifted
+  /// into motion and set back down, and these two control points are how much
+  /// of the move is spent doing each. Deeper than UIKit's own `curveEaseInOut`
+  /// at both ends: this is a movement the reader is meant to *follow* to a
+  /// particular line, and the settle at the far end is what says the line has
+  /// arrived rather than merely stopped.
+  ///
+  /// Cubic control points, as `UIViewPropertyAnimator` takes them — the four
+  /// named UIKit curves have no way to say this.
+  static let playbackEaseIn = CGPoint(x: 0.65, y: 0)
+  static let playbackEaseOut = CGPoint(x: 0.25, y: 1)
+
+  /// How fast the page is put back to the opening line when a reading finishes,
+  /// in points a second, and the shortest and longest that may take.
+  ///
+  /// A speed rather than a duration, because the distance is whatever the
+  /// prayer's length made it: a fixed duration is a crawl over five lines and a
+  /// smear over five hundred. The bounds keep both ends honest — long enough to
+  /// be a movement, short enough not to be a journey — and the rewind rides the
+  /// same curve as everything else, so it lifts off and sets down too.
+  static let rewindSpeed: CGFloat = 3200
+  static let rewindShortest: TimeInterval = 0.32
+  static let rewindLongest: TimeInterval = 0.9
+
+  // MARK: The wheel
+  //
+  // What the rest of the prayer does while one line of it is being read. Every
+  // one of these is applied per *step away* from that line rather than to the
+  // waiting lines as a body: a flat treatment says only "not this one", where a
+  // graded one says how far off each line is, and the page stops being a list
+  // with a highlight on it and becomes something the reading is travelling
+  // through.
+  //
+  // The lines are never resized or re-laid-out to do it. Every one of these is a
+  // transform and an alpha on text the table has already placed, so a step costs
+  // the page no layout at all — see ``PrayerVerseLineCell/Emphasis/waiting``.
+
+  /// How many steps out the effect goes on deepening for. Past this, lines are
+  /// as far away as lines get.
+  ///
+  /// Four, which is about what fits on a page either side of the middle at the
+  /// default type size. Deeper than that and the far lines would be gone
+  /// before the page edge got to them, which reads as the prayer having ended.
+  static let waitingDepth = 4
+
+  /// What each step away costs a line of its ink, compounding.
+  ///
+  /// Compounding rather than in equal parts, because that is what distance
+  /// actually does to legibility: the first step off the read line is a line
+  /// you could still read if you wanted to, and the fourth is a mark on paper.
+  static let waitingFalloff: CGFloat = 0.45
+
+  /// The floor under that, so the far lines are a suggestion of text rather
+  /// than a blank page. Reached at ``waitingDepth``.
+  static let waitingMinimumAlpha: CGFloat = 0.04
+
+  /// What each step away costs a line of its size.
+  static let waitingShrink: CGFloat = 0.05
+
+  /// How much each step away costs a line of its *focus*, as a fraction of the
+  /// resolution it would otherwise be drawn at.
+  ///
+  /// Blur is the last of the four, and the one that does most of the work of
+  /// keeping the reader on the right line: a dimmed line is still a line you
+  /// can read if you look, where a line drawn out of focus is one the eye
+  /// declines to try. It is also the honest depth cue — everything else here
+  /// says a line is far away, and this is what far away actually looks like.
+  ///
+  /// Applied by rendering the line small and letting it be scaled back up,
+  /// rather than by running a real blur filter over it: a Gaussian per line per
+  /// step, on a page that steps every two seconds, would be paid for out of the
+  /// scrolling. See ``PrayerVerseLineCell``.
+  static let waitingSoftening: CGFloat = 0.6
+
+  /// The floor under that. Below about a quarter of native resolution the text
+  /// stops reading as out of focus and starts reading as broken.
+  static let waitingMinimumSharpness: CGFloat = 0.25
+
+  /// And how far each step tilts it away from the reader, in radians.
+  ///
+  /// The tilt is the part that makes this a wheel rather than a page fading
+  /// out: lines above lean back from their top edge and lines below from their
+  /// bottom, so the whole thing curves away from the one line held flat on to
+  /// the reader.
+  static let waitingTilt: CGFloat = 13 * .pi / 180
+
+  /// How far each step draws a line in towards the one being read.
+  ///
+  /// Without it the shrinking would open gaps where the text used to be and the
+  /// page would read as coming apart. Pulling the lines in closes them, which
+  /// is also what the far side of a wheel does.
+  static let waitingPull: CGFloat = 5
+
+  /// How near the eye is taken to be, for the tilt to have any depth to it.
+  ///
+  /// Far enough back that the perspective is felt rather than seen. Bringing it
+  /// closer exaggerates the near lines into something the reader notices as an
+  /// effect, which is the opposite of what this is for.
+  static let waitingPerspective: CGFloat = 900
+
+  /// The mark against the line being read.
+  ///
+  /// Small, and in the margin rather than on the text: it is a place-keeper, of
+  /// the kind a finger held down the side of a page is, and the moment it is
+  /// large enough to be a label it starts competing with the line it is
+  /// pointing at.
+  static let recitingDotSize: CGFloat = 6
+
+  /// Between the dot and the text it marks. Sized so that the pair sit inside
+  /// ``horizontalInset`` — the mark lives in the gutter the page already has,
+  /// and never pushes the text across to make room for itself.
+  static let recitingDotGap: CGFloat = 7
+
+  /// How far out a line is, in steps, held to what the effect deepens over.
+  static func waitingSteps(fromDistance distance: Int) -> CGFloat {
+    CGFloat(min(abs(distance), waitingDepth))
+  }
+
   /// How long a scroll asked for from the watch takes.
   ///
   /// Shorter than ``focusScroll``: that one is a move the reader is meant to

@@ -1,4 +1,5 @@
 #if canImport(UIKit)
+import CoreText
 import DesignKit
 import LocalisationKit
 import UIKit
@@ -140,14 +141,23 @@ enum PrayerNissayaSheetMetrics {
   static let markerRevealMargin: CGFloat = 12
 
   /// How fast the mark is drawn on, in points a second — the speed of the pen
-  /// rather than a duration, so a short line is marked in less time than a long
-  /// one and a wrapped passage is marked a line at a time at one pace.
+  /// rather than a duration, so a passage twice as long takes twice as long to
+  /// mark and a wrapped one is marked a line at a time at one pace.
   static let markerSweepSpeed: CGFloat = 900
 
-  /// The longest the whole stroke may take, however much text is under it. Past
-  /// this the pen simply moves faster: the mark is an answer to a question the
-  /// reader has already asked, and an answer is not worth waiting a second for.
-  static let markerSweepLimit: TimeInterval = 0.55
+  /// What the stroke takes at the short end, however little there is under it.
+  ///
+  /// A line the pen crosses in a third of a second is a line that has already
+  /// been marked by the time the reader has found it. This is the beat that
+  /// makes the mark something they watch being drawn — and the base the longer
+  /// passages are measured up from, since the pen keeps its own pace once there
+  /// is more text than this covers.
+  static let markerSweepBase: TimeInterval = 0.55
+
+  /// The longest the whole stroke may take, however much text is under it. Well
+  /// past what any verse line reaches, so it is a backstop rather than a
+  /// setting: the mark is worth watching, but not worth sitting through.
+  static let markerSweepLimit: TimeInterval = 2
 
   /// The beat between the sheet landing and the pen starting. Short, but not
   /// nothing: the two movements have to be seen as two.
@@ -862,56 +872,102 @@ private final class PrayerNissayaVerseLineView: UIView {
   /// width.
   ///
   /// The text is laid out a second time here rather than read off the label,
-  /// because the label will not say where its lines ended. Same string, same
-  /// container width, same wrapping, so it breaks where the label breaks.
+  /// because the label will not say where its lines ended. Core Text and not
+  /// `NSLayoutManager`: a label sets its text with Core Text, and on a script
+  /// the label's own face does not cover — Burmese in a font that has no
+  /// Burmese, which falls back to the system's — the layout manager measures
+  /// the *fallen-back* face's line height while the label goes on stacking its
+  /// lines at the height of the face it was given. Half again as tall per line
+  /// is enough to put the second line's mark a whole line below the second
+  /// line.
   ///
-  /// Width comes from each line fragment's *used* rect — where that line's
+  /// So the two are read apart. Where the lines break and how wide they run
+  /// comes from Core Text, which is the engine the label breaks them with.
+  /// Where they *sit* is worked out the way the label stacks them: one line
+  /// height apart, plus the leading, from the top of the block down.
+  ///
+  /// Width is the line's advance less any trailing space — where that line's
   /// glyphs actually stop, which is what keeps the mark on the words instead of
-  /// running to the margin as a full-width bar. Height comes from the *fragment*
-  /// rect, the whole slot the line was given, line spacing included: fragment
-  /// rects tile the block without gaps, so consecutive lines come out as one
-  /// unbroken stroke rather than a stack of bars with the paper showing between
-  /// them.
+  /// running to the margin as a full-width bar. Height is the line's whole
+  /// slot, the leading under it included, so the slots tile the block and a
+  /// marked passage comes out as one unbroken stroke rather than a stack of
+  /// bars with the paper showing between them — grown, where a tall script
+  /// overruns its slot, to whatever the glyphs on that line actually reach.
   private static func bands(for text: NSAttributedString, width: CGFloat) -> [CGRect] {
     let outset = PrayerNissayaSheetMetrics.markerOutset
     // The label's width: the mark is the label's box already grown by the
     // outset, and the text was wrapped to the label.
     let textWidth = width - outset.horizontal * 2
 
-    guard text.length > 0, textWidth > 0 else { return [] }
+    guard
+      text.length > 0,
+      textWidth > 0,
+      let font = text.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
+    else {
+      return []
+    }
 
-    let storage = NSTextStorage(attributedString: text)
-    let manager = NSLayoutManager()
-    let container = NSTextContainer(
-      size: CGSize(width: textWidth, height: .greatestFiniteMagnitude)
+    let leading = (text.attribute(.paragraphStyle, at: 0, effectiveRange: nil)
+      as? NSParagraphStyle)?.lineSpacing ?? 0
+
+    // Room for any verse: a frame lays out only as much text as fits inside it,
+    // and what does not fit is dropped rather than wrapped.
+    let unbounded: CGFloat = 100_000
+
+    let framesetter = CTFramesetterCreateWithAttributedString(text)
+    let frame = CTFramesetterCreateFrame(
+      framesetter,
+      CFRange(location: 0, length: 0),
+      CGPath(
+        rect: CGRect(x: 0, y: 0, width: textWidth, height: unbounded),
+        transform: nil
+      ),
+      nil
     )
 
-    // `UILabel` insets nothing and wraps on words; the default text container
-    // pads its fragments, which would break the lines a little early.
-    container.lineFragmentPadding = 0
-    container.lineBreakMode = .byWordWrapping
-    container.maximumNumberOfLines = 0
-
-    manager.addTextContainer(container)
-    storage.addLayoutManager(manager)
-    manager.ensureLayout(for: container)
+    guard let lines = CTFrameGetLines(frame) as? [CTLine], !lines.isEmpty else { return [] }
 
     var bands: [CGRect] = []
 
-    manager.enumerateLineFragments(
-      forGlyphRange: NSRange(location: 0, length: manager.numberOfGlyphs)
-    ) { fragment, used, _, _, _ in
-      guard used.width > 0, fragment.height > 0 else { return }
+    for (index, line) in lines.enumerated() {
+      var ascent: CGFloat = 0
+      var descent: CGFloat = 0
+      var leadingBelow: CGFloat = 0
 
-      // Back into the mark's coordinates: the text sits an outset in from its
-      // top left corner, and the band is that rect grown by the outset again —
-      // which lands its origin back on the text's own.
+      let advance = CGFloat(
+        CTLineGetTypographicBounds(line, &ascent, &descent, &leadingBelow)
+      )
+      let used = advance - CGFloat(CTLineGetTrailingWhitespaceWidth(line))
+
+      // A line with nothing on it takes no mark. The band under it would be a
+      // stripe of highlighter across blank paper.
+      guard used > 0 else { continue }
+
+      // The slot the label gives this line, and where it puts the line's
+      // baseline inside it.
+      let slot = CGFloat(index) * (font.lineHeight + leading)
+      let baseline = slot + font.ascender
+
+      // The last line keeps its own height only: the leading is the gap to the
+      // line below, and under the last line there is no line below.
+      let foot = slot + font.lineHeight + (index == lines.count - 1 ? 0 : leading)
+
+      // Whichever is taller, the slot or what is actually written in it. A
+      // script that stacks past its line height — Burmese does, and further
+      // still in a face that was not cut for it — is a script the highlighter
+      // has to be drawn over rather than through.
+      let top = min(slot, baseline - ascent)
+      let bottom = max(foot, baseline + descent)
+
+      // Into the mark's coordinates: the text sits an outset in from the mark's
+      // top left corner, so a band drawn at the text's own origin and grown by
+      // the outset on each side is already the outset out all round.
       bands.append(
         CGRect(
-          x: used.minX,
-          y: fragment.minY,
-          width: used.width + outset.horizontal * 2,
-          height: fragment.height + outset.vertical * 2
+          x: 0,
+          y: top,
+          width: used + outset.horizontal * 2,
+          height: bottom - top + outset.vertical * 2
         )
       )
     }
@@ -950,12 +1006,16 @@ private final class PrayerNissayaVerseLineView: UIView {
 
     guard total > 0 else { return }
 
-    // One pen, at one speed, carried across every line of the passage — so a
-    // long line takes longer than a short one and the lines are drawn in
-    // reading order, not all at once. Capped, because a passage long enough to
-    // fill the sheet would otherwise be a stroke the reader has to sit through.
+    // One pen, at one speed, carried across every line of the passage — so the
+    // more there is to mark the longer the marking takes, and the lines are
+    // drawn in reading order rather than all at once. Never quicker than the
+    // base stroke, which is what a line or less is given whatever its length,
+    // and never longer than the backstop.
     let duration = min(
-      TimeInterval(total / PrayerNissayaSheetMetrics.markerSweepSpeed),
+      max(
+        TimeInterval(total / PrayerNissayaSheetMetrics.markerSweepSpeed),
+        PrayerNissayaSheetMetrics.markerSweepBase
+      ),
       PrayerNissayaSheetMetrics.markerSweepLimit
     )
     let start = CACurrentMediaTime() + PrayerNissayaSheetMetrics.markerSweepDelay

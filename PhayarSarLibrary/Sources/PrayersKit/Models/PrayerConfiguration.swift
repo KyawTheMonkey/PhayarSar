@@ -27,9 +27,26 @@ public struct PrayerConfiguration: Hashable, Sendable {
   /// app to arrive at a paper that belongs to none of them.
   public var themeSlot: PrayerThemeSlot
 
-  public init(settings: PrayerSettings = .standard, themeSlot: PrayerThemeSlot = .one) {
+  /// How fast the page reads itself when it is asked to.
+  ///
+  /// Here rather than in ``PrayerSettings`` for the same reason ``themeSlot``
+  /// is: the page cannot show it. Folding it in would have the reader rebuild
+  /// every row of the prayer each time a reader changed the pace of a recitation
+  /// they were in the middle of.
+  ///
+  /// Per prayer, and kept, because it is a fact about the prayer rather than
+  /// about the moment: a long discourse being learned is read slowly every time
+  /// it is read, and a short paritta known by heart is not.
+  public var playbackSpeed: PrayerPlaybackSpeed
+
+  public init(
+    settings: PrayerSettings = .standard,
+    themeSlot: PrayerThemeSlot = .one,
+    playbackSpeed: PrayerPlaybackSpeed = .normal
+  ) {
     self.settings = settings
     self.themeSlot = themeSlot
+    self.playbackSpeed = playbackSpeed
   }
 
   /// What a prayer opens with before the reader has changed anything.

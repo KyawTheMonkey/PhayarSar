@@ -358,7 +358,12 @@ extension Animation {
 /// closed pill's wash is the *page* colour rather than `AppColor.background` —
 /// which is what `AppFadeBlurBackground` would have brought — because the page
 /// is a reading preference and can be black while the app is in light mode.
-private struct PrayerTrayBackground: ViewModifier {
+///
+/// Not private, because the shut end of it is the reader's floating-control
+/// surface rather than this control's: ``PrayerPlaybackBar`` takes it at zero
+/// openness so that the bar which replaces the pill during playback is made of
+/// the same thing the pill was.
+struct PrayerTrayBackground: ViewModifier {
   let shape: RoundedRectangle
   let openness: CGFloat
   let pageColor: Color

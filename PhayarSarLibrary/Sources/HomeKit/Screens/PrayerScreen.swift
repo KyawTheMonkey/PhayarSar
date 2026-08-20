@@ -99,6 +99,22 @@ public struct PrayerScreen: View {
   /// comes to rest exactly where the sheet arrives.
   @State private var isShowingNissaya = false
 
+  /// Whether the page is reading itself, and whether that reading is halted.
+  ///
+  /// The shell's copy of what the reader owns. It is held here because the
+  /// controls are here — the menu item that starts playback and the bar that
+  /// pauses and stops it — and it is written from both ends: this screen sets it
+  /// to ask, and the reader reports back through `onPlaybackChange` for every
+  /// way playback ends that nobody asked for.
+  @State private var playback: PrayerPlaybackState = .stopped
+
+  /// How fast the page reads itself.
+  ///
+  /// Read straight off the configuration rather than held beside it, so there is
+  /// no second copy to keep in step — scrubbing to another prayer brings that
+  /// prayer's pace with it through the same reload the theme comes back on.
+  private var speed: PrayerPlaybackSpeed { configuration.playbackSpeed }
+
   /// Resolved from the id the route carried rather than passed in whole — see
   /// `RouterDestination`, whose payloads are ids so that routes stay `Codable`.
   public init(prayerID: String) {
@@ -153,19 +169,42 @@ public struct PrayerScreen: View {
     // this screen is a level down like any other, and a reader who has learned
     // where Back is should not have to find it again here.
     .toolbar {
-      // A menu rather than a single button, because this is where the rest of
-      // the reader's own actions belong as they arrive — bookmarking, reporting
-      // a spelling, adding to a plan. One item in it today.
-      ToolbarItem(placement: .primaryAction) {
-        Menu {
-          Button {
-            isEditingTheme = true
-          } label: {
-            Label(L10n.themeAndSettings, systemImage: "textformat.size")
+      // Gone entirely while the page reads itself. Everything in here is
+      // something to do *to* the page — start it reading, change how it is set —
+      // and the reader has one thing to decide during a recitation, which the
+      // bar at the foot of the page is holding. Leaving the menu up would also
+      // leave a second way to open the theme sheet over a page that has just
+      // dismissed one to start.
+      if !isPlaying {
+        // Its own button rather than an item in the menu beside it. Setting the
+        // page reading is the one thing a reader does *to* a prayer often
+        // enough to want it under the thumb rather than behind a tap — and it
+        // is the odd one out among the menu's contents besides, which are all
+        // ways of changing how the prayer is set rather than what it is doing.
+        //
+        // Before the menu, so it is the nearer of the two to the middle of the
+        // bar and the further from the corner.
+        ToolbarItem(placement: .primaryAction) {
+          Button(action: startPlayback) {
+            Image(systemName: "play.square.stack")
+              .accessibilityLabel(L10n.playPrayer)
           }
-        } label: {
-          Image(systemName: "line.3.horizontal.decrease.circle")
-            .accessibilityLabel(L10n.quickActions)
+        }
+
+        // A menu rather than a second button, because this is where the rest of
+        // the reader's own actions belong as they arrive — bookmarking,
+        // reporting a spelling, adding to a plan.
+        ToolbarItem(placement: .primaryAction) {
+          Menu {
+            Button {
+              isEditingTheme = true
+            } label: {
+              Label(L10n.themeAndSettings, systemImage: "textformat.size")
+            }
+          } label: {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+              .accessibilityLabel(L10n.quickActions)
+          }
         }
       }
     }
@@ -216,7 +255,14 @@ public struct PrayerScreen: View {
         // be the page the reader is on, not a strip of app background above it.
         .ignoresSafeArea()
 
-      PrayerReader(prayer: prayer, settings: settings, onSheetChange: showNissaya)
+      PrayerReader(
+        prayer: prayer,
+        settings: settings,
+        onSheetChange: showNissaya,
+        playback: playback,
+        speed: speed,
+        onPlaybackChange: { playback = $0 }
+      )
         // The page colour runs to every edge — a reader with a strip of app
         // background under it reads as a card, not as a page.
         .ignoresSafeArea(edges: .bottom)
@@ -268,11 +314,36 @@ public struct PrayerScreen: View {
       // top of it. Faded rather than removed: taken out of the layout it would
       // be rebuilt on the way back, and it would come back shut even if the
       // reader had left it open.
-      .opacity(isShowingNissaya ? 0 : 1)
-      .allowsHitTesting(!isShowingNissaya)
+      //
+      // Out of the way through playback too, and for a stronger reason: the
+      // playback bar arrives in its exact place, and scrubbing to another
+      // prayer mid-reading is a request that has no sensible answer.
+      .opacity(isShowingNissaya || isPlaying ? 0 : 1)
+      .allowsHitTesting(!isShowingNissaya && !isPlaying)
       .animation(.readerPageSettle, value: isShowingNissaya)
+      .animation(PrayerPlaybackMetrics.handover, value: isPlaying)
+
+      // The switcher's replacement, in the switcher's own place. Both are kept
+      // in the hierarchy and faded past one another so that the pill's tray
+      // state, and its measured ends, survive a reading.
+      PrayerPlaybackBar(
+        state: playback,
+        speed: speed,
+        settings: settings,
+        onToggle: togglePlayback,
+        onStop: stopPlayback,
+        onSpeed: setSpeed
+      )
+      .appHorizontalInset()
+      .padding(.bottom, PrayerPageSwitcherMetrics.bottomPadding)
+      .opacity(isPlaying ? 1 : 0)
+      .allowsHitTesting(isPlaying)
+      .animation(PrayerPlaybackMetrics.handover, value: isPlaying)
     }
   }
+
+  /// Whether the page is given over to playback, paused or not.
+  private var isPlaying: Bool { playback != .stopped }
 
   // MARK: - Configuration
 
@@ -294,6 +365,57 @@ public struct PrayerScreen: View {
   /// is a pure function of the stored theme and the appearance.
   private func followAppearance() {
     configuration = configuration.resolvingBackground(for: colorScheme)
+  }
+
+  // MARK: - Playback
+
+  /// Sets the page reading itself, a line at a time.
+  ///
+  /// Everything about *how* belongs to the reader — see
+  /// ``PrayerViewController/setPlayback(_:)``. All this screen does is hold the
+  /// state its controls are drawn from and hand it down; the reader is what
+  /// knows where the page is, which line comes next, and when there is no next
+  /// line.
+  private func startPlayback() {
+    // The page is about to be given over to the reading, so everything laid over
+    // it goes first. The tray would otherwise be left open under the bar that is
+    // about to take its place, and the theme sheet would be sitting over the
+    // very lines the wheel is turning — with its own catcher swallowing the taps
+    // meant for the bar underneath.
+    //
+    // Dismissing the sheet this way drops any edits it was carrying, which is
+    // what dismissing it any other way does too: only its Save button writes,
+    // and `onDismiss` reads the stored theme back over whatever the sheet had
+    // been trying out.
+    close()
+    isEditingTheme = false
+    playback = .playing
+  }
+
+  private func togglePlayback() {
+    playback = playback == .playing ? .paused : .playing
+  }
+
+  private func stopPlayback() {
+    playback = .stopped
+  }
+
+  /// Changes the pace, and keeps it.
+  ///
+  /// Persisted at the moment it is chosen, like a size set from the wrist and
+  /// unlike the theme sheet's live edits: there is no Save here and no sheet to
+  /// abandon, so choosing a pace mid-recitation is a decision rather than an
+  /// experiment.
+  private func setSpeed(_ speed: PrayerPlaybackSpeed) {
+    guard speed != configuration.playbackSpeed else { return }
+
+    // Built whole and then assigned, rather than mutated in place and read back
+    // — see `remoteHandle` for why that distinction matters to `@State`.
+    var updated = configuration
+    updated.playbackSpeed = speed
+    configuration = updated
+
+    PrayerConfigurationStore.shared.save(updated, for: selectedID)
   }
 
   // MARK: - The watch remote
@@ -383,6 +505,16 @@ public struct PrayerScreen: View {
 
     guard target != index else { return }
 
+    // Playback belonged to the prayer being left. Stopped here rather than left
+    // to the reader to notice, so that the new prayer and the state of the
+    // reading arrive together in one pass: the reader would otherwise be handed
+    // the new page and, in the same breath, a request to go on reading — which
+    // it would start doing before the shell could take it back.
+    //
+    // Only reachable from the wrist in practice. The switcher is out of the way
+    // while the page reads itself, so a finger has nothing here to scrub.
+    playback = .stopped
+
     guard kind == .settled else {
       // Following a finger on the shut pill. The page changes outright: a turn
       // per tick crossed would be half a second of dissolve each, stacked on
@@ -458,10 +590,18 @@ private struct PrayerReader: UIViewControllerRepresentable {
   let settings: PrayerSettings
   /// Called when the reader opens or closes its inline nissaya sheet.
   let onSheetChange: (Bool) -> Void
+  /// What the shell's controls are asking the page to do.
+  let playback: PrayerPlaybackState
+  /// And how fast to do it.
+  let speed: PrayerPlaybackSpeed
+  /// Called when playback changes on the reader's own account — the prayer
+  /// running out, or a hand on the page.
+  let onPlaybackChange: (PrayerPlaybackState) -> Void
 
   func makeUIViewController(context: Context) -> PrayerViewController {
     let controller = PrayerViewController(prayer: prayer, settings: settings)
     controller.onSheetChange = onSheetChange
+    controller.onPlaybackChange = onPlaybackChange
 
     return controller
   }
@@ -470,7 +610,17 @@ private struct PrayerReader: UIViewControllerRepresentable {
     // Re-set on every pass, because the closure captures the current `body`'s
     // state — a stale one would be writing to a `State` that has moved on.
     controller.onSheetChange = onSheetChange
+    controller.onPlaybackChange = onPlaybackChange
     controller.update(prayer: prayer, settings: settings)
+    // Before the playback state, so a reading that is about to start takes the
+    // pace the reader has chosen rather than beginning at the last one and
+    // correcting itself a line later.
+    controller.setSpeed(speed)
+    // After the update, so a prayer and a playback state arriving together are
+    // applied in the order they have to be: the new page first, then the
+    // reading of it. The reader ignores a state it is already in, which is what
+    // most passes through here are.
+    controller.setPlayback(playback)
   }
 }
 #else
@@ -486,6 +636,10 @@ private struct PrayerReader: View {
   /// Unused on macOS, which has no reader and so no sheet. Here so that the
   /// call site does not have to know which platform it is building for.
   let onSheetChange: (Bool) -> Void
+  /// Unused for the same reason: there is no page here to read itself.
+  let playback: PrayerPlaybackState
+  let speed: PrayerPlaybackSpeed
+  let onPlaybackChange: (PrayerPlaybackState) -> Void
 
   var body: some View {
     VStack(spacing: 8) {

@@ -110,6 +110,36 @@ final class PrayerViewController: UIViewController {
   /// this one cannot draw above.
   var onSheetChange: ((Bool) -> Void)?
 
+  /// Whether the page is reading itself, and how far into doing so.
+  ///
+  /// Owned here rather than in ``PrayerScreen``, which only *asks*. The shell
+  /// holds a copy to draw its controls from, but every way playback can end
+  /// without being asked to — the prayer running out, a finger on the page, the
+  /// screen going away — is something only the reader can see, so the reader is
+  /// where the answer lives and ``onPlaybackChange`` is how the shell hears
+  /// about it.
+  private(set) var playback: PrayerPlaybackState = .stopped
+
+  /// The row playback is resting on, or `nil` when it is stopped.
+  ///
+  /// A row rather than a line identity, because stepping is `+ 1` and the table
+  /// is addressed by index everywhere else in here. It is turned into an
+  /// identity only where the emphasis needs one — see ``recitedLine``.
+  private var recitedRow: Int?
+
+  /// What moves the page on. Invalidated on every exit from `.playing`, which
+  /// is what makes pause a pause rather than a page that keeps going quietly.
+  private var playbackTimer: Timer?
+
+  /// How fast the page reads itself. Held here rather than read off the shell
+  /// on every step, so the timer and the step it schedules cannot disagree.
+  private var speed: PrayerPlaybackSpeed = .normal
+
+  /// Told when playback changes on its own account, so the shell's controls can
+  /// follow. Never called for a change the shell itself asked for — it already
+  /// knows about those, and the round trip would only be a chance to disagree.
+  var onPlaybackChange: ((PrayerPlaybackState) -> Void)?
+
   private lazy var tableView = UITableView(frame: .zero, style: .plain)
   private lazy var dataSource = makeDataSource()
 
@@ -160,6 +190,17 @@ final class PrayerViewController: UIViewController {
   override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
     PrayerRemoteHost.shared.detach(reader: self)
+    // A page nobody is looking at should not be turning itself. Reported, so
+    // the shell's controls are not still showing pause when the reader comes
+    // back to it.
+    //
+    // Also the only place the timer is invalidated on the way out, and it has to
+    // be: the run loop holds the timer rather than this controller, so one left
+    // running would go on firing into a dead closure. `deinit` cannot do it —
+    // a `Timer` is not `Sendable`, and a nonisolated `deinit` may not touch it —
+    // but nothing that never appeared can have started playing, and everything
+    // that appeared comes through here.
+    endPlayback(reporting: true)
   }
 
   // MARK: - Set up
@@ -384,10 +425,27 @@ final class PrayerViewController: UIViewController {
     }
   }
 
-  private func emphasis(for item: Item) -> PrayerVerseLineCell.Emphasis {
+  /// How a row is to be drawn.
+  ///
+  /// Takes the index path as well as the item because the wheel is measured in
+  /// *rows away from the read line*, and an item identifier says which line it
+  /// is without saying where. Both are already to hand at every call site.
+  private func emphasis(
+    for item: Item,
+    at indexPath: IndexPath
+  ) -> PrayerVerseLineCell.Emphasis {
     // Before the follow, because a lifted line is off the page entirely and a
     // page that is not being followed still has one to hide.
     if let liftedLine, item == .line(prayer: prayer.id, line: liftedLine) { return .lifted }
+
+    // Above the follow too, and for the same reason it takes the page's
+    // gestures away: while the page is reading itself, the line it is on is the
+    // only one that can be picked out, and a tap's leftovers underneath would
+    // be a second answer to the same question.
+    if playback != .stopped, let recitedRow, lines.indices.contains(recitedRow) {
+      let distance = indexPath.row - recitedRow
+      return distance == 0 ? .reciting : .waiting(distance: distance)
+    }
 
     guard let focusedLine else { return .none }
     return item == .line(prayer: prayer.id, line: focusedLine) ? .focused : .receded
@@ -403,8 +461,304 @@ final class PrayerViewController: UIViewController {
         continue
       }
 
-      cell.setEmphasis(emphasis(for: item), animated: animated)
+      cell.setEmphasis(emphasis(for: item, at: indexPath), animated: animated)
     }
+  }
+
+  // MARK: - Reading itself
+
+  /// Takes the state ``PrayerScreen`` wants the page to be in.
+  ///
+  /// The one way in from the shell, and deliberately a state rather than three
+  /// verbs: the shell holds a value and this makes the page match it, so a
+  /// control tapped twice in a frame cannot leave the two disagreeing.
+  func setPlayback(_ state: PrayerPlaybackState) {
+    // Nothing can be started against a table that has not been laid out — there
+    // are no rows to centre and no page to centre them in. The shell can only
+    // reach this from a control on screen, so a reader who has not appeared has
+    // nothing to say here.
+    guard isViewLoaded, state != playback else { return }
+
+    switch state {
+    case .playing:
+      playback == .paused ? resumePlayback() : startPlayback()
+    case .paused:
+      pausePlayback(reporting: false)
+    case .stopped:
+      endPlayback(reporting: false)
+    }
+  }
+
+  /// Takes the pace ``PrayerScreen`` is showing.
+  ///
+  /// A change lands on the *next* line rather than the one being read: the
+  /// clock is restarted from now, so choosing double speed part way through a
+  /// line does not snatch it away mid-word, and choosing quarter does not leave
+  /// the reader waiting out the remainder of the old pace first.
+  func setSpeed(_ speed: PrayerPlaybackSpeed) {
+    guard speed != self.speed else { return }
+
+    self.speed = speed
+
+    guard playback == .playing else { return }
+    schedulePlaybackStep()
+  }
+
+  /// Starts the page reading itself from the first line the reader can see.
+  ///
+  /// From what is on screen rather than from the top of the prayer: a reader who
+  /// has scrolled half way in and pressed play means *here*. On an unscrolled
+  /// page the two are the same thing, which is the common case answering
+  /// correctly for free.
+  private func startPlayback() {
+    // Both of these are the page doing something else with the same line. A tap
+    // still being followed would fight the first step for the scroll, and the
+    // sheet is about one verse of a prayer the page is about to walk out of.
+    releaseFocus()
+    nissayaSheet?.dismiss()
+    settleScroll()
+
+    guard let first = firstReadableRow else {
+      // A prayer with no lines in it at all. Nothing to read, so the shell is
+      // told to put its controls away rather than left showing a bar over a
+      // page that is never going to move.
+      //
+      // Reported a beat later because this is reached from inside a SwiftUI
+      // update pass, which is no place to write the shell's state.
+      DispatchQueue.main.async { [weak self] in
+        self?.onPlaybackChange?(.stopped)
+      }
+      return
+    }
+
+    playback = .playing
+    recitedRow = first
+    applyPlaybackGestures()
+    recite()
+    schedulePlaybackStep()
+  }
+
+  /// Goes on from the line playback was left on.
+  ///
+  /// Re-centres that line rather than simply restarting the clock, because the
+  /// commonest way to pause is to have grabbed the page — so the line playback
+  /// is on is usually no longer where the reader left it.
+  private func resumePlayback() {
+    guard let resumingAt = recitedRow else { return startPlayback() }
+
+    // Nothing left to go on to. A reading that ran out has already stopped and
+    // rewound, so this is a reader who paused on the last line themselves — and
+    // play at the end of something means play it again.
+    if resumingAt >= lines.count - 1 {
+      recitedRow = 0
+    }
+
+    playback = .playing
+    applyPlaybackGestures()
+    recite()
+    schedulePlaybackStep()
+  }
+
+  /// Holds the page where it is, keeping the line, the wheel turned away around
+  /// it, and the gestures playback has taken.
+  ///
+  /// - Parameter reporting: whether the shell needs telling. `true` for every
+  ///   pause it did not ask for — a hand on the page, a turn of the crown, the
+  ///   prayer running out under the reading.
+  private func pausePlayback(reporting: Bool) {
+    guard playback == .playing else { return }
+
+    playbackTimer?.invalidate()
+    playbackTimer = nil
+    // The step that was in flight stops where it has got to rather than
+    // carrying on to a line the reader has just asked it to stop at.
+    settleScroll()
+    playback = .paused
+
+    if reporting {
+      onPlaybackChange?(.paused)
+    }
+  }
+
+  /// Puts the page back the way it was found.
+  ///
+  /// - Parameter reporting: whether the shell needs telling. `true` for every
+  ///   way playback ends that the shell did not ask for — the prayer running
+  ///   out, a page being swapped under it, the screen going away.
+  private func endPlayback(reporting: Bool) {
+    guard playback != .stopped else { return }
+
+    playbackTimer?.invalidate()
+    playbackTimer = nil
+    settleScroll()
+
+    playback = .stopped
+    recitedRow = nil
+    applyPlaybackGestures()
+    // Animated, so the prayer comes back up around the line it finished on
+    // rather than snapping to full strength.
+    applyEmphasis(animated: true)
+
+    if reporting {
+      onPlaybackChange?(.stopped)
+    }
+  }
+
+  /// Moves to the next line, or finishes if there is not one.
+  private func stepPlayback() {
+    guard playback == .playing, let current = recitedRow else { return }
+
+    let next = current + 1
+    guard lines.indices.contains(next) else {
+      // The end of the prayer. The reading is over, so this is a stop and not a
+      // pause: the page comes back up whole, the gestures and the menu come
+      // back, and the bar puts itself away — everything the Stop button does,
+      // because the reader has arrived at the same place by reading rather than
+      // by deciding to leave.
+      //
+      // Not the next prayer, either. The reader asked for *this* one to be
+      // read, and carrying on into whatever follows it in the catalog is a
+      // decision they did not make.
+      endPlayback(reporting: true)
+      // And back to the opening line, so the prayer is left as it was found
+      // rather than at the tail the reading ran out on — ready to be read
+      // again, by eye or by pressing play.
+      scrollToTop()
+      return
+    }
+
+    recitedRow = next
+    recite()
+  }
+
+  /// Carries the line playback is on into the middle of the page, with the rest
+  /// of the prayer drawing back around it.
+  ///
+  /// One animation for the move and the emphasis, exactly as ``follow(_:at:)``
+  /// does it and for the same reason: two clocks over one movement is two
+  /// movements.
+  private func recite() {
+    guard let recitedRow, lines.indices.contains(recitedRow) else { return }
+
+    let indexPath = IndexPath(row: recitedRow, section: 0)
+    let offset = offset(centring: tableView.rectForRow(at: indexPath))
+
+    // A step is a line's worth of travel and is meant to be watched. Anything
+    // further than a screenful is not a step — it is the reading starting again
+    // from the top, or going on from a line the reader has scrolled a long way
+    // off from — and the same curve stretched over that distance is a smear
+    // rather than a scroll.
+    guard abs(offset.y - tableView.contentOffset.y) <= tableView.bounds.height else {
+      UIView.performWithoutAnimation {
+        tableView.contentOffset = offset
+        applyEmphasis(animated: false)
+      }
+      return
+    }
+
+    // A property animator rather than `UIView.animate`, for the curve alone:
+    // the four named UIKit curves cannot say how much of the move is spent
+    // lifting off and how much setting down, and this move is the one the
+    // reader follows down the page. Its views stay interactive while it runs —
+    // the page has to be there to be grabbed, which is the gesture that pauses
+    // this.
+    eased(for: speed.scroll) {
+      self.tableView.contentOffset = offset
+      // Unanimated on its own account — it is the animator that animates it,
+      // which is what puts the wheel's turning on the move's clock.
+      self.applyEmphasis(animated: false)
+    }
+  }
+
+  /// Runs a change on playback's curve — see
+  /// ``PrayerReaderMetrics/playbackEaseIn``.
+  private func eased(for duration: TimeInterval, _ change: @escaping () -> Void) {
+    let animator = UIViewPropertyAnimator(
+      duration: duration,
+      controlPoint1: PrayerReaderMetrics.playbackEaseIn,
+      controlPoint2: PrayerReaderMetrics.playbackEaseOut
+    )
+    animator.addAnimations(change)
+    animator.startAnimation()
+  }
+
+  /// Puts the page back at the opening line.
+  ///
+  /// Timed from the distance rather than fixed, and on the same curve as every
+  /// step was — this can be a move of five lines or of five hundred, and one
+  /// duration cannot serve both. See ``PrayerReaderMetrics/rewindSpeed``.
+  ///
+  /// `setContentOffset(_:animated:)` would have been the one-liner, but its
+  /// animation is UIKit's own: a fixed length whatever the distance, and a
+  /// curve that has nothing to do with the one the reader has been watching for
+  /// the length of a prayer.
+  private func scrollToTop() {
+    let target = CGPoint(x: 0, y: -tableView.adjustedContentInset.top)
+    let distance = abs(tableView.contentOffset.y - target.y)
+    guard distance > 0 else { return }
+
+    let duration = min(
+      max(TimeInterval(distance / PrayerReaderMetrics.rewindSpeed), PrayerReaderMetrics.rewindShortest),
+      PrayerReaderMetrics.rewindLongest
+    )
+
+    eased(for: duration) { self.tableView.contentOffset = target }
+  }
+
+  private func schedulePlaybackStep() {
+    playbackTimer?.invalidate()
+
+    // Repeating rather than rescheduled per step: every line is held for the
+    // same beat, so there is nothing for a fresh timer each time to say that
+    // this one does not.
+    playbackTimer = Timer.scheduledTimer(
+      withTimeInterval: speed.interval,
+      repeats: true
+    ) { [weak self] _ in
+      self?.stepPlayback()
+    }
+  }
+
+  /// Takes the page's own gestures away while it is reading itself, and gives
+  /// them back when it stops.
+  ///
+  /// Both of them mean something that would fight the reading. A tap carries a
+  /// line to the middle of the page, which is the very thing playback is doing
+  /// on its own clock; a swipe opens a tray over a row that is about to be
+  /// stepped past. Paused counts as playing here — the page is still given over
+  /// to the reading, and a reader who wants their gestures back has Stop.
+  ///
+  /// Dragging is left alone on purpose: it is how playback is paused.
+  private func applyPlaybackGestures() {
+    tableView.allowsSelection = playback == .stopped
+  }
+
+  /// The first line the reader is actually looking at.
+  ///
+  /// Measured by the *middle* of each row rather than its top edge. The obvious
+  /// test — the first row that begins at or below the top of the page — is
+  /// wrong by a whole line on the commonest case there is: a page that has not
+  /// been scrolled at all, where the first row starts at exactly the top and a
+  /// fraction of a point of rounding between `contentOffset` and the adjusted
+  /// inset decides whether it counts. It usually did not, and the reading
+  /// started on the second line of the prayer.
+  ///
+  /// Half a row is also the better rule on its own account, for the case the
+  /// top-edge test was reaching for: the row at the top of a scrolled page is
+  /// often cut, and a line with most of itself on screen is one the reader is
+  /// reading, where a line with a sliver showing is one they have left behind.
+  private var firstReadableRow: Int? {
+    guard !lines.isEmpty else { return nil }
+    guard let visible = tableView.indexPathsForVisibleRows, !visible.isEmpty else {
+      // No rows laid out yet, which is a page that has only just appeared: the
+      // beginning is the only answer it has.
+      return 0
+    }
+
+    let top = tableView.contentOffset.y + tableView.adjustedContentInset.top
+
+    let readable = visible.first { tableView.rectForRow(at: $0).midY >= top }
+    return (readable ?? visible[0]).row
   }
 
   // MARK: - Centring a line
@@ -457,6 +811,19 @@ final class PrayerViewController: UIViewController {
 
     guard !isCentred else { return current }
 
+    return offset(centring: row)
+  }
+
+  /// Where the page has to sit for a rect to be in the middle of it, with no
+  /// dead zone and no question of whether it is near enough already.
+  ///
+  /// The dead zone in ``centredOffset(for:)`` is about *taps*: a page that
+  /// twitched at every tap would be unusable. Playback is the other case
+  /// entirely — it steps one line at a time, and neighbouring lines are exactly
+  /// what fall inside that zone, so a step judged the same way would leave the
+  /// page standing still for runs of a prayer at a time while the emphasis
+  /// walked down it alone.
+  private func offset(centring row: CGRect) -> CGPoint {
     let inset = tableView.adjustedContentInset
     let pageHeight = tableView.bounds.height - inset.top - inset.bottom
 
@@ -466,7 +833,7 @@ final class PrayerViewController: UIViewController {
     let bottom = max(top, tableView.contentSize.height + inset.bottom - tableView.bounds.height)
     let y = row.midY - inset.top - pageHeight / 2
 
-    return CGPoint(x: current.x, y: min(max(y, top), bottom))
+    return CGPoint(x: tableView.contentOffset.x, y: min(max(y, top), bottom))
   }
 
   // MARK: - The inline nissaya sheet
@@ -564,6 +931,18 @@ final class PrayerViewController: UIViewController {
       // The sheet is about a verse of the prayer being replaced, and it folds
       // back into a rect on a page that is about to stop existing.
       nissayaSheet?.dismiss()
+
+      // Playback belonged to the prayer that has just gone. Its row index means
+      // something else entirely in the new one, and a reader who scrubbed to a
+      // different prayer asked to read it, not to have it read to them from
+      // wherever the last one had got to.
+      //
+      // Unreported, because this is reached from inside a SwiftUI update pass —
+      // `updateUIViewController` — and writing the shell's state during one is
+      // undefined behaviour. It does not need reporting either: the shell stops
+      // playback itself as it commits the new prayer, which is what sent the
+      // prayer down here in the first place.
+      endPlayback(reporting: false)
 
       turnPage()
     } else if isViewLoaded {
@@ -672,6 +1051,10 @@ private enum PrayerLineAction {
 
 extension PrayerViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    // Selection is off through playback — see ``applyPlaybackGestures()`` — so
+    // this is belt and braces against a tap already in flight when it started.
+    guard playback == .stopped else { return }
+
     // The row is deselected straight away: the selected state draws nothing,
     // and a line left selected under the finger is state the reader can neither
     // see nor clear. What the tap looks like is `follow`'s business.
@@ -689,7 +1072,7 @@ extension PrayerViewController: UITableViewDelegate {
     forRowAt indexPath: IndexPath
   ) {
     guard
-      focusedLine != nil || liftedLine != nil,
+      focusedLine != nil || liftedLine != nil || playback != .stopped,
       let cell = cell as? PrayerVerseLineCell,
       let item = dataSource.itemIdentifier(for: indexPath)
     else {
@@ -700,7 +1083,7 @@ extension PrayerViewController: UITableViewDelegate {
     // a line arriving at the edge of the page should already be stepped back,
     // not be caught fading into it.
     UIView.performWithoutAnimation {
-      cell.setEmphasis(emphasis(for: item), animated: false)
+      cell.setEmphasis(emphasis(for: item, at: indexPath), animated: false)
     }
   }
 
@@ -709,6 +1092,10 @@ extension PrayerViewController: UITableViewDelegate {
   func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
     stopFollowingScroll()
     releaseFocus()
+    // A hand on the page pauses the reading rather than fighting it for the
+    // scroll. It goes on from the same line when the reader presses play, which
+    // is why this is not a stop.
+    pausePlayback(reporting: true)
   }
 
   // MARK: - Line actions
@@ -723,6 +1110,11 @@ extension PrayerViewController: UITableViewDelegate {
     _ tableView: UITableView,
     trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
   ) -> UISwipeActionsConfiguration? {
+    // Nothing is swiped out of a page that is reading itself: the row the tray
+    // would open over is one or two steps from being scrolled past, and the
+    // sheet Nissaya opens is the thing playback just dismissed to start.
+    guard playback == .stopped else { return nil }
+
     guard case let .line(_, id)? = dataSource.itemIdentifier(for: indexPath) else { return nil }
 
     let configuration = UISwipeActionsConfiguration(
@@ -833,8 +1225,9 @@ extension PrayerViewController: PrayerRemoteReader {
 
     // A push on the page is the reader taking hold of it, as far as anything in
     // flight is concerned — same as a finger landing on it.
-    settleForRemote()
+    settleScroll()
     releaseFocus()
+    pausePlayback(reporting: true)
 
     let lowest = -inset.top
     let highest = max(
@@ -873,6 +1266,10 @@ extension PrayerViewController: PrayerRemoteReader {
   func remoteStepVerse(_ delta: Int) {
     guard isViewLoaded, !verses.isEmpty, delta != 0 else { return }
 
+    // The wrist steering counts as the reader taking the page back, exactly as
+    // a finger on it does.
+    pausePlayback(reporting: true)
+
     let current = centredVerseOrdinal ?? 0
     // Equal after clamping means the page is already at the end the step was
     // heading for, and there is nothing to move.
@@ -895,7 +1292,8 @@ extension PrayerViewController: PrayerRemoteReader {
   /// move still in flight.
   ///
   /// A broader version of ``stopFollowingScroll()``, which only ever cuts a
-  /// follow short. This has to cut short a previous *remote* scroll too, and the
+  /// follow short. This has to cut short a remote scroll and a playback step
+  /// too — anything that moved the page without a finger on it. The
   /// difference matters on the commonest sequence there is: press the page-down
   /// button, then reach for the crown before its quarter-second animation has
   /// finished. `contentOffset` reads as the animation's destination the instant
@@ -906,7 +1304,7 @@ extension PrayerViewController: PrayerRemoteReader {
   ///
   /// Checked against the layer's animations rather than against `focusedLine`,
   /// because a remote scroll leaves no focus behind to test.
-  private func settleForRemote() {
+  private func settleScroll() {
     guard
       tableView.layer.animationKeys()?.isEmpty == false,
       let presented = tableView.layer.presentation()?.bounds.origin

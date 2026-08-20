@@ -79,6 +79,18 @@
     "En": "Nissaya",
     "Mm": "နိဿယ"
   },
+  "play_prayer": {
+    "En": "Play",
+    "Mm": "အလိုအလျောက်ဖတ်ရန်"
+  },
+  "pause_prayer": {
+    "En": "Pause",
+    "Mm": "ခဏရပ်ရန်"
+  },
+  "stop_prayer": {
+    "En": "Stop",
+    "Mm": "ရပ်တန့်ရန်"
+  },
   "theme_and_settings": {
     "En": "Theme & settings",
     "Mm": "အပြင်အဆင်"
