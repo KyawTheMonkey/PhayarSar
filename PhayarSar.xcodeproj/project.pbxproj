@@ -7,12 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C8DA7C103025000000000011 /* PhayarSarWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DA7C103025000000000001 /* PhayarSarWatchApp.swift */; };
-		C8DA7C103025000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8DA7C103025000000000003 /* Assets.xcassets */; };
-		C8DA7C103025000000000013 /* PhayarSarWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C8DA7C103025000000000004 /* PhayarSarWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		C8DA7C103025000000000081 /* WristKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8DA7C103025000000000071 /* WristKit */; };
-		C8DA7C103025000000000082 /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8DA7C103025000000000072 /* DesignKit */; };
-		C8DA7C103025000000000084 /* RemoteKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8DA7C103025000000000074 /* RemoteKit */; };
 		653454BB2BEBDF24004FC8EE /* MyanmarSyllable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653454BA2BEBDF24004FC8EE /* MyanmarSyllable.swift */; };
 		653454C02BEBE2BE004FC8EE /* PhayarSarRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653454BF2BEBE2BE004FC8EE /* PhayarSarRepository.swift */; };
 		C80287442B4940ED00F165DF /* CommonPrayerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */; };
@@ -135,6 +129,12 @@
 		C8D652962B2EA6BD00BB6C42 /* AppColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D652952B2EA6BD00BB6C42 /* AppColor.swift */; };
 		C8D6529D2B2EE5AB00BB6C42 /* CustomCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */; };
 		C8D730B32B46D42500D19D57 /* OverflowContentViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */; };
+		C8DA7C103025000000000011 /* PhayarSarWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DA7C103025000000000001 /* PhayarSarWatchApp.swift */; };
+		C8DA7C103025000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8DA7C103025000000000003 /* Assets.xcassets */; };
+		C8DA7C103025000000000013 /* PhayarSarWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C8DA7C103025000000000004 /* PhayarSarWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C8DA7C103025000000000081 /* WristKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8DA7C103025000000000071 /* WristKit */; };
+		C8DA7C103025000000000082 /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8DA7C103025000000000072 /* DesignKit */; };
+		C8DA7C103025000000000084 /* RemoteKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8DA7C103025000000000074 /* RemoteKit */; };
 		C8EF0D5B2FA30DBF00543BCA /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */; };
 		C8EF0F212FA3A47500543BCA /* EnvironmentKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8EF0F202FA3A47500543BCA /* EnvironmentKit */; };
 		C8F3393A2B938D7A00C1730B /* String+Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F339392B938D7A00C1730B /* String+Date.swift */; };
@@ -145,13 +145,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		C8DA7C103025000000000062 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C82039A22B1CABE4000EEF61 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C8DA7C103025000000000041;
-			remoteInfo = PhayarSarWatch;
-		};
 		C82039BB2B1CABE6000EEF61 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = C82039A22B1CABE4000EEF61 /* Project object */;
@@ -173,20 +166,16 @@
 			remoteGlobalIDString = C84F4A9B2C03197700B5A502;
 			remoteInfo = PhayarSarNotificationService;
 		};
+		C8DA7C103025000000000062 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C82039A22B1CABE4000EEF61 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C8DA7C103025000000000041;
+			remoteInfo = PhayarSarWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		C8DA7C103025000000000034 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				C8DA7C103025000000000013 /* PhayarSarWatch.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		C84F4AA72C03197700B5A502 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -198,13 +187,20 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8DA7C103025000000000034 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				C8DA7C103025000000000013 /* PhayarSarWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C8DA7C103025000000000001 /* PhayarSarWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarWatchApp.swift; sourceTree = "<group>"; };
-		C8DA7C103025000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C8DA7C103025000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C8DA7C103025000000000004 /* PhayarSarWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhayarSarWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		653454BA2BEBDF24004FC8EE /* MyanmarSyllable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarSyllable.swift; sourceTree = "<group>"; };
 		653454BF2BEBE2BE004FC8EE /* PhayarSarRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarRepository.swift; sourceTree = "<group>"; };
 		C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPrayerProtocol.swift; sourceTree = "<group>"; };
@@ -325,6 +321,10 @@
 		C8D652952B2EA6BD00BB6C42 /* AppColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColor.swift; sourceTree = "<group>"; };
 		C8D6529C2B2EE5AB00BB6C42 /* CustomCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCornerView.swift; sourceTree = "<group>"; };
 		C8D730B22B46D42500D19D57 /* OverflowContentViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverflowContentViewModifier.swift; sourceTree = "<group>"; };
+		C8DA7C103025000000000001 /* PhayarSarWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarWatchApp.swift; sourceTree = "<group>"; };
+		C8DA7C103025000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C8DA7C103025000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C8DA7C103025000000000004 /* PhayarSarWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhayarSarWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8F339392B938D7A00C1730B /* String+Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Date.swift"; sourceTree = "<group>"; };
 		C8FCD1332BA462D900AB5BD3 /* LocalizedAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlert.swift; sourceTree = "<group>"; };
 		C8FCD1352BA482C400AB5BD3 /* DailyPrayingTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrayingTime.swift; sourceTree = "<group>"; };
@@ -333,16 +333,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		C8DA7C103025000000000032 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C8DA7C103025000000000081 /* WristKit in Frameworks */,
-				C8DA7C103025000000000082 /* DesignKit in Frameworks */,
-				C8DA7C103025000000000084 /* RemoteKit in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		C82039A72B1CABE4000EEF61 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -384,19 +374,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8DA7C103025000000000032 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8DA7C103025000000000081 /* WristKit in Frameworks */,
+				C8DA7C103025000000000082 /* DesignKit in Frameworks */,
+				C8DA7C103025000000000084 /* RemoteKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C8DA7C103025000000000021 /* PhayarSarWatch */ = {
-			isa = PBXGroup;
-			children = (
-				C8DA7C103025000000000001 /* PhayarSarWatchApp.swift */,
-				C8DA7C103025000000000003 /* Assets.xcassets */,
-				C8DA7C103025000000000002 /* Info.plist */,
-			);
-			path = PhayarSarWatch;
-			sourceTree = "<group>";
-		};
 		C80287452B49410400F165DF /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -698,31 +688,19 @@
 			path = Worshipplan;
 			sourceTree = "<group>";
 		};
+		C8DA7C103025000000000021 /* PhayarSarWatch */ = {
+			isa = PBXGroup;
+			children = (
+				C8DA7C103025000000000001 /* PhayarSarWatchApp.swift */,
+				C8DA7C103025000000000003 /* Assets.xcassets */,
+				C8DA7C103025000000000002 /* Info.plist */,
+			);
+			path = PhayarSarWatch;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C8DA7C103025000000000041 /* PhayarSarWatch */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = C8DA7C103025000000000053 /* Build configuration list for PBXNativeTarget "PhayarSarWatch" */;
-			buildPhases = (
-				C8DA7C103025000000000031 /* Sources */,
-				C8DA7C103025000000000032 /* Frameworks */,
-				C8DA7C103025000000000033 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = PhayarSarWatch;
-			packageProductDependencies = (
-				C8DA7C103025000000000071 /* WristKit */,
-				C8DA7C103025000000000072 /* DesignKit */,
-				C8DA7C103025000000000074 /* RemoteKit */,
-			);
-			productName = PhayarSarWatch;
-			productReference = C8DA7C103025000000000004 /* PhayarSarWatch.app */;
-			productType = "com.apple.product-type.application";
-		};
 		C82039A92B1CABE4000EEF61 /* PhayarSar */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C82039CE2B1CABE6000EEF61 /* Build configuration list for PBXNativeTarget "PhayarSar" */;
@@ -812,6 +790,28 @@
 			productReference = C84F4A9C2C03197700B5A502 /* PhayarSarNotificationService.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		C8DA7C103025000000000041 /* PhayarSarWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C8DA7C103025000000000053 /* Build configuration list for PBXNativeTarget "PhayarSarWatch" */;
+			buildPhases = (
+				C8DA7C103025000000000031 /* Sources */,
+				C8DA7C103025000000000032 /* Frameworks */,
+				C8DA7C103025000000000033 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PhayarSarWatch;
+			packageProductDependencies = (
+				C8DA7C103025000000000071 /* WristKit */,
+				C8DA7C103025000000000072 /* DesignKit */,
+				C8DA7C103025000000000074 /* RemoteKit */,
+			);
+			productName = PhayarSarWatch;
+			productReference = C8DA7C103025000000000004 /* PhayarSarWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -868,14 +868,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		C8DA7C103025000000000033 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C8DA7C103025000000000012 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		C82039A82B1CABE4000EEF61 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -949,17 +941,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
-		C8DA7C103025000000000031 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
+		C8DA7C103025000000000033 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C8DA7C103025000000000011 /* PhayarSarWatchApp.swift in Sources */,
+				C8DA7C103025000000000012 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
 		C82039A62B1CABE4000EEF61 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1058,14 +1050,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8DA7C103025000000000031 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8DA7C103025000000000011 /* PhayarSarWatchApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		C8DA7C103025000000000061 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C8DA7C103025000000000041 /* PhayarSarWatch */;
-			targetProxy = C8DA7C103025000000000062 /* PBXContainerItemProxy */;
-		};
 		C82039BC2B1CABE6000EEF61 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C82039A92B1CABE4000EEF61 /* PhayarSar */;
@@ -1081,69 +1076,14 @@
 			target = C84F4A9B2C03197700B5A502 /* PhayarSarNotificationService */;
 			targetProxy = C84F4AA12C03197700B5A502 /* PBXContainerItemProxy */;
 		};
+		C8DA7C103025000000000061 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C8DA7C103025000000000041 /* PhayarSarWatch */;
+			targetProxy = C8DA7C103025000000000062 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		C8DA7C103025000000000051 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PhayarSarWatch/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = PhayarSar;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 2.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "watchos watchsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
-			};
-			name = Debug;
-		};
-		C8DA7C103025000000000052 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PhayarSarWatch/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = PhayarSar;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 2.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "watchos watchsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
-			};
-			name = Release;
-		};
 		C82039CC2B1CABE6000EEF61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1469,18 +1409,69 @@
 			};
 			name = Release;
 		};
+		C8DA7C103025000000000051 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PhayarSarWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PhayarSar;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		C8DA7C103025000000000052 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PhayarSarWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PhayarSar;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C8DA7C103025000000000053 /* Build configuration list for PBXNativeTarget "PhayarSarWatch" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C8DA7C103025000000000051 /* Debug */,
-				C8DA7C103025000000000052 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		C82039A52B1CABE4000EEF61 /* Build configuration list for PBXProject "PhayarSar" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1526,6 +1517,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C8DA7C103025000000000053 /* Build configuration list for PBXNativeTarget "PhayarSarWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C8DA7C103025000000000051 /* Debug */,
+				C8DA7C103025000000000052 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -1547,18 +1547,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C8DA7C103025000000000071 /* WristKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = WristKit;
-		};
-		C8DA7C103025000000000072 /* DesignKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DesignKit;
-		};
-		C8DA7C103025000000000074 /* RemoteKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RemoteKit;
-		};
 		C817925D2BFB979E00DC741E /* FirebaseRemoteConfig */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C817925C2BFB979E00DC741E /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -1605,6 +1593,18 @@
 		C8D166453028D20600FA4895 /* PrayersKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PrayersKit;
+		};
+		C8DA7C103025000000000071 /* WristKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WristKit;
+		};
+		C8DA7C103025000000000072 /* DesignKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignKit;
+		};
+		C8DA7C103025000000000074 /* RemoteKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RemoteKit;
 		};
 		C8EF0D5A2FA30DBF00543BCA /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -10,12 +10,9 @@ import UIKit
 /// no margins, no focus tint, no reuse. The cell keeps those because they are
 /// about being a row in a table, which this is not.
 ///
-/// Split out because the page is not the only thing that draws a line:
-/// ``PrayerNissayaSheet`` grows out of a line on the page and has to be showing
-/// that line, set exactly as the page had it, at the instant it starts to move.
-/// One place a line is set rather than two that have to be kept in step —
-/// anything less than exact and the sheet does not look like it came from
-/// there; it looks like a panel that appeared with a copy of the text in it.
+/// Split from the cell so that how a line is *set* — the gloss pairing, the
+/// name over the verse it opens, the rule closing it — can be read in one place
+/// without the reuse and margin machinery around it.
 final class PrayerVerseLineView: UIView {
   private let stack = UIStackView()
   private let nameLabel = UILabel()

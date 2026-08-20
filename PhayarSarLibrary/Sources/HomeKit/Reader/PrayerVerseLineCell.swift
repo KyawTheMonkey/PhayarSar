@@ -4,12 +4,10 @@ import UIKit
 
 /// One line of a prayer as a row of the reading page.
 ///
-/// The line itself is drawn by ``PrayerVerseLineView``, which the inline nissaya
-/// sheet uses too — the sheet grows out of a line on this page and has to be
-/// showing the very same setting of it at the instant it starts to move. What
-/// this adds is everything about being a *row*: the margins that turn the
-/// reader's spacing settings into the gap under the line, the tint behind a line
-/// that has been tapped, and reuse.
+/// The line itself is drawn by ``PrayerVerseLineView``. What this adds is
+/// everything about being a *row*: the margins that turn the reader's spacing
+/// settings into the gap under the line, the tint behind a line that has been
+/// tapped, and reuse.
 ///
 /// Self-sizing — the table sets `automaticDimension` and the line view's
 /// constraints to the content guide are what give the cell its height.

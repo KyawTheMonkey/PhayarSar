@@ -471,43 +471,30 @@ final class PrayerViewController: UIViewController {
 
   // MARK: - The inline nissaya sheet
 
-  /// Grows the inline nissaya sheet out of a line.
+  /// Brings the inline nissaya sheet up over the page.
   ///
-  /// The sheet opens at the exact rect that one row occupies on the page, drawn
-  /// by the same code in the same face at the same size, and travels from there
-  /// into a bottom sheet with the translation under it. See
-  /// ``PrayerNissayaSheet`` for why it is built that way rather than presented.
+  /// The sheet gets the whole verse, which is what the nissaya is written for,
+  /// and the line the reader swiped, which is what it marks in it.
   ///
-  /// Given a *line* even though the nissaya it carries is the whole verse's:
-  /// the reader swiped one row, and that row is the only thing on the page the
-  /// sheet can convincingly have come from. Handing it the verse would put four
-  /// or five other lines in the sheet that are already legible on the page
-  /// behind it, and would make the rect it grows out of a block the reader never
-  /// pointed at.
+  /// The verse is taken from ``lines`` rather than from `prayer.body`, so that
+  /// the sheet shows the very rows the page is showing: the two would otherwise
+  /// be separate flattenings of the same verse and could split differently.
   private func openNissaya(for line: PrayerVerseLine.ID) {
+    let verse = lines.filter { $0.id.verse == line.verse }
+
     guard
       nissayaSheet == nil,
       isViewLoaded,
       let meaning = meaningsByVerse[line.verse],
-      let verseLine = linesByID[line],
-      let source = sourceRect(of: line)
+      !verse.isEmpty
     else {
       return
     }
 
-    // The page must not move while the sheet is up: the sheet folds back into
-    // the rect it left from, and a page scrolled out from under it would have
-    // nowhere to put it.
-    tableView.isScrollEnabled = false
-    // A tap being followed would put the page back up under the sheet, and the
-    // verse the sheet came from would recede along with everything else.
+    // A tap being followed would go on moving the page under the sheet, and the
+    // reader would come back to a page that had wandered while they were
+    // reading the translation.
     releaseFocus()
-
-    // Off the page for as long as the sheet has it. Unanimated, because at this
-    // instant the panel is exactly over the row and there is nothing to see —
-    // fading it would be a fade under an opaque panel.
-    liftedLine = line
-    applyEmphasis(animated: false)
 
     let sheet = PrayerNissayaSheet()
     nissayaSheet = sheet
@@ -515,39 +502,15 @@ final class PrayerViewController: UIViewController {
 
     sheet.present(
       in: view,
-      from: source,
-      line: verseLine,
+      lines: verse,
+      marked: line,
       meaning: meaning,
       style: style
     ) { [weak self] in
       guard let self else { return }
       self.nissayaSheet = nil
-      // Put back under the panel's last frame, which is the rect it left from,
-      // so the line is on the page again before the panel is gone from over it.
-      self.liftedLine = nil
-      self.applyEmphasis(animated: false)
-      self.tableView.isScrollEnabled = true
       self.onSheetChange?(false)
     }
-  }
-
-  /// Where a line is drawn, in this controller's coordinates.
-  ///
-  /// Clipped to the page: the last row on screen is usually cut off by the
-  /// bottom of it, and a sheet that opened at the full height of one would start
-  /// by covering a strip nobody can see.
-  private func sourceRect(of line: PrayerVerseLine.ID) -> CGRect? {
-    guard
-      let indexPath = dataSource.indexPath(for: Item.line(prayer: prayer.id, line: line))
-    else {
-      return nil
-    }
-
-    let rect = tableView.rectForRow(at: indexPath).intersection(tableView.bounds)
-
-    guard !rect.isNull, rect.height >= 1 else { return nil }
-
-    return view.convert(rect, from: tableView)
   }
 
   // MARK: - Style

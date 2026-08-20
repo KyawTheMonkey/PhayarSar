@@ -107,9 +107,9 @@ enum PrayerReaderMetrics {
   /// movement rather than a cut.
   static let focusFade: TimeInterval = 0.28
 
-  /// How long the sheet takes to grow out of the verse, and to fold back into
-  /// it. Spring-driven — see ``nissayaSheet`` — so this is the settling time
-  /// rather than a hard duration.
+  /// How long the inline nissaya sheet takes to come up over the page, and to
+  /// go back down. Spring-driven — see ``PrayerNissayaSheetMetrics/travel`` — so
+  /// this is the settling time rather than a hard duration.
   static let sheetTravel: TimeInterval = 0.5
 
     /// How long UIKit takes to slide a swipe tray shut.
@@ -236,11 +236,7 @@ struct PrayerReadingStyle {
     showsPronunciation = settings.showsPronunciation
   }
 
-  /// A verse's name, and the small labels the sheet uses in the same slot.
-  ///
-  /// On ``PrayerReadingStyle`` rather than on the cell so that the sheet, which
-  /// is not a cell, cannot end up labelling things a little differently from
-  /// the page it grew out of.
+  /// A verse's name, in the small label the page titles it with.
   func attributedName(_ text: String) -> NSAttributedString {
     NSAttributedString(
       string: text.uppercased(),
@@ -254,10 +250,9 @@ struct PrayerReadingStyle {
 
   /// The gap under a line.
   ///
-  /// - Parameter next: What follows it. The last line of a verse block drops the
-  ///   gap entirely — on the page the table's bottom inset provides the
-  ///   clearance, and in the sheet the panel's own padding does; either way both
-  ///   together would read as a hole.
+  /// - Parameter next: What follows it. The last line of the prayer drops the
+  ///   gap entirely — the table's bottom inset provides that clearance, and the
+  ///   two together would read as a hole.
   func gap(before next: PrayerVerseLine.Next) -> CGFloat {
     switch next {
     case .line:
@@ -302,23 +297,6 @@ struct PrayerReadingStyle {
         .font: verseFont,
         .foregroundColor: textColor,
         .kern: kern,
-        .paragraphStyle: paragraphStyle(lineSpacing: lineSpacing)
-      ]
-    )
-  }
-
-  /// A verse's nissaya, for the face a row turns over to.
-  ///
-  /// The recited size and the page's full ink, because on that face this *is*
-  /// the row's text rather than a note under it — but none of the tracking:
-  /// letter-spacing is a setting about chanting a line of Pali, and a paragraph
-  /// of Burmese prose set with it comes apart.
-  func attributedMeaning(_ text: String) -> NSAttributedString {
-    NSAttributedString(
-      string: text,
-      attributes: [
-        .font: verseFont,
-        .foregroundColor: textColor,
         .paragraphStyle: paragraphStyle(lineSpacing: lineSpacing)
       ]
     )
