@@ -240,6 +240,15 @@ enum PrayerIslandMetrics {
   static let swapOut: TimeInterval = 0.18
   static let swapIn: TimeInterval = 0.32
 
+  /// What the contents fade to rather than fading away.
+  ///
+  /// A hair above nothing. They are laid out at a fixed size and scaled now, so
+  /// there is no longer anything for them to collide with — but a panel resizing
+  /// through a quarter of its own width is the one moment where being wrong is
+  /// most visible, and the cheapest insurance against ever seeing it again is
+  /// for there to be nothing on screen to see.
+  static let contentFloor: Double = 0.01
+
   /// How the verse count rolls over as the reading moves on.
   ///
   /// Quick and barely sprung. This fires once per verse for the length of a
@@ -325,8 +334,6 @@ enum PrayerIslandMetrics {
   /// being dragged.
   static let elasticTravel: CGFloat = 0.55
 
-  /// A degree or so of lean into a sideways pull.
-  static let elasticLean: Double = 0.03
 
   /// The two springs, and they are deliberately not the same one.
   ///
@@ -353,7 +360,39 @@ enum PrayerIslandMetrics {
   /// is about speed, not distance.
   static let elasticFling: CGFloat = 150
 
-  /// The one edge on the shape.  /// The one edge on the shape.
+  // MARK: The progress bar
+
+  /// How far through the prayer, drawn beside its name.
+  ///
+  /// Green, and fixed rather than taken from `AppColor` — the same reason
+  /// everything else on this panel is fixed. The sheet is black over six
+  /// different papers, so its palette answers to itself and not to the page.
+  static let progressAccent = Color(red: 0.29, green: 0.84, blue: 0.40)
+  static let progressTrack = Color.white.opacity(0.14)
+
+  /// The hatching over the filled part. Light enough to read as texture rather
+  /// than as a second colour.
+  static let progressStripe = Color.white.opacity(0.24)
+  static let progressStripeWidth: CGFloat = 4
+  static let progressStripeSpacing: CGFloat = 9
+  static let progressStripeLean = Angle(degrees: 22)
+
+  /// Twenty by a hundred and thirty, which is mostly about the knob.
+  ///
+  /// The markers are circles the height of the bar, so the height decides how
+  /// much of the track they eat. At twenty-four the head took a fifth of the
+  /// whole bar and there was barely any hatching left to see; the reference sets
+  /// its knob at about an eighth, and this is that.
+  static let progressHeight: CGFloat = 20
+  static let progressWidth: CGFloat = 130
+
+  /// The glyphs inside those circles, which have about seventeen points of room
+  /// once the ring is drawn.
+  static let progressGlyphSize: CGFloat = 8
+
+  // MARK: Ink
+
+  /// The one edge on the shape.
   ///
   /// The open sheet hangs over a page that can itself be black — `midnight` and
   /// `ink` are two of the six papers — and a black shape on black paper with no
@@ -530,6 +569,11 @@ struct PrayerIslandBar: View {
     GeometryReader { proxy in
       let bounds = CGRect(origin: .zero, size: proxy.size)
       let rect = frame(in: bounds)
+      // The size this layout was written for, whatever size the shape happens to
+      // be at the moment. See the contents layer below.
+      let natural = isSheet
+        ? PrayerIslandMetrics.sheet(in: bounds).size
+        : PrayerIslandMetrics.shutRect(in: bounds).size
 
       ZStack(alignment: .topLeading) {
         // Anywhere off the sheet shuts it, exactly as a tap outside the theme
@@ -594,8 +638,40 @@ struct PrayerIslandBar: View {
           // the pill is black on a black hole and invisible, but white glyphs on
           // it would not be — so they arrive with it rather than waiting there
           // to be carried out.
-          .opacity(Double(emergence) * (1 - Double(swap)))
-          .frame(width: rect.width, height: rect.height)
+          // Floors at ``PrayerIslandMetrics/contentFloor`` rather than zero, so
+          // the layer is still there and still measured — nothing has to be
+          // rebuilt on the way back in.
+          .opacity(
+            Double(emergence)
+              * (1 - Double(swap) * (1 - PrayerIslandMetrics.contentFloor))
+          )
+          // Laid out once, at the size the layout is *for*, and scaled to
+          // whatever the shape currently is.
+          //
+          // This is the fix for a whole family of bugs rather than one of them.
+          // Everything in here was being laid out afresh on every frame of a
+          // growth or a collapse, at widths it was never designed for: a title,
+          // a caption, a progress bar and seven controls do not fit in the
+          // hundred and fourteen points the sheet passes through on its way to
+          // and from the cutout. SwiftUI does something with the overflow, and
+          // what it does is arbitrary — a speed label squeezed to nothing with
+          // its marker left stranded beside the title, which is exactly what it
+          // looked like.
+          //
+          // Given a fixed frame there is no reflow at all. The layout is
+          // computed once and the transition is a scale, which is also what the
+          // shape underneath is doing — so the two now agree by construction
+          // rather than by both being animated at the same rate.
+          .frame(width: natural.width, height: natural.height)
+          .scaleEffect(
+            x: natural.width > 0 ? rect.width / natural.width : 1,
+            y: natural.height > 0 ? rect.height / natural.height : 1,
+            anchor: .topLeading
+          )
+          // Back to the shape's own box, so everything after this positions and
+          // clips against the sheet rather than against the layout it was drawn
+          // at.
+          .frame(width: rect.width, height: rect.height, alignment: .topLeading)
           .clipShape(outline)
           // Only the sheet gives. The pill is a hundred and twenty-six points
           // wide and its whole job is to be tapped — something that squirmed
@@ -720,14 +796,22 @@ struct PrayerIslandBar: View {
     stageWork = nil
 
     guard isActive else {
-      // The reading is over. Everything goes back into the island together —
-      // there is nothing to exchange on the way, because nothing is going to be
-      // looked at afterwards. `emergence` blurs the contents away as the pill
-      // withdraws.
+      // The reading is over, and how it ends depends on what is open.
+      guard isSheet else {
+        // Nothing is open. The pill simply goes back in, and `emergence` takes
+        // its contents with it.
+        swallow()
+        return
+      }
+
+      // The sheet is open and the reading has ended under it. Same shape as a
+      // close — soften from nought, exchange, then take the pill home — except
+      // that there is nothing to spit out at the end of it.
       withAnimation(motion) { openness = 0 }
-      isSheet = false
-      showsSheet = false
-      swallow()
+      exchange(at: PrayerIslandMetrics.release, softeningFrom: 0, to: false) {
+        isSheet = false
+        swallow()
+      }
       return
     }
 
@@ -741,8 +825,10 @@ struct PrayerIslandBar: View {
 
       // Shutting. The sheet draws back into the island first, and only then is
       // the pill squeezed out again.
+      // Softening from nought: the contents go as the sheet starts to shrink,
+      // not partway down.
       withAnimation(motion) { openness = 0 }
-      exchange(at: PrayerIslandMetrics.release, to: false) {
+      exchange(at: PrayerIslandMetrics.release, softeningFrom: 0, to: false) {
         isSheet = false
         spit()
       }
@@ -1020,14 +1106,31 @@ struct PrayerIslandBar: View {
       Spacer()
         .frame(height: PrayerIslandMetrics.openContentTop)
 
-      Text(title)
-        .font(AppFont.listItemTitle)
-        .foregroundStyle(PrayerIslandMetrics.ink)
-        // One line, whatever it costs the type. See
-        // ``PrayerIslandMetrics/openHeight`` — the sheet animates to a fixed
-        // height, so it cannot be allowed to follow a title.
-        .lineLimit(1)
-        .minimumScaleFactor(0.7)
+      HStack(spacing: 12) {
+        Text(title)
+          .font(AppFont.listItemTitle)
+          .foregroundStyle(PrayerIslandMetrics.ink)
+          // One line, whatever it costs the type. See
+          // ``PrayerIslandMetrics/openHeight`` — the sheet animates to a fixed
+          // height, so it cannot be allowed to follow a title.
+          .lineLimit(1)
+          .minimumScaleFactor(0.7)
+
+        Spacer(minLength: 0)
+
+        // How far through the prayer, beside its name. The count below says
+        // the same thing exactly; this says it at a glance, which is what a
+        // reader looking up mid-recitation actually wants.
+        if let progress, progress.verses > 0 {
+          PrayerIslandProgressBar(
+            fraction: Double(progress.verse) / Double(progress.verses)
+          )
+          .frame(
+            width: PrayerIslandMetrics.progressWidth,
+            height: PrayerIslandMetrics.progressHeight
+          )
+        }
+      }
 
       if let progress {
         // Latin digits in both languages, and the same decision
@@ -1109,7 +1212,24 @@ struct PrayerIslandBar: View {
             .frame(height: PrayerIslandMetrics.speedHeight)
             .background {
               if option == speed {
-                Capsule().fill(PrayerIslandMetrics.speedActiveFill)
+                Capsule()
+                  .fill(PrayerIslandMetrics.speedActiveFill)
+                  // Never animated, by anything.
+                  //
+                  // This is a mark *on* a label, not a thing in its own right,
+                  // and it must never be anywhere its label is not. It was
+                  // picking up whatever animation happened to be running around
+                  // it — chiefly the sheet's own growth, where the row is being
+                  // laid out afresh every frame at a new width. Text layout
+                  // lands instantly and an animated frame does not, so the
+                  // marker spent the whole expansion sliding towards a label
+                  // that was already somewhere else, ending up across the gap
+                  // between two of them.
+                  //
+                  // Killing the transaction rather than choosing a gentler curve
+                  // because there is no curve that keeps two things together
+                  // when only one of them is being animated.
+                  .transaction { $0.animation = nil }
               }
             }
             .contentShape(Capsule())
@@ -1120,9 +1240,10 @@ struct PrayerIslandBar: View {
       }
     }
     .frame(height: PrayerIslandMetrics.controlSize)
-    // The marker slides between speeds rather than blinking from one to the
-    // next, which is the only thing that says the five are one control.
-    .animation(motion, value: speed)
+    // No animation on the row either. The marker used to slide between speeds
+    // on the same bouncy spring the rest of this control uses, which is what let
+    // it overshoot past its label — and there is nothing left for it to slide
+    // *for*, since choosing a pace now shuts the sheet on the same tap.
     .appSelectionFeedback(trigger: speed)
     .accessibilityElement(children: .contain)
     .accessibilityLabel(L10n.playbackSpeed)
@@ -1272,7 +1393,12 @@ struct PrayerIslandBar: View {
   ///     it, not started at it.
   ///   - sheet: Which layout to change to.
   ///   - change: What to do to the shape at that instant.
-  private func exchange(at moment: TimeInterval, to sheet: Bool, _ change: @escaping () -> Void) {
+  private func exchange(
+    at moment: TimeInterval,
+    softeningFrom soften: TimeInterval? = nil,
+    to sheet: Bool,
+    _ change: @escaping () -> Void
+  ) {
     swapWork?.cancel()
 
     guard !reduceMotion else {
@@ -1287,9 +1413,14 @@ struct PrayerIslandBar: View {
       return
     }
 
-    // The blur has to *finish* as the shape changes, not begin there — so it
-    // starts a `swapOut` early and the exchange lands at the bottom of it.
-    let lead = max(moment - PrayerIslandMetrics.swapOut, 0)
+    // By default the blur has to *finish* as the shape changes, not begin there,
+    // so it starts a `swapOut` early and the exchange lands at the bottom of it.
+    //
+    // A caller can ask for it sooner, and the close does. The sheet begins
+    // shrinking the instant it is dismissed, and it is the shrinking that is
+    // dangerous — the contents should already be gone by then rather than
+    // catching up a tenth of a second later.
+    let lead = max(soften ?? (moment - PrayerIslandMetrics.swapOut), 0)
 
     let soften = DispatchWorkItem {
       withAnimation(.easeIn(duration: PrayerIslandMetrics.swapOut)) { swap = 1 }
@@ -1374,9 +1505,8 @@ private struct PrayerIslandCountRoll: ViewModifier {
 
 /// The sheet as something soft.
 ///
-/// Three transforms from two numbers. It travels a little way with the finger,
-/// lengthens along the pull and thins across it, and leans slightly into a
-/// sideways drag.
+/// Two transforms from two numbers. It travels a little way with the finger, and
+/// lengthens along the pull while thinning across it. Nothing rotates.
 ///
 /// The anchor is the part that sells it. It sits opposite the pull and moves
 /// continuously with it, so the sheet stretches *away* from a fixed far edge
@@ -1394,7 +1524,10 @@ private struct PrayerIslandElastic: ViewModifier {
         y: 1 + along(y, size.height) - across(x, size.width),
         anchor: anchor
       )
-      .rotationEffect(.degrees(Double(x) * PrayerIslandMetrics.elasticLean))
+      // No rotation. A sideways pull moves and stretches the sheet; it does not
+      // tip it. The lean that used to be here was a couple of degrees at most
+      // and still read as the panel coming loose — everything on it is type, and
+      // type off the horizontal looks broken rather than soft.
       .offset(x: x * PrayerIslandMetrics.elasticTravel, y: rise)
   }
 
@@ -1443,5 +1576,102 @@ private struct PrayerIslandElastic: ViewModifier {
 
   private func clamp(_ value: CGFloat) -> CGFloat {
     min(max(value, -0.5), 0.5)
+  }
+}
+
+
+// MARK: - Progress
+
+/// How far through the prayer, as a hatched bar with a marker riding its head.
+///
+/// A capsule track, a green fill striped diagonally, a knob at the front of the
+/// fill and a flag at the end of the road — the Fitness reading of a progress
+/// bar, which says three things at a glance instead of one: how far, which way,
+/// and how much is left.
+///
+/// Nothing here animates, and that is deliberate. The bar's whole geometry is
+/// derived from a width that is itself being animated while the sheet grows, and
+/// anything given its own curve on top of that ends up chasing a layout that has
+/// already arrived — which is exactly what put the speed marker across the gap
+/// between two labels. A bar that steps a twentieth of its length once a verse
+/// does not need easing; the count beside it rolls, and that carries the motion.
+private struct PrayerIslandProgressBar: View {
+  /// 0 at the first verse, 1 at the last.
+  let fraction: Double
+
+  var body: some View {
+    GeometryReader { proxy in
+      let height = proxy.size.height
+      // Never shorter than its own knob, so the knob always has fill under it
+      // rather than hanging off the start of an empty track.
+      let filled = max(min(max(fraction, 0), 1) * proxy.size.width, height)
+
+      ZStack(alignment: .leading) {
+        Capsule()
+          .fill(PrayerIslandMetrics.progressTrack)
+
+        Capsule()
+          .fill(PrayerIslandMetrics.progressAccent)
+          .overlay { hatching }
+          // Clipped *after* the hatching, so the stripes stop at the capsule's
+          // curve rather than at the rectangle they were drawn in.
+          .clipShape(Capsule())
+          .frame(width: filled)
+
+        // The far end, which is where the prayer finishes. Dimmer than the fill
+        // so it reads as somewhere still to get to.
+        marker(systemImage: "flag.fill", ground: PrayerIslandMetrics.progressAccent.opacity(0.35))
+          .frame(width: height, height: height)
+          .offset(x: proxy.size.width - height)
+
+        // And the head of the fill, which is where the reading is. Ringed in
+        // white because it sits on its own colour and would otherwise dissolve
+        // into it.
+        marker(systemImage: "book.closed.fill", ground: PrayerIslandMetrics.progressAccent)
+          .overlay {
+            Circle().strokeBorder(PrayerIslandMetrics.ink, lineWidth: 1.5)
+          }
+          .frame(width: height, height: height)
+          .offset(x: filled - height)
+      }
+    }
+    .transaction { $0.animation = nil }
+    .accessibilityHidden(true)
+  }
+
+  private func marker(systemImage: String, ground: Color) -> some View {
+    Circle()
+      .fill(ground)
+      .overlay {
+        Image(systemName: systemImage)
+          .font(.system(size: PrayerIslandMetrics.progressGlyphSize, weight: .bold))
+          .foregroundStyle(PrayerIslandMetrics.ink)
+      }
+  }
+
+  /// The diagonal stripes over the filled part.
+  ///
+  /// Drawn as a row of leaning bars rather than with a repeating image or a
+  /// canvas: it is a handful of rectangles, it is static, and it costs nothing
+  /// to lay out. Each is twice the bar's height so that leaning it still covers
+  /// top to bottom, and the row starts a height early so the first stripe's
+  /// lean does not leave a wedge at the left end.
+  private var hatching: some View {
+    GeometryReader { proxy in
+      let height = proxy.size.height
+      let spacing = PrayerIslandMetrics.progressStripeSpacing
+      let count = Int((proxy.size.width + height * 2) / spacing) + 1
+
+      ZStack(alignment: .leading) {
+        ForEach(0 ..< max(count, 1), id: \.self) { step in
+          Rectangle()
+            .fill(PrayerIslandMetrics.progressStripe)
+            .frame(width: PrayerIslandMetrics.progressStripeWidth, height: height * 2)
+            .rotationEffect(PrayerIslandMetrics.progressStripeLean)
+            .offset(x: CGFloat(step) * spacing - height)
+        }
+      }
+      .frame(height: height)
+    }
   }
 }
