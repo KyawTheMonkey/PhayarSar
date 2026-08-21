@@ -1,4 +1,4 @@
-#if canImport(AppIntents) && canImport(ActivityKit)
+#if os(iOS)
 import AppIntents
 
 /// The buttons on the card, as things the system can run.

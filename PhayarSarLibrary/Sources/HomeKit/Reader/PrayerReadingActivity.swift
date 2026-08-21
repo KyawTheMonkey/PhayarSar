@@ -2,7 +2,7 @@ import ActivitiesKit
 import Foundation
 import PrayersKit
 
-#if canImport(ActivityKit)
+#if os(iOS)
 // Pre-concurrency, because `Activity` is a plain class that the framework has
 // never declared `Sendable` — so handing one to its own `async` methods from the
 // main actor is a data race as far as Swift 6 is concerned. It is not one: this
@@ -30,7 +30,7 @@ import PrayersKit
 @MainActor
 enum PrayerReadingActivity {
 
-  #if canImport(ActivityKit)
+  #if os(iOS)
   /// The card currently up, if there is one.
   ///
   /// Typed against the availability guard rather than stored as `Any`, which is
@@ -68,7 +68,7 @@ enum PrayerReadingActivity {
     isPlaying: Bool,
     speed: PrayerPlaybackSpeed
   ) {
-    #if canImport(ActivityKit)
+    #if os(iOS)
     // iOS 17 rather than the 16.1 that Live Activities themselves began at. The
     // whole of this card is its buttons, and buttons are iOS 17 — a card posted
     // to iOS 16 would be a transport control that quietly does nothing. Below
@@ -122,7 +122,7 @@ enum PrayerReadingActivity {
   /// itself, and a card still offering to resume would be offering something
   /// that no longer exists.
   static func end() {
-    #if canImport(ActivityKit)
+    #if os(iOS)
     guard #available(iOS 17.0, *), let activity else { return }
 
     self.activity = nil

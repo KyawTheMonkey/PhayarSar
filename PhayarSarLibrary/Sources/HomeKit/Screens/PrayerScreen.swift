@@ -407,6 +407,10 @@ public struct PrayerScreen: View {
       // Built only on the devices that can use it, unlike the bar above: this is
       // a fact about the hardware rather than about the reading, so there is no
       // state in it worth keeping alive on a phone that will never show it.
+      // Compiled only where there is a `UIWindow` to raise. `docksToIsland` is
+      // already `false` off iOS, but that is a runtime answer and this needs a
+      // compile-time one — ``PrayerIslandPresenter`` does not exist on macOS.
+      #if os(iOS)
       if docksToIsland {
         PrayerIslandPresenter(
           state: playback,
@@ -422,6 +426,7 @@ public struct PrayerScreen: View {
         .allowsHitTesting(false)
         .accessibilityHidden(true)
       }
+      #endif
     }
   }
 

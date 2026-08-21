@@ -1,4 +1,9 @@
-#if canImport(ActivityKit)
+// `os(iOS)` rather than `canImport(ActivityKit)`, which was the first guess and
+// was wrong: the module imports perfectly well on macOS and every type in it is
+// then marked unavailable there, so the check passes and the build fails a line
+// later. The question being asked is which platform this is, so that is what to
+// ask.
+#if os(iOS)
 import ActivityKit
 #endif
 import Foundation
@@ -33,7 +38,7 @@ import Foundation
 /// here takes effect in full and at once, because pace is stored; and play or
 /// pause here settles what the page does the moment the reader is back in front
 /// of it, which is the only moment it could have done anything anyway.
-#if canImport(ActivityKit)
+#if os(iOS)
 public struct PrayerReadingAttributes: ActivityAttributes {
 
   /// The part that changes while the card is up.

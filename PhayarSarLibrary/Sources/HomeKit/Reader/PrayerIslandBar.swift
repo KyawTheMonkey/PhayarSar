@@ -556,8 +556,9 @@ struct PrayerIslandBar: View {
         onToggle()
       }
 
+      // One call now. The contents used to be exchanged here, on their own
+      // clock; `retarget` owns both halves so they cannot drift apart.
       retarget()
-      exchangeContents()
     }
     .onDisappear {
       swapWork?.cancel()
@@ -617,17 +618,21 @@ struct PrayerIslandBar: View {
     stageWork = nil
 
     guard isActive else {
-      // The reading is over. The island opens to take the pill back and closes
-      // behind it.
+      // The reading is over. Everything goes back into the island together —
+      // there is nothing to exchange on the way, because nothing is going to be
+      // looked at afterwards. `emergence` blurs the contents away as the pill
+      // withdraws.
       withAnimation(motion) { openness = 0 }
       isSheet = false
+      showsSheet = false
       swallow()
       return
     }
 
     guard isOpen else {
       guard isSheet else {
-        // A reading starting. The island gathers, then squeezes the pill out.
+        // A reading starting. The island gathers, then squeezes the pill out,
+        // and `emergence` blurs its contents in as it comes.
         spit()
         return
       }
@@ -635,7 +640,7 @@ struct PrayerIslandBar: View {
       // Shutting. The sheet draws back into the island first, and only then is
       // the pill squeezed out again.
       withAnimation(motion) { openness = 0 }
-      stage(after: PrayerIslandMetrics.release) {
+      exchange(at: PrayerIslandMetrics.release, to: false) {
         isSheet = false
         spit()
       }
@@ -645,7 +650,7 @@ struct PrayerIslandBar: View {
     // Opening. The island takes the pill back, and once it is inside the sheet
     // grows out of it.
     swallow()
-    stage(after: PrayerIslandMetrics.retract) {
+    exchange(at: PrayerIslandMetrics.retract, to: true) {
       isSheet = true
       withAnimation(motion) { openness = 1 }
     }
@@ -1071,47 +1076,70 @@ struct PrayerIslandBar: View {
     }
   }
 
-  /// Softens the contents away, changes them, and brings them back.
+  /// Softens the contents away, changes them *and the shape they are on* in the
+  /// same instant, and brings them back.
   ///
-  /// Driven from a value rather than left to a `transition`, deliberately. This
-  /// view is hosted in a window of its own and its root is reassigned on every
-  /// pass — see ``PrayerIslandPresenter`` — and a transition needs the structural
-  /// change and the animation to meet in a tree whose identity has held still.
-  /// A blur that is simply a number nothing has to notice is a number that
-  /// animates whatever else is going on around it.
-  private func exchangeContents() {
+  /// Blurred rather than cross-faded, and driven from a value rather than left
+  /// to a `transition`. This view is hosted in a window of its own and its root
+  /// is reassigned on every pass — see ``PrayerIslandPresenter`` — and a
+  /// transition needs the structural change and the animation to meet in a tree
+  /// whose identity has held still. A blur that is simply a number nothing has
+  /// to notice is a number that animates whatever else is going on around it.
+  ///
+  /// Two layouts fading past one another would be legible together in the middle
+  /// besides, and they have nothing in common: a row of two things against a
+  /// title, a count and seven controls. Out of focus the first loses its shape
+  /// before the second finds one.
+  ///
+  /// - Parameters:
+  ///   - moment: How far from now the shape changes. The blur is arranged around
+  ///     it, not started at it.
+  ///   - sheet: Which layout to change to.
+  ///   - change: What to do to the shape at that instant.
+  private func exchange(at moment: TimeInterval, to sheet: Bool, _ change: @escaping () -> Void) {
     swapWork?.cancel()
 
     guard !reduceMotion else {
-      // No travel and no softening for a reader who has asked for neither. The
-      // layout is simply the one it should be.
-      swapWork = nil
+      // No softening for a reader who has asked for none. The contents are
+      // simply the ones they should be, when they should be.
       swap = 0
-      showsSheet = isOpen
+      stage(after: moment) {
+        showsSheet = sheet
+        change()
+      }
+      swapWork = nil
       return
     }
 
-    withAnimation(.easeIn(duration: PrayerIslandMetrics.swapOut)) { swap = 1 }
+    // The blur has to *finish* as the shape changes, not begin there — so it
+    // starts a `swapOut` early and the exchange lands at the bottom of it.
+    let lead = max(moment - PrayerIslandMetrics.swapOut, 0)
 
-    // Captured rather than read later. By the time this runs the view struct is
-    // several rebuilds old, and what it should exchange to is what was asked for
-    // when it was scheduled.
-    let target = isOpen
+    let soften = DispatchWorkItem {
+      withAnimation(.easeIn(duration: PrayerIslandMetrics.swapOut)) { swap = 1 }
 
-    let exchange = DispatchWorkItem {
-      // On blurred contents, so there is nothing for the change to be seen
-      // against.
-      showsSheet = target
+      let resolve = DispatchWorkItem {
+        // Both at once. This is the whole of the fix: the contents used to be
+        // exchanged when `isOpen` changed and the shape when its phase came due,
+        // which put a third of a second between them — long enough for the
+        // sheet's title and its seven controls to be drawn, briefly, on a pill
+        // a hundred and twenty-six points wide.
+        showsSheet = sheet
+        change()
 
-      withAnimation(.easeOut(duration: PrayerIslandMetrics.swapIn)) { swap = 0 }
-      swapWork = nil
+        withAnimation(.easeOut(duration: PrayerIslandMetrics.swapIn)) { swap = 0 }
+        swapWork = nil
+      }
+
+      swapWork = resolve
+      DispatchQueue.main.asyncAfter(
+        deadline: .now() + PrayerIslandMetrics.swapOut,
+        execute: resolve
+      )
     }
 
-    swapWork = exchange
-    DispatchQueue.main.asyncAfter(
-      deadline: .now() + PrayerIslandMetrics.swapOut,
-      execute: exchange
-    )
+    swapWork = soften
+    DispatchQueue.main.asyncAfter(deadline: .now() + lead, execute: soften)
   }
 
   private func setOpen(_ open: Bool) {
