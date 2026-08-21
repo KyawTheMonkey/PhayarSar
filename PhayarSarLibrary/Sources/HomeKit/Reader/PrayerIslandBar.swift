@@ -237,8 +237,8 @@ enum PrayerIslandMetrics {
   /// nothing to see, and bringing the other back is the same trick the page turn
   /// uses on a whole prayer, for the same reason. See
   /// `PrayerReaderMetrics.pageDissolve`.
-  static let swapOut: TimeInterval = 0.14
-  static let swapIn: TimeInterval = 0.22
+  static let swapOut: TimeInterval = 0.18
+  static let swapIn: TimeInterval = 0.32
 
   /// How the verse count rolls over as the reading moves on.
   ///
@@ -249,11 +249,15 @@ enum PrayerIslandMetrics {
 
   /// How soft the contents go as they arrive and leave.
   ///
-  /// Enough to be unreadable at the ends of the change, which is the point: a
-  /// row of controls that cross-fades legibly is two rows of controls on screen
-  /// at once for a moment. Out of focus they read as one thing resolving into
-  /// another.
-  static let contentBlur: CGFloat = 8
+  /// Far enough to be unreadable, and then some. Eight points left the type
+  /// legible through the whole exchange, which reads as two layouts sliding past
+  /// one another rather than as one resolving out of nothing; at eighteen the
+  /// words have gone entirely and what comes back has to be read fresh.
+  ///
+  /// The resolve is nearly twice as long as the softening, on purpose. Losing
+  /// focus should be quick — it is the part nobody needs to watch — and finding
+  /// it should take long enough to be worth watching.
+  static let contentBlur: CGFloat = 18
 
   /// How far the screen behind is taken down while the sheet is open. Enough to
   /// say the page is not the thing being addressed, light enough that the reader
@@ -297,7 +301,59 @@ enum PrayerIslandMetrics {
   static let speedActiveFill = Color.yellow
   static let speedActiveInk = Color.black
 
-  /// The one edge on the shape.
+  // MARK: The give
+
+  /// How far the sheet can be pulled before it stops giving, in points.
+  ///
+  /// The pull is passed through a `tanh`, so this is an asymptote rather than a
+  /// limit: the first few points of a drag move it nearly one for one and the
+  /// eightieth barely move it at all. Nothing ever hits a wall.
+  static let elasticReach: CGFloat = 64
+
+  /// How much it lengthens under a pull, and how much it thins for it.
+  ///
+  /// Thinning is what makes it read as a material rather than a picture being
+  /// scaled. Something soft that gets longer has to get narrower — it has the
+  /// same amount of itself either way.
+  static let elasticStretch: CGFloat = 0.34
+  static let elasticSquash: CGFloat = 0.18
+
+  /// How much of the pull the sheet actually travels.
+  ///
+  /// The rest of the finger's movement is spent deforming it rather than moving
+  /// it, which is the whole difference between something elastic and something
+  /// being dragged.
+  static let elasticTravel: CGFloat = 0.55
+
+  /// A degree or so of lean into a sideways pull.
+  static let elasticLean: Double = 0.03
+
+  /// The two springs, and they are deliberately not the same one.
+  ///
+  /// Decoupled and orthogonal: horizontal displacement and vertical displacement
+  /// are separate state with separate curves, so the sheet can still be swinging
+  /// sideways after it has already settled downwards. One spring driving a
+  /// `CGSize` gives both axes the same phase, which is the thing that reads as a
+  /// rigid object wobbling rather than as jelly.
+  ///
+  /// The horizontal is quicker and looser because the sheet is wide — a long
+  /// axis with a slow spring on it looks heavy — and both are bouncier than they
+  /// were, which is most of what makes the material feel softer.
+  static let elasticHorizontal: Animation = .spring(response: 0.34, dampingFraction: 0.42)
+  static let elasticVertical: Animation = .spring(response: 0.44, dampingFraction: 0.5)
+
+  /// How far a finger must travel before the sheet gives at all, so that a tap
+  /// on one of its controls is still a tap.
+  static let elasticThreshold: CGFloat = 8
+
+  /// How far a throw has to be heading for the sheet to let go of it.
+  ///
+  /// Measured against where the drag was *going* rather than where it got to, so
+  /// a short flick counts and a long slow haul does not. Throwing a thing away
+  /// is about speed, not distance.
+  static let elasticFling: CGFloat = 150
+
+  /// The one edge on the shape.  /// The one edge on the shape.
   ///
   /// The open sheet hangs over a page that can itself be black — `midnight` and
   /// `ink` are two of the six papers — and a black shape on black paper with no
@@ -385,6 +441,22 @@ struct PrayerIslandBar: View {
 
   /// Changes the pace, from the line after the one being read.
   let onSpeed: (PrayerPlaybackSpeed) -> Void
+
+  /// How far the sheet has been pulled out of shape, per axis.
+  ///
+  /// Two scalars rather than one `CGSize`, and that is the point — see
+  /// ``PrayerIslandMetrics/elasticHorizontal``. Separate state is what lets the
+  /// two axes be animated by separate springs; a size would put them in one
+  /// transaction and give them one phase.
+  @State private var pullX: CGFloat = 0
+  @State private var pullY: CGFloat = 0
+
+  /// Whether letting go right now would throw the sheet away.
+  ///
+  /// Held rather than recomputed at the end, because the reader needs to know
+  /// *before* they let go — a threshold they only find out about afterwards is
+  /// not a threshold, it is a surprise.
+  @State private var willFling = false
 
   /// How far the chrome has travelled out from under the island: 0 sitting
   /// inside it, 1 at rest below it.
@@ -484,6 +556,7 @@ struct PrayerIslandBar: View {
         if isSheet {
           sheetShape
             .frame(width: rect.width, height: rect.height)
+            .modifier(PrayerIslandElastic(x: pullX, y: pullY, size: rect.size))
             .offset(x: rect.minX, y: rect.minY)
             .allowsHitTesting(false)
         } else {
@@ -524,6 +597,24 @@ struct PrayerIslandBar: View {
           .opacity(Double(emergence) * (1 - Double(swap)))
           .frame(width: rect.width, height: rect.height)
           .clipShape(outline)
+          // Only the sheet gives. The pill is a hundred and twenty-six points
+          // wide and its whole job is to be tapped — something that squirmed
+          // under the thumb aiming for pause would be a worse control, not a
+          // livelier one.
+          //
+          // The contents take the identical deformation the shape does, from
+          // the same two numbers, so the type stays registered with the panel it
+          // is written on. Unlike a distortion, `scaleEffect` moves hit testing
+          // with it, so the controls stay under their own glyphs however far the
+          // sheet is pulled.
+          .modifier(PrayerIslandElastic(x: pullX, y: pullY, size: rect.size))
+          .contentShape(Rectangle())
+          // Outranks the controls, but only once it has actually started. A drag
+          // with a minimum distance does not claim the touch until the finger
+          // has moved, so a tap that never moves still belongs to whichever
+          // button it landed on — and a drag that begins on top of one takes it
+          // away rather than fighting it for every point.
+          .highPriorityGesture(isSheet ? give : nil)
           .offset(x: rect.minX, y: rect.minY)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -535,6 +626,9 @@ struct PrayerIslandBar: View {
     // The glyph changes under the finger that changed it, so the click belongs
     // to the control rather than to the page starting or stopping.
     .appSelectionFeedback(trigger: state)
+    // And a firmer one the moment a drag becomes a throw, so the reader knows
+    // that letting go now will put the sheet away.
+    .appThresholdFeedback(armed: willFling)
     // A reading that ends while the sheet is down leaves the sheet with nothing
     // to control. Shut rather than left hanging, so the next reading opens from
     // the pill the reader last saw it as.
@@ -554,6 +648,14 @@ struct PrayerIslandBar: View {
       // then, which is one tap away.
       if isOpen, isPlaying {
         onToggle()
+      }
+
+      // A sheet shut mid-pull would otherwise take its deformation with it and
+      // hand it to the pill. Sprung rather than zeroed, so letting go by closing
+      // feels like letting go.
+      if !isOpen {
+        release()
+        willFling = false
       }
 
       // One call now. The contents used to be exchanged here, on their own
@@ -1076,6 +1178,80 @@ struct PrayerIslandBar: View {
     }
   }
 
+  // MARK: - The give
+
+  /// Pulling the sheet about.
+  ///
+  /// Measured in the *global* space rather than the view's own, which matters:
+  /// the sheet moves as it is dragged, and a translation measured against
+  /// something that is itself being moved by that translation runs away with
+  /// itself.
+  ///
+  /// It waits for ``PrayerIslandMetrics/elasticThreshold`` before engaging, so
+  /// a finger that lands on pause and lifts again has pressed a button rather
+  /// than nudged a panel.
+  private var give: some Gesture {
+    DragGesture(
+      minimumDistance: PrayerIslandMetrics.elasticThreshold,
+      coordinateSpace: .global
+    )
+    .onChanged { value in
+      // No animation on the way out — the sheet is following a finger, and
+      // anything between the two is lag.
+      pullX = resist(value.translation.width)
+      pullY = resist(value.translation.height)
+
+      // Tested every frame against the same number `onEnded` will use, so the
+      // tap the reader feels is a promise about what letting go will do rather
+      // than a guess at it.
+      willFling = isThrown(value)
+    }
+    .onEnded { value in
+      let thrown = isThrown(value)
+      willFling = false
+
+      guard !thrown else {
+        // Thrown away. The sheet leaves in the shape the throw left it in —
+        // springing it back square and *then* closing reads as two events.
+        setOpen(false)
+        return
+      }
+
+      release()
+    }
+  }
+
+  /// Whether this drag is heading far enough to be a throw.
+  ///
+  /// Measured against where it was *going* rather than where it got to, so a
+  /// short hard flick counts and a long slow haul does not. Throwing a thing
+  /// away is about speed, not distance.
+  private func isThrown(_ value: DragGesture.Value) -> Bool {
+    let predicted = hypot(
+      value.predictedEndTranslation.width,
+      value.predictedEndTranslation.height
+    )
+
+    return predicted >= PrayerIslandMetrics.elasticFling
+  }
+
+  /// The further it is pulled, the less it gives.
+  ///
+  /// `tanh` because it is the honest shape for this: linear for small pulls,
+  /// flattening smoothly, and never reaching the limit — so there is no point at
+  /// which the sheet stops responding, only a point past which it barely does.
+  private func resist(_ distance: CGFloat) -> CGFloat {
+    let reach = PrayerIslandMetrics.elasticReach
+
+    return reach * CGFloat(tanh(Double(distance / reach)))
+  }
+
+  /// Lets go, on two springs that know nothing about one another.
+  private func release() {
+    withAnimation(PrayerIslandMetrics.elasticHorizontal) { pullX = 0 }
+    withAnimation(PrayerIslandMetrics.elasticVertical) { pullY = 0 }
+  }
+
   /// Softens the contents away, changes them *and the shape they are on* in the
   /// same instant, and brings them back.
   ///
@@ -1192,5 +1368,80 @@ private struct PrayerIslandCountRoll: ViewModifier {
     } else {
       content.contentTransition(.numericText())
     }
+  }
+}
+
+
+/// The sheet as something soft.
+///
+/// Three transforms from two numbers. It travels a little way with the finger,
+/// lengthens along the pull and thins across it, and leans slightly into a
+/// sideways drag.
+///
+/// The anchor is the part that sells it. It sits opposite the pull and moves
+/// continuously with it, so the sheet stretches *away* from a fixed far edge
+/// towards the finger rather than swelling evenly about its middle — which is
+/// what everything soft does when you take hold of one end of it.
+private struct PrayerIslandElastic: ViewModifier {
+  let x: CGFloat
+  let y: CGFloat
+  let size: CGSize
+
+  func body(content: Content) -> some View {
+    content
+      .scaleEffect(
+        x: 1 + along(x, size.width) - across(y, size.height),
+        y: 1 + along(y, size.height) - across(x, size.width),
+        anchor: anchor
+      )
+      .rotationEffect(.degrees(Double(x) * PrayerIslandMetrics.elasticLean))
+      .offset(x: x * PrayerIslandMetrics.elasticTravel, y: rise)
+  }
+
+  /// How far it moves vertically — and it may only ever move *up*.
+  ///
+  /// The sheet's top edge sits flush with the top of the cutout, so travelling
+  /// downwards is the one translation that slides the hardware out from under
+  /// it and leaves a black hole above a panel. Travelling upwards only ever
+  /// covers more of the island, so it is left alone.
+  ///
+  /// A downward pull is not ignored, though — it is spent on ``along(_:_:)``
+  /// instead. With the anchor already at the top edge for a downward drag, the
+  /// stretch lengthens the sheet away from a fixed top rather than moving it,
+  /// so the sheet still gives under the finger and the cutout stays covered.
+  /// The give is converted, not clamped away.
+  ///
+  /// Sideways is unconstrained. The sheet is three hundred and sixty-nine points
+  /// wide against a hundred-and-twenty-six point cutout, so there are a hundred
+  /// and twenty points of margin either side — far more than the thirty-five the
+  /// travel can ever ask for.
+  private var rise: CGFloat {
+    min(y * PrayerIslandMetrics.elasticTravel, 0)
+  }
+
+  /// How much longer the pulled axis gets.
+  private func along(_ pull: CGFloat, _ extent: CGFloat) -> CGFloat {
+    guard extent > 0 else { return 0 }
+
+    return abs(pull) / extent * PrayerIslandMetrics.elasticStretch
+  }
+
+  /// And how much thinner the other one gets for it.
+  private func across(_ pull: CGFloat, _ extent: CGFloat) -> CGFloat {
+    guard extent > 0 else { return 0 }
+
+    return abs(pull) / extent * PrayerIslandMetrics.elasticSquash
+  }
+
+  /// Opposite the pull, and never further than an edge.
+  private var anchor: UnitPoint {
+    UnitPoint(
+      x: 0.5 - clamp(x / max(size.width, 1)),
+      y: 0.5 - clamp(y / max(size.height, 1))
+    )
+  }
+
+  private func clamp(_ value: CGFloat) -> CGFloat {
+    min(max(value, -0.5), 0.5)
   }
 }

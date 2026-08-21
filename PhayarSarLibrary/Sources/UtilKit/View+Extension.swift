@@ -90,6 +90,31 @@ extension View {
       self
     }
   }
+
+  /// A tap when a gesture crosses the point past which letting go does
+  /// something, and a lighter one when it falls back inside.
+  ///
+  /// The cue a threshold needs is *arrival*, not arrangement: a reader dragging
+  /// something towards a limit cannot see where the limit is, so the only way
+  /// they learn they have reached it is to be told. Weighted differently in each
+  /// direction because the two mean opposite things — one commits, one takes it
+  /// back — and a threshold that ticked identically both ways would say only
+  /// "something changed".
+  ///
+  /// A shim, like the tick above: `sensoryFeedback` is iOS 17 and the package
+  /// ships to 16, so below that the crossing happens silently.
+  @ViewBuilder
+  public func appThresholdFeedback(armed: Bool) -> some View {
+    if #available(iOS 17.0, macOS 14.0, *) {
+      sensoryFeedback(trigger: armed) { _, isArmed in
+        isArmed
+          ? .impact(weight: .medium, intensity: 0.9)
+          : .impact(weight: .light, intensity: 0.5)
+      }
+    } else {
+      self
+    }
+  }
 }
 
 /// Constants for the selection tick.
