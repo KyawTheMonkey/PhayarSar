@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C8E5D4C04030000000000011 /* PhayarSarWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C8E5D4C04030000000000002 /* PhayarSarWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C8E5D4C04030000000000007 /* PhayarSarWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E5D4C04030000000000004 /* PhayarSarWidgetsBundle.swift */; };
+		C8E5D4C04030000000000008 /* PrayerReadingLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E5D4C04030000000000005 /* PrayerReadingLiveActivity.swift */; };
+		C8E5D4C04030000000000015 /* ActivitiesKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8E5D4C04030000000000012 /* ActivitiesKit */; };
+		C8E5D4C04030000000000016 /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8E5D4C04030000000000013 /* DesignKit */; };
+		C8E5D4C04030000000000017 /* LocalisationKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8E5D4C04030000000000014 /* LocalisationKit */; };
 		653454BB2BEBDF24004FC8EE /* MyanmarSyllable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653454BA2BEBDF24004FC8EE /* MyanmarSyllable.swift */; };
 		653454C02BEBE2BE004FC8EE /* PhayarSarRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 653454BF2BEBE2BE004FC8EE /* PhayarSarRepository.swift */; };
 		C80287442B4940ED00F165DF /* CommonPrayerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */; };
@@ -173,6 +179,13 @@
 			remoteGlobalIDString = C8DA7C103025000000000041;
 			remoteInfo = PhayarSarWatch;
 		};
+		C8E5D4C0403000000000000F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C82039A22B1CABE4000EEF61 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C8E5D4C04030000000000001;
+			remoteInfo = PhayarSarWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -183,6 +196,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				C84F4AA32C03197700B5A502 /* PhayarSarNotificationService.appex in Embed Foundation Extensions */,
+				C8E5D4C04030000000000011 /* PhayarSarWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -201,6 +215,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C8E5D4C04030000000000002 /* PhayarSarWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PhayarSarWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8E5D4C04030000000000004 /* PhayarSarWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarWidgetsBundle.swift; sourceTree = "<group>"; };
+		C8E5D4C04030000000000005 /* PrayerReadingLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrayerReadingLiveActivity.swift; sourceTree = "<group>"; };
+		C8E5D4C04030000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		653454BA2BEBDF24004FC8EE /* MyanmarSyllable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarSyllable.swift; sourceTree = "<group>"; };
 		653454BF2BEBE2BE004FC8EE /* PhayarSarRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhayarSarRepository.swift; sourceTree = "<group>"; };
 		C80287432B4940ED00F165DF /* CommonPrayerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPrayerProtocol.swift; sourceTree = "<group>"; };
@@ -384,6 +402,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8E5D4C0403000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8E5D4C04030000000000015 /* ActivitiesKit in Frameworks */,
+				C8E5D4C04030000000000016 /* DesignKit in Frameworks */,
+				C8E5D4C04030000000000017 /* LocalisationKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -460,6 +488,7 @@
 				C82039BD2B1CABE6000EEF61 /* PhayarSarTests */,
 				C82039C72B1CABE6000EEF61 /* PhayarSarUITests */,
 				C84F4A9D2C03197700B5A502 /* PhayarSarNotificationService */,
+				C8E5D4C04030000000000003 /* PhayarSarWidgets */,
 				C8DA7C103025000000000021 /* PhayarSarWatch */,
 				C82039AB2B1CABE4000EEF61 /* Products */,
 				C84F4A952C03146900B5A502 /* Frameworks */,
@@ -473,6 +502,7 @@
 				C82039BA2B1CABE6000EEF61 /* PhayarSarTests.xctest */,
 				C82039C42B1CABE6000EEF61 /* PhayarSarUITests.xctest */,
 				C84F4A9C2C03197700B5A502 /* PhayarSarNotificationService.appex */,
+				C8E5D4C04030000000000002 /* PhayarSarWidgets.appex */,
 				C8DA7C103025000000000004 /* PhayarSarWatch.app */,
 			);
 			name = Products;
@@ -698,6 +728,16 @@
 			path = PhayarSarWatch;
 			sourceTree = "<group>";
 		};
+		C8E5D4C04030000000000003 /* PhayarSarWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				C8E5D4C04030000000000004 /* PhayarSarWidgetsBundle.swift */,
+				C8E5D4C04030000000000005 /* PrayerReadingLiveActivity.swift */,
+				C8E5D4C04030000000000006 /* Info.plist */,
+			);
+			path = PhayarSarWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -715,6 +755,7 @@
 			);
 			dependencies = (
 				C84F4AA22C03197700B5A502 /* PBXTargetDependency */,
+				C8E5D4C04030000000000010 /* PBXTargetDependency */,
 				C8DA7C103025000000000061 /* PBXTargetDependency */,
 			);
 			name = PhayarSar;
@@ -812,6 +853,28 @@
 			productReference = C8DA7C103025000000000004 /* PhayarSarWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C8E5D4C04030000000000001 /* PhayarSarWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C8E5D4C0403000000000000C /* Build configuration list for PBXNativeTarget "PhayarSarWidgets" */;
+			buildPhases = (
+				C8E5D4C04030000000000009 /* Sources */,
+				C8E5D4C0403000000000000A /* Frameworks */,
+				C8E5D4C0403000000000000B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PhayarSarWidgets;
+			packageProductDependencies = (
+				C8E5D4C04030000000000012 /* ActivitiesKit */,
+				C8E5D4C04030000000000013 /* DesignKit */,
+				C8E5D4C04030000000000014 /* LocalisationKit */,
+			);
+			productName = PhayarSarWidgets;
+			productReference = C8E5D4C04030000000000002 /* PhayarSarWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -862,6 +925,7 @@
 				C82039B92B1CABE6000EEF61 /* PhayarSarTests */,
 				C82039C32B1CABE6000EEF61 /* PhayarSarUITests */,
 				C84F4A9B2C03197700B5A502 /* PhayarSarNotificationService */,
+				C8E5D4C04030000000000001 /* PhayarSarWidgets */,
 				C8DA7C103025000000000041 /* PhayarSarWatch */,
 			);
 		};
@@ -946,6 +1010,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				C8DA7C103025000000000012 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8E5D4C0403000000000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1058,6 +1129,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8E5D4C04030000000000009 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8E5D4C04030000000000008 /* PrayerReadingLiveActivity.swift in Sources */,
+				C8E5D4C04030000000000007 /* PhayarSarWidgetsBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1080,6 +1160,11 @@
 			isa = PBXTargetDependency;
 			target = C8DA7C103025000000000041 /* PhayarSarWatch */;
 			targetProxy = C8DA7C103025000000000062 /* PBXContainerItemProxy */;
+		};
+		C8E5D4C04030000000000010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C8E5D4C04030000000000001 /* PhayarSarWidgets */;
+			targetProxy = C8E5D4C0403000000000000F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1469,6 +1554,58 @@
 			};
 			name = Release;
 		};
+		C8E5D4C0403000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PhayarSarWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PhayarSar;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.PhayarSarWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C8E5D4C0403000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3LGZY3S9Q5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PhayarSarWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PhayarSar;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kyaw.PhayarSar.PhayarSarWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1522,6 +1659,15 @@
 			buildConfigurations = (
 				C8DA7C103025000000000051 /* Debug */,
 				C8DA7C103025000000000052 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C8E5D4C0403000000000000C /* Build configuration list for PBXNativeTarget "PhayarSarWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C8E5D4C0403000000000000D /* Debug */,
+				C8E5D4C0403000000000000E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1613,6 +1759,18 @@
 		C8EF0F202FA3A47500543BCA /* EnvironmentKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = EnvironmentKit;
+		};
+		C8E5D4C04030000000000012 /* ActivitiesKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ActivitiesKit;
+		};
+		C8E5D4C04030000000000013 /* DesignKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignKit;
+		};
+		C8E5D4C04030000000000014 /* LocalisationKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LocalisationKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 

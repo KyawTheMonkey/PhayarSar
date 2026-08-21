@@ -1,3 +1,4 @@
+import ActivitiesKit
 import DesignKit
 import Inject
 import LocalisationKit
@@ -108,6 +109,26 @@ public struct PrayerScreen: View {
   /// way playback ends that nobody asked for.
   @State private var playback: PrayerPlaybackState = .stopped
 
+  /// How far into the prayer the reading has got, reported up from the reader.
+  ///
+  /// Only the island's open sheet shows it — the bottom bar has no room for it
+  /// and never claimed to. `nil` whenever nothing is reading.
+  @State private var playbackProgress: PrayerPlaybackProgress?
+
+  /// Whether the island chrome has its sheet down.
+  ///
+  /// Held here rather than inside ``PrayerIslandBar`` because the window the bar
+  /// is drawn in needs the answer too — see ``PrayerIslandPresenter``, which
+  /// decides from it whether a touch anywhere on screen belongs to the chrome or
+  /// goes straight through to the page.
+  @State private var isIslandOpen = false
+
+  /// Whether the phone is upright, which is half of whether there is an island
+  /// to dock to. See ``AppDynamicIsland/docks(verticalSizeClass:)``.
+  #if os(iOS)
+  @Environment(\.verticalSizeClass) private var verticalSizeClass
+  #endif
+
   /// How fast the page reads itself.
   ///
   /// Read straight off the configuration rather than held beside it, so there is
@@ -156,7 +177,13 @@ public struct PrayerScreen: View {
           .appBackground()
       }
     }
-    .navigationTitle(prayer?.title ?? L10n.prayerNotFound)
+    // Given up for the length of a reading on a phone whose island is carrying
+    // the controls: the chrome hangs from the cutout straight down through where
+    // the title sits, and the open sheet shows the prayer's name itself. The bar
+    // stays, which is the part that matters — Back is exactly where the reader
+    // left it, and a reading is not something they should have to stop in order
+    // to leave.
+    .navigationTitle(hidesNavigationTitle ? "" : (prayer?.title ?? L10n.prayerNotFound))
     // No navigation bar on macOS, so no display mode to set either.
     #if os(iOS)
     .navigationBarTitleDisplayMode(.inline)
@@ -238,6 +265,26 @@ public struct PrayerScreen: View {
     // theme sheet, so a size changed on the phone moves the watch's control too.
     .onValueChange(selectedID, perform: publishToRemote)
     .onValueChange(configuration.settings.textSize, perform: publishToRemote)
+    // The card on the Lock Screen and in the Dynamic Island. Driven from the
+    // same two pieces of state the controls are drawn from, so there is nothing
+    // for it to disagree with — and from `playback` rather than from the button
+    // that changed it, because most of the ways a reading ends are not buttons.
+    //
+    // See `PrayerReadingAttributes` for why the card offers a way back in rather
+    // than a set of controls.
+    .onValueChange(playback, perform: publishActivity)
+    .onValueChange(playbackProgress, perform: publishActivity)
+    // Leaving the screen ends the reading — see
+    // `PrayerViewController.viewDidDisappear` — and a card outliving the reading
+    // it describes would be offering to resume something that is over. The
+    // playback change would take it down a moment later anyway; this is here so
+    // that the order is decided rather than raced.
+    // And where its buttons land. Attached beside the watch remote above,
+    // because they are the same kind of thing: something outside the app
+    // reaching this one screen, through writes only.
+    .onAppear { PrayerReadingControl.shared.attach(readingControlHandle) }
+    .onDisappear { PrayerReadingControl.shared.attach(nil) }
+    .onDisappear(perform: PrayerReadingActivity.end)
     .enableInjection()
   }
 
@@ -261,7 +308,8 @@ public struct PrayerScreen: View {
         onSheetChange: showNissaya,
         playback: playback,
         speed: speed,
-        onPlaybackChange: { playback = $0 }
+        onPlaybackChange: { playback = $0 },
+        onProgressChange: { playbackProgress = $0 }
       )
         // The page colour runs to every edge — a reader with a strip of app
         // background under it reads as a card, not as a page.
@@ -326,24 +374,84 @@ public struct PrayerScreen: View {
       // The switcher's replacement, in the switcher's own place. Both are kept
       // in the hierarchy and faded past one another so that the pill's tray
       // state, and its measured ends, survive a reading.
-      PrayerPlaybackBar(
-        state: playback,
-        speed: speed,
-        settings: settings,
-        onToggle: togglePlayback,
-        onStop: stopPlayback,
-        onSpeed: setSpeed
-      )
-      .appHorizontalInset()
-      .padding(.bottom, PrayerPageSwitcherMetrics.bottomPadding)
-      .opacity(isPlaying ? 1 : 0)
-      .allowsHitTesting(isPlaying)
-      .animation(PrayerPlaybackMetrics.handover, value: isPlaying)
+      //
+      // Stood down entirely on a phone with a Dynamic Island held upright, where
+      // the controls have somewhere better to be — see ``PrayerIslandBar``. Two
+      // live transports for one reading would be two places to look for pause
+      // and two things to keep in step, and the reader only ever asked for one.
+      if !docksToIsland {
+        PrayerPlaybackBar(
+          state: playback,
+          speed: speed,
+          settings: settings,
+          onToggle: togglePlayback,
+          onStop: stopPlayback,
+          onSpeed: setSpeed
+        )
+        .appHorizontalInset()
+        .padding(.bottom, PrayerPageSwitcherMetrics.bottomPadding)
+        .opacity(isPlaying ? 1 : 0)
+        .allowsHitTesting(isPlaying)
+        .animation(PrayerPlaybackMetrics.handover, value: isPlaying)
+      }
+
+      // And the same controls docked to the cutout, where there is one.
+      //
+      // Not drawn in this hierarchy at all, despite being written here. The
+      // chrome has to sit above the navigation bar to reach the cutout, and
+      // nothing inside a `NavigationStack` can — so this raises a window of its
+      // own and draws there. See ``PrayerIslandPresenter``, which is a view that
+      // shows nothing and exists only so that SwiftUI owns that window's
+      // lifetime.
+      //
+      // Built only on the devices that can use it, unlike the bar above: this is
+      // a fact about the hardware rather than about the reading, so there is no
+      // state in it worth keeping alive on a phone that will never show it.
+      if docksToIsland {
+        PrayerIslandPresenter(
+          state: playback,
+          speed: speed,
+          progress: playbackProgress,
+          title: prayer.title,
+          isOpen: $isIslandOpen,
+          onToggle: togglePlayback,
+          onStop: stopPlayback,
+          onSpeed: setSpeed
+        )
+        .frame(width: 0, height: 0)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+      }
     }
   }
 
   /// Whether the page is given over to playback, paused or not.
   private var isPlaying: Bool { playback != .stopped }
+
+  /// Whether this reading's controls belong on the cutout rather than at the
+  /// foot of the page.
+  ///
+  /// Re-read on rotation, which is the point: turning the phone on its side puts
+  /// the cutout down one edge, and the controls go back to the bottom bar for as
+  /// long as they are held that way.
+  /// Whether the navigation bar should be showing the prayer's name.
+  ///
+  /// Only while the island is carrying the reading. Everywhere else the title is
+  /// the title, including on a phone with an island that is simply not reading
+  /// anything at the moment.
+  @MainActor
+  private var hidesNavigationTitle: Bool {
+    isPlaying && docksToIsland
+  }
+
+  @MainActor
+  private var docksToIsland: Bool {
+    #if os(iOS)
+    return AppDynamicIsland.docks(verticalSizeClass: verticalSizeClass)
+    #else
+    return false
+    #endif
+  }
 
   // MARK: - Configuration
 
@@ -416,6 +524,46 @@ public struct PrayerScreen: View {
     configuration = updated
 
     PrayerConfigurationStore.shared.save(updated, for: selectedID)
+  }
+
+  /// Tells the system what to show while the app is not the one on screen.
+  ///
+  /// Everything about *what* that card is belongs to
+  /// ``PrayerReadingActivity``, including whether the device will show one at
+  /// all. This only says which prayer, where in it, and whether it is halted.
+  private func publishActivity() {
+    guard let prayer, isPlaying else {
+      return PrayerReadingActivity.end()
+    }
+
+    PrayerReadingActivity.show(
+      prayer: prayer,
+      progress: playbackProgress,
+      isPlaying: playback == .playing,
+      speed: speed
+    )
+  }
+
+  /// What the card's buttons are allowed to change on this screen.
+  ///
+  /// Every one of them goes through the same function the equivalent tap in the
+  /// app does — the Lock Screen has no privileges the finger does not, which is
+  /// what keeps the two from producing different states. The same rule the watch
+  /// remote is built on; see ``remoteHandle``.
+  private var readingControlHandle: PrayerReadingControl.Handle {
+    PrayerReadingControl.Handle(
+      toggle: togglePlayback,
+      stop: stopPlayback,
+      setSpeed: { raw in
+        // A number that names no pace is dropped rather than clamped. There is
+        // no sensible nearest pace to a value nobody sent, and the only way one
+        // can arrive is a card left over from a build that offered a different
+        // set.
+        guard let speed = PrayerPlaybackSpeed(rawValue: raw) else { return }
+
+        setSpeed(speed)
+      }
+    )
   }
 
   // MARK: - The watch remote
@@ -597,11 +745,15 @@ private struct PrayerReader: UIViewControllerRepresentable {
   /// Called when playback changes on the reader's own account — the prayer
   /// running out, or a hand on the page.
   let onPlaybackChange: (PrayerPlaybackState) -> Void
+  /// Called as the reading moves from one verse to the next, and with `nil` when
+  /// it is not reading.
+  let onProgressChange: (PrayerPlaybackProgress?) -> Void
 
   func makeUIViewController(context: Context) -> PrayerViewController {
     let controller = PrayerViewController(prayer: prayer, settings: settings)
     controller.onSheetChange = onSheetChange
     controller.onPlaybackChange = onPlaybackChange
+    controller.onProgressChange = onProgressChange
 
     return controller
   }
@@ -611,6 +763,7 @@ private struct PrayerReader: UIViewControllerRepresentable {
     // state — a stale one would be writing to a `State` that has moved on.
     controller.onSheetChange = onSheetChange
     controller.onPlaybackChange = onPlaybackChange
+    controller.onProgressChange = onProgressChange
     controller.update(prayer: prayer, settings: settings)
     // Before the playback state, so a reading that is about to start takes the
     // pace the reader has chosen rather than beginning at the last one and
@@ -640,6 +793,7 @@ private struct PrayerReader: View {
   let playback: PrayerPlaybackState
   let speed: PrayerPlaybackSpeed
   let onPlaybackChange: (PrayerPlaybackState) -> Void
+  let onProgressChange: (PrayerPlaybackProgress?) -> Void
 
   var body: some View {
     VStack(spacing: 8) {

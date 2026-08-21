@@ -574,5 +574,21 @@
   "sync_not_syncing": {
     "En": "Sign in to sync your data with iCloud.",
     "Mm": "အချက်အလက်များကို iCloud နှင့် စင့်ခ်လုပ်ရန် အကောင့်ဝင်ပါ။"
+  },
+  "verse_progress": {
+    "En": "Verse {0} of {1}",
+    "Mm": "ပိုဒ် {0} / {1}"
+  },
+  "playback_controls": {
+    "En": "Playback controls",
+    "Mm": "ဖတ်ရှုမှု ခလုတ်များ"
+  },
+  "expand_controls": {
+    "En": "Show all controls",
+    "Mm": "ခလုတ်အားလုံး ပြရန်"
+  },
+  "playback_speed": {
+    "En": "Speed",
+    "Mm": "အမြန်နှုန်း"
   }
 }

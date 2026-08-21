@@ -145,22 +145,10 @@ final class NissayaListViewController: UIViewController {
   private func introduce() {
     guard !hasIntroduced, let first = verses.first else { return }
     hasIntroduced = true
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + NissayaListMetrics.introDelay) {
-      [weak self] in
-      guard
-        let self,
-        // All the ways the reader can have got there first: gone back, opened
-        // that verse themselves, or opened the lot from the menu.
-        view.window != nil,
-        folding == nil,
-        !opened.contains(first.id)
-      else {
-        return
-      }
-
-      toggle(first.id)
+    guard view.window != nil, folding == nil, !opened.contains(first.id) else {
+      return
     }
+    toggle(first.id)
   }
 
   /// A fold has nothing to open on to once the screen is off the page, and its

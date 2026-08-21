@@ -118,14 +118,18 @@ final class PrayerViewController: UIViewController {
   /// screen going away — is something only the reader can see, so the reader is
   /// where the answer lives and ``onPlaybackChange`` is how the shell hears
   /// about it.
-  private(set) var playback: PrayerPlaybackState = .stopped
+  private(set) var playback: PrayerPlaybackState = .stopped {
+    didSet { reportProgress() }
+  }
 
   /// The row playback is resting on, or `nil` when it is stopped.
   ///
   /// A row rather than a line identity, because stepping is `+ 1` and the table
   /// is addressed by index everywhere else in here. It is turned into an
   /// identity only where the emphasis needs one — see ``recitedLine``.
-  private var recitedRow: Int?
+  private var recitedRow: Int? {
+    didSet { reportProgress() }
+  }
 
   /// What moves the page on. Invalidated on every exit from `.playing`, which
   /// is what makes pause a pause rather than a page that keeps going quietly.
@@ -149,6 +153,24 @@ final class PrayerViewController: UIViewController {
   /// follow. Never called for a change the shell itself asked for — it already
   /// knows about those, and the round trip would only be a chance to disagree.
   var onPlaybackChange: ((PrayerPlaybackState) -> Void)?
+
+  /// Told how far into the prayer the reading has got, and `nil` when it is not
+  /// reading at all.
+  ///
+  /// Unlike ``onPlaybackChange`` this fires for changes the shell *did* ask for
+  /// as well, because the shell cannot work any of them out for itself: where
+  /// the reading starts, which verse a line belongs to and how many verses a
+  /// prayer was left with after de-duplication are all facts about the indexed
+  /// page, and the indexed page is here.
+  var onProgressChange: ((PrayerPlaybackProgress?) -> Void)?
+
+  /// The last thing ``onProgressChange`` was told, so that a step which stays
+  /// inside one verse says nothing.
+  ///
+  /// The same shape as ``centredVerse`` and for the same reason: a long verse is
+  /// a dozen lines, and the shell has no use for eleven reports that its label
+  /// is already correct.
+  private var reportedProgress: PrayerPlaybackProgress?
 
   private lazy var tableView = UITableView(frame: .zero, style: .plain)
   private lazy var dataSource = makeDataSource()
@@ -503,19 +525,55 @@ final class PrayerViewController: UIViewController {
   /// control tapped twice in a frame cannot leave the two disagreeing.
   func setPlayback(_ state: PrayerPlaybackState) {
     // Nothing can be started against a table that has not been laid out — there
-    // are no rows to centre and no page to centre them in. The shell can only
-    // reach this from a control on screen, so a reader who has not appeared has
-    // nothing to say here.
-    guard isViewLoaded, state != playback else { return }
+    // are no rows to centre and no page to centre them in.
+    guard isViewLoaded else { return }
 
     switch state {
     case .playing:
+      // Asked to read while there is no screen reading it — the play button on
+      // the Live Activity, tapped from the Lock Screen or from another app. The
+      // page cannot scroll where nobody is looking, so the request is kept
+      // rather than carried out: ``resumesWhenActive`` is exactly this promise,
+      // and ``applicationDidBecomeActive()`` is where it comes due.
+      //
+      // The shell is left believing the page is playing, and that is the honest
+      // answer to give it — that *is* what the page will be doing the moment the
+      // reader is in front of it again. The two come back into agreement without
+      // anything having to correct anything: the resume reports `.playing` to a
+      // shell already showing it.
+      guard isReadable else {
+        resumesWhenActive = true
+        return
+      }
+
+      guard state != playback else { return }
       playback == .paused ? resumePlayback() : startPlayback()
+
     case .paused:
+      // Cleared *before* the pause rather than left to it, because the
+      // commonest shape of this is a reading the app going away has already
+      // halted: there is nothing left for ``pausePlayback(reporting:)`` to stop,
+      // and the only thing the reader actually asked for by reaching for pause
+      // on the Lock Screen is that it not start itself up again when they come
+      // back.
+      resumesWhenActive = false
+
+      guard state != playback else { return }
       pausePlayback(reporting: false)
+
     case .stopped:
+      guard state != playback else { return }
       endPlayback(reporting: false)
     }
+  }
+
+  /// Whether there is a screen for the page to move on.
+  ///
+  /// Both halves matter and neither implies the other. An inactive app has no
+  /// screen at all; an active app can still have this reader loaded behind
+  /// something the reader pushed on top of it.
+  private var isReadable: Bool {
+    UIApplication.shared.applicationState == .active && view.window != nil
   }
 
   /// Takes the pace ``PrayerScreen`` is showing.
@@ -642,6 +700,51 @@ final class PrayerViewController: UIViewController {
     if reporting {
       onPlaybackChange?(.stopped)
     }
+  }
+
+  // MARK: - Saying where it has got to
+
+  /// Works out where the reading is and tells the shell, if the answer has
+  /// changed.
+  ///
+  /// Reported a beat later rather than straight away. Every caller of this is
+  /// reached from ``setPlayback(_:)``, which the shell drives from inside a
+  /// SwiftUI update pass — writing the shell's state from in there is the one
+  /// thing that is not allowed, and the empty-prayer case in ``startPlayback()``
+  /// already had to step around it the same way.
+  ///
+  /// The comparison happens *now* rather than in the hop, so two changes landing
+  /// in one pass cannot both decide they are the first.
+  private func reportProgress() {
+    let progress = currentProgress
+    guard progress != reportedProgress else { return }
+
+    reportedProgress = progress
+    DispatchQueue.main.async { [weak self] in
+      self?.onProgressChange?(progress)
+    }
+  }
+
+  /// Which verse the recited line belongs to, out of how many the page was
+  /// indexed with.
+  ///
+  /// `nil` whenever there is no reading to place — stopped, or a row that has
+  /// gone out from under the reading because the prayer was swapped beneath it.
+  /// The shell draws nothing in that case, which is right: it has a bar that is
+  /// on its way out and no business claiming a position in a page it has left.
+  ///
+  /// Counted against ``verses`` rather than `prayer.body`, so the number agrees
+  /// with what the page actually shows — see ``indexVerses()``, which drops
+  /// repeated verse indices rather than trapping the snapshot on them.
+  private var currentProgress: PrayerPlaybackProgress? {
+    guard playback != .stopped,
+          !verses.isEmpty,
+          let recitedRow,
+          lines.indices.contains(recitedRow),
+          let ordinal = ordinalByVerse[lines[recitedRow].id.verse]
+    else { return nil }
+
+    return PrayerPlaybackProgress(verse: ordinal + 1, verses: verses.count)
   }
 
   /// Moves to the next line, or finishes if there is not one.

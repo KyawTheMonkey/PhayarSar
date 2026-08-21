@@ -55,6 +55,10 @@ let package = Package(
       targets: ["RemoteKit"]
     ),
     .library(
+      name: "ActivitiesKit",
+      targets: ["ActivitiesKit"]
+    ),
+    .library(
       name: "WristKit",
       targets: ["WristKit"]
     ),
@@ -106,6 +110,13 @@ let package = Package(
     .target(
       name: "RemoteKit"
     ),
+    // Dependency-free on purpose: the widget extension links this and nothing
+    // else of the app's, so that drawing a title on a card does not drag the
+    // prayer catalog and the CloudKit stack into a second binary. See
+    // `PrayerReadingAttributes`.
+    .target(
+      name: "ActivitiesKit"
+    ),
 
     // MARK: - Features
     .target(
@@ -115,7 +126,9 @@ let package = Package(
     ),
     .target(
       name: "HomeKit",
-      dependencies: ["EnvironmentKit", "DesignKit", "PrayersKit", "AuthKit", "RemoteKit"]
+      dependencies: [
+        "EnvironmentKit", "DesignKit", "PrayersKit", "AuthKit", "RemoteKit", "ActivitiesKit"
+      ]
     ),
     .target(
       name: "PrayersKit",

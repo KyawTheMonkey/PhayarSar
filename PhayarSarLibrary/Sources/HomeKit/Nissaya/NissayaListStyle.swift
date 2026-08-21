@@ -103,7 +103,7 @@ enum NissayaListMetrics {
   /// Long enough that the push has settled and the reader is looking at the
   /// page rather than at the transition — and short enough that it is still
   /// obviously part of arriving. See `NissayaListViewController.introduce()`.
-  static let introDelay: TimeInterval = 0.25
+  static let introDelay: TimeInterval = 0.0
 
   /// How long the page takes to change when the menu opens or shuts every verse
   /// at once.

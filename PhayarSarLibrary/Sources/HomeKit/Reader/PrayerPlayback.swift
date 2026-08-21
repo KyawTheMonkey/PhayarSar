@@ -28,6 +28,29 @@ enum PrayerPlaybackState {
   case paused
 }
 
+// MARK: - Progress
+
+/// How far into the prayer the reading has got, counted in verses.
+///
+/// Verses rather than lines, which is the table's own unit. A line is partly a
+/// wrapping artefact: the same prayer is a different number of lines at a
+/// different text size, so a line count is a number that would change under a
+/// reader who only changed how large they wanted the type. Verses are what the
+/// prayer is actually made of, they are what the watch already steps through,
+/// and they are the count a reader would give if asked how far in they were.
+///
+/// Only carried while something is reading. Stopped is the absence of this
+/// rather than a zero, because zero of twenty-two is a position and stopped is
+/// not one.
+struct PrayerPlaybackProgress: Equatable {
+  /// 1-based, because it is shown to a reader rather than used to index
+  /// anything.
+  let verse: Int
+
+  /// How many there are in this prayer.
+  let verses: Int
+}
+
 // MARK: - Speed
 
 /// What each pace costs the page in time.
