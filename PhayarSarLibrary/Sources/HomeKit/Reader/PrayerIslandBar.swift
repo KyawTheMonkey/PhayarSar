@@ -709,6 +709,16 @@ struct PrayerIslandBar: View {
     // to control. Shut rather than left hanging, so the next reading opens from
     // the pill the reader last saw it as.
     .onValueChange(state) { if state == .stopped { setOpen(false) } }
+    // Put straight into the state it should already be in, without animating
+    // into it.
+    //
+    // The chrome is torn down and rebuilt whenever the phone is turned — see
+    // ``PrayerIslandPresenter``, which only exists in portrait — and every piece
+    // of state in this view goes with it. Nothing here fires on first
+    // appearance, so a bar rebuilt mid-prayer used to come back tucked inside
+    // the island with no reading to tell it to come out: playback running and no
+    // controls anywhere.
+    .onAppear(perform: settle)
     .onValueChange(isActive, perform: retarget)
     .onValueChange(isOpen) {
       // Opening the sheet halts the reading, always.
@@ -791,6 +801,37 @@ struct PrayerIslandBar: View {
   ///
   /// Starting a reading and ending one are single movements, because there is
   /// nothing to open or shut.
+  /// Snaps every part of the chrome to where it belongs, now, with no animation
+  /// and nothing in flight.
+  ///
+  /// For arriving rather than for changing. A reading that is already running
+  /// when this view is built has not just started — the phone was turned, or the
+  /// screen was rebuilt — and replaying the entrance would claim something
+  /// happened that did not. So the pill is simply out, or simply in.
+  ///
+  /// Always collapsed, never the sheet. The panel is transient by nature: it
+  /// closes when a control is used and when the page behind it is tapped, and
+  /// turning the phone is at least as clear a sign of being done with it.
+  private func settle() {
+    stageWork?.cancel()
+    swapWork?.cancel()
+    crossWork?.cancel()
+    stageWork = nil
+    swapWork = nil
+    crossWork = nil
+
+    isSheet = false
+    showsSheet = false
+    openness = 0
+    bulge = 0
+    swap = 0
+    pullX = 0
+    pullY = 0
+    willFling = false
+
+    travel = isActive ? 1 : 0
+  }
+
   private func retarget() {
     stageWork?.cancel()
     stageWork = nil

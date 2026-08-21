@@ -282,6 +282,15 @@ public struct PrayerScreen: View {
     // And where its buttons land. Attached beside the watch remote above,
     // because they are the same kind of thing: something outside the app
     // reaching this one screen, through writes only.
+    // The island chrome only exists upright, and the sheet is the one piece of
+    // its state this screen holds. Shut it as the phone is turned, so that the
+    // chrome rebuilt on the way back cannot come up believing a panel is open
+    // that nothing is drawing.
+    .onValueChange(docksToIsland) {
+      if !docksToIsland {
+        isIslandOpen = false
+      }
+    }
     .onAppear { PrayerReadingControl.shared.attach(readingControlHandle) }
     .onDisappear { PrayerReadingControl.shared.attach(nil) }
     .onDisappear(perform: PrayerReadingActivity.end)
