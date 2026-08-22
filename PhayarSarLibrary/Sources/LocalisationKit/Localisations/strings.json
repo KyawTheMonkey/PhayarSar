@@ -590,5 +590,25 @@
   "playback_speed": {
     "En": "Speed",
     "Mm": "အမြန်နှုန်း"
+  },
+  "meditation_empty_title": {
+    "En": "No meditations yet",
+    "Mm": "တရားထိုင်မှတ်တမ်း မရှိသေးပါ"
+  },
+  "meditation_empty_message": {
+    "En": "Sessions you sit will be kept here.",
+    "Mm": "ထိုင်ခဲ့သော တရားထိုင်ချိန်များကို ဤနေရာတွင် သိမ်းထားပါမည်။"
+  },
+  "meditation_start_session": {
+    "En": "Start a session",
+    "Mm": "တရားထိုင်ရန် စတင်မည်"
+  },
+  "meditation_coming_soon_title": {
+    "En": "Coming soon",
+    "Mm": "မကြာမီ ရောက်ရှိလာမည်"
+  },
+  "meditation_coming_soon_message": {
+    "En": "Guided sessions are being prepared. They will appear here as soon as they are ready.",
+    "Mm": "လမ်းညွှန်တရားထိုင်ခြင်းများကို ပြင်ဆင်နေပါသည်။ အဆင်သင့်ဖြစ်သည်နှင့် ဤနေရာတွင် ပေါ်လာပါမည်။"
   }
 }

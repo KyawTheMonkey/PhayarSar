@@ -8,6 +8,7 @@
 import DesignKit
 import EnvironmentKit
 import HomeKit
+import MeditationKit
 import SettingsKit
 import SwiftUI
 
@@ -94,6 +95,8 @@ struct AppTabView: View {
     switch tab {
     case .home:
       HomeScreen()
+    case .meditation:
+      MeditationScreen()
     case .settings:
       SettingsScreen()
     default:

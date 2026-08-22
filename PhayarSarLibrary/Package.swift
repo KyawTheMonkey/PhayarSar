@@ -51,6 +51,10 @@ let package = Package(
       targets: ["MiscKit"]
     ),
     .library(
+      name: "MeditationKit",
+      targets: ["MeditationKit"]
+    ),
+    .library(
       name: "RemoteKit",
       targets: ["RemoteKit"]
     ),
@@ -150,6 +154,10 @@ let package = Package(
     ),
     .target(
       name: "MiscKit",
+      dependencies: ["EnvironmentKit", "DesignKit"]
+    ),
+    .target(
+      name: "MeditationKit",
       dependencies: ["EnvironmentKit", "DesignKit"]
     )
   ]
