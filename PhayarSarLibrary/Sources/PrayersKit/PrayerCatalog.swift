@@ -20,7 +20,12 @@ public struct PrayerSection: Identifiable, Hashable, Sendable {
 private struct PrayerManifest: Decodable {
   struct Category: Decodable {
     let id: String
-    let prayers: [String]
+    let prayers: [Entry]
+  }
+
+  struct Entry: Decodable {
+    let file: String
+    let cover: String?
   }
 
   let categories: [Category]
@@ -35,8 +40,9 @@ private struct PrayerManifest: Decodable {
 /// ```
 ///
 /// The taxonomy lives in `Prayers/manifest.json`, which maps each category to an
-/// ordered list of prayer *file names* — the same strings
-/// ``PrayerLoader/prayer(named:)`` takes. File names rather than ``Prayer/id``
+/// ordered list of entries pairing a prayer `file` with a `cover` asset name.
+/// File names are the same strings ``PrayerLoader/prayer(named:)`` takes,
+/// rather than ``Prayer/id``
 /// because the ids are a mix of Burmese and romanised spellings, while the file
 /// names are uniform.
 ///
@@ -54,6 +60,7 @@ public final class PrayerCatalog: @unchecked Sendable {
   private let loader: PrayerLoader
   private let bundle: Bundle
   private var cached: [PrayerSection]?
+  private var coverAssets: [Prayer.ID: String] = [:]
   private var idIndex: [Prayer.ID: Prayer]?
   private var ordered: [Prayer]?
   private let cacheQueue = DispatchQueue(label: "com.phayarsar.prayers.catalog")
@@ -83,9 +90,24 @@ public final class PrayerCatalog: @unchecked Sendable {
       return cached
     }
 
-    let sections = loadSections()
-    cacheQueue.sync { cached = sections }
-    return sections
+    let loaded = loadSections()
+    cacheQueue.sync {
+      coverAssets = loaded.covers
+      cached = loaded.sections
+    }
+    return loaded.sections
+  }
+
+  /// Artwork belongs to the catalog, not the recitable JSON or persisted
+  /// configuration. Resolving manifest filenames to IDs while loading keeps
+  /// callers from assuming those two namespaces are interchangeable.
+  ///
+  /// Missing artwork leaves a prayer readable; the image view draws a neutral
+  /// placeholder when an entry has no cover. The sections and cover index are
+  /// published under the same lock so a cached section never precedes its art.
+  public func coverAssetName(for prayerID: Prayer.ID) -> String? {
+    _ = sections()
+    return cacheQueue.sync { coverAssets[prayerID] }
   }
 
   /// Every prayer in catalog order, flattened across sections.
@@ -134,22 +156,30 @@ public final class PrayerCatalog: @unchecked Sendable {
     return index[id]
   }
 
-  private func loadSections() -> [PrayerSection] {
+  private func loadSections() -> (sections: [PrayerSection], covers: [Prayer.ID: String]) {
     guard
       let url = bundle.url(forResource: Self.manifestResourceName, withExtension: "json"),
       let data = try? Data(contentsOf: url),
       let manifest = try? JSONDecoder().decode(PrayerManifest.self, from: data)
     else {
-      return []
+      return ([], [:])
     }
 
-    return manifest.categories.compactMap { entry in
+    var covers: [Prayer.ID: String] = [:]
+    let sections = manifest.categories.compactMap { entry -> PrayerSection? in
       guard let category = PrayerCategory(rawValue: entry.id) else { return nil }
 
-      let prayers = entry.prayers.compactMap { try? loader.prayer(named: $0) }
+      let prayers = entry.prayers.compactMap { item -> Prayer? in
+        guard let prayer = try? loader.prayer(named: item.file) else { return nil }
+        if let cover = item.cover {
+          covers[prayer.id] = cover
+        }
+        return prayer
+      }
       guard !prayers.isEmpty else { return nil }
 
       return PrayerSection(category: category, prayers: prayers)
     }
+    return (sections, covers)
   }
 }

@@ -3,65 +3,167 @@
     {
       "id": "precepts",
       "prayers": [
-        "သြကာသ",
-        "သရဏဂုံ",
-        "သီလတောင်း",
-        "ငါးပါးသီလ",
-        "ရှစ်ပါးသီလ",
-        "ဆယ်ပါးသီလ",
-        "အမျှဝေ",
-        "စိန်ရောင်ခြည်",
-        "နတ်ပင့်"
+        {
+          "file": "သြကာသ",
+          "cover": "PrayerCover-okasa"
+        },
+        {
+          "file": "သရဏဂုံ",
+          "cover": "PrayerCover-saranagamana"
+        },
+        {
+          "file": "သီလတောင်း",
+          "cover": "PrayerCover-requesting-precepts"
+        },
+        {
+          "file": "ငါးပါးသီလ",
+          "cover": "PrayerCover-five-precepts"
+        },
+        {
+          "file": "ရှစ်ပါးသီလ",
+          "cover": "PrayerCover-eight-precepts"
+        },
+        {
+          "file": "ဆယ်ပါးသီလ",
+          "cover": "PrayerCover-ten-precepts"
+        },
+        {
+          "file": "အမျှဝေ",
+          "cover": "PrayerCover-sharing-merit"
+        },
+        {
+          "file": "စိန်ရောင်ခြည်",
+          "cover": "PrayerCover-diamond-radiance"
+        },
+        {
+          "file": "နတ်ပင့်",
+          "cover": "PrayerCover-invitation-to-devas"
+        }
       ]
     },
     {
       "id": "virtues",
       "prayers": [
-        "ဘုရားဂုဏ်တော်",
-        "တရားဂုဏ်တော်",
-        "သံဃာဂုဏ်တော်",
-        "ဂုဏ်တော်ကွန်ချာ",
-        "သမ္ဗုဒ္ဓေ",
-        "ရှင်သီဝလိ"
+        {
+          "file": "ဘုရားဂုဏ်တော်",
+          "cover": "PrayerCover-buddha-virtues"
+        },
+        {
+          "file": "တရားဂုဏ်တော်",
+          "cover": "PrayerCover-dhamma-virtues"
+        },
+        {
+          "file": "သံဃာဂုဏ်တော်",
+          "cover": "PrayerCover-sangha-virtues"
+        },
+        {
+          "file": "ဂုဏ်တော်ကွန်ချာ",
+          "cover": "PrayerCover-net-of-virtues"
+        },
+        {
+          "file": "သမ္ဗုဒ္ဓေ",
+          "cover": "PrayerCover-sambuddhe"
+        },
+        {
+          "file": "ရှင်သီဝလိ",
+          "cover": "PrayerCover-sivali"
+        }
       ]
     },
     {
       "id": "parittas",
       "prayers": [
-        "မင်္ဂလသုတ်",
-        "ရတနသုတ်",
-        "မေတ္တသုတ်",
-        "ခန္ဓသုတ်",
-        "မောရသုတ်",
-        "ဝဋ္ဋသုတ်",
-        "ဓဇဂ္ဂသုတ်",
-        "အာဋာနာဋိယသုတ်",
-        "အင်္ဂုလိမာလသုတ်",
-        "ဗောဇ္ဈင်္ဂသုတ်",
-        "ပုဗ္ဗဏှသုတ်"
+        {
+          "file": "မင်္ဂလသုတ်",
+          "cover": "PrayerCover-mangala"
+        },
+        {
+          "file": "ရတနသုတ်",
+          "cover": "PrayerCover-ratana"
+        },
+        {
+          "file": "မေတ္တသုတ်",
+          "cover": "PrayerCover-metta"
+        },
+        {
+          "file": "ခန္ဓသုတ်",
+          "cover": "PrayerCover-khanda"
+        },
+        {
+          "file": "မောရသုတ်",
+          "cover": "PrayerCover-mora"
+        },
+        {
+          "file": "ဝဋ္ဋသုတ်",
+          "cover": "PrayerCover-vatta"
+        },
+        {
+          "file": "ဓဇဂ္ဂသုတ်",
+          "cover": "PrayerCover-dhajagga"
+        },
+        {
+          "file": "အာဋာနာဋိယသုတ်",
+          "cover": "PrayerCover-atanatiya"
+        },
+        {
+          "file": "အင်္ဂုလိမာလသုတ်",
+          "cover": "PrayerCover-angulimala"
+        },
+        {
+          "file": "ဗောဇ္ဈင်္ဂသုတ်",
+          "cover": "PrayerCover-bojjhanga"
+        },
+        {
+          "file": "ပုဗ္ဗဏှသုတ်",
+          "cover": "PrayerCover-pubbanha"
+        }
       ]
     },
     {
       "id": "protective",
       "prayers": [
-        "မစ္ဆရာဇသုတ်",
-        "မဟာသမယသုတ်"
+        {
+          "file": "မစ္ဆရာဇသုတ်",
+          "cover": "PrayerCover-maccharaja"
+        },
+        {
+          "file": "မဟာသမယသုတ်",
+          "cover": "PrayerCover-mahasamaya"
+        }
       ]
     },
     {
       "id": "discourses",
       "prayers": [
-        "ဓမ္မစကြာသုတ်",
-        "အနတ္တလက္ခဏသုတ်",
-        "ပဋ္ဌာန်းအကျဥ်း",
-        "ပဋ္ဌာန်းအကျယ်"
+        {
+          "file": "ဓမ္မစကြာသုတ်",
+          "cover": "PrayerCover-dhammacakka"
+        },
+        {
+          "file": "အနတ္တလက္ခဏသုတ်",
+          "cover": "PrayerCover-anattalakkhana"
+        },
+        {
+          "file": "ပဋ္ဌာန်းအကျဥ်း",
+          "cover": "PrayerCover-patthana-short"
+        },
+        {
+          "file": "ပဋ္ဌာန်းအကျယ်",
+          "cover": "PrayerCover-patthana-full"
+        }
       ]
     },
     {
       "id": "metta",
       "prayers": [
-        "ဆယ်မျက်နှာမ္မေတ္တာပွား",
-        "မေတ္တာသုတ်လာမ္မေတ္တာပွား"
+        {
+          "file": "ဆယ်မျက်နှာမ္မေတ္တာပွား",
+          "cover": "PrayerCover-metta-ten-directions"
+        },
+        {
+          "file": "မေတ္တာသုတ်လာမ္မေတ္တာပွား",
+          "cover": "PrayerCover-metta-practice"
+        }
       ]
     }
   ]

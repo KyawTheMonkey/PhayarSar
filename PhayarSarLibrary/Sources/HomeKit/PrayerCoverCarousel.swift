@@ -130,12 +130,14 @@ enum PrayerCoverMetrics {
 
 /// One prayer's cover art, standing on its own reflection.
 ///
-/// A plain grey square until real artwork exists. The reflection hangs below the
-/// cover as an overlay rather than sitting under it in a stack, so the view's
+/// The reflection hangs below the cover as an overlay rather than sitting
+/// under it in a stack, so the view's
 /// layout box stays the cover alone — which keeps the carousel's rotations
 /// pivoting about the middle of the art and not about the middle of art plus
 /// floor.
 struct PrayerCover: View {
+  let prayerID: Prayer.ID?
+
   var body: some View {
     face
       .overlay(alignment: .bottom) {
@@ -147,16 +149,15 @@ struct PrayerCover: View {
 
   /// The artwork, with nothing on it.
   private var art: some View {
-    RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous)
-      .fill(AppColor.grey300)
+    PrayerCoverImage(prayerID: prayerID)
       .frame(width: PrayerCoverMetrics.size, height: PrayerCoverMetrics.size)
+      .clipShape(RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous))
   }
 
   private var face: some View {
     art
-      // The covers in the wall overlap by design, and until there is real
-      // artwork they are all the same flat grey — so without a lit edge to
-      // separate one from the next the whole stack reads as a single shape.
+      // A lit sleeve edge keeps overlapping covers distinct where their
+      // artwork happens to share the same background colour.
       .overlay(
         RoundedRectangle(cornerRadius: PrayerCoverMetrics.cornerRadius, style: .continuous)
           .strokeBorder(.white.opacity(0.55), lineWidth: 1)
@@ -256,7 +257,7 @@ struct PrayerCoverCarousel: View {
     } else {
       // The single cover this falls back to is always the selected one, so it is
       // always the one a tap opens.
-      PrayerCover()
+      PrayerCover(prayerID: selectedID)
         .frame(height: PrayerCoverMetrics.height)
         .onTapGesture(perform: onOpen)
     }
@@ -378,7 +379,7 @@ private struct PagingCovers: View {
           // nothing to hold; revisit if the covers become downloaded images.
           HStack(spacing: PrayerCoverMetrics.spacing) {
             ForEach(cells) { cell in
-              PrayerCover()
+              PrayerCover(prayerID: cell.prayer.id)
                 // Only the front cover is measured, and only while it is the
                 // front cover — one reader in the strip rather than one per
                 // cover, all but one of which would be reporting about a cover

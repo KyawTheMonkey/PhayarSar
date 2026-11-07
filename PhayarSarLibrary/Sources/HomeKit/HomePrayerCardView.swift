@@ -5,6 +5,8 @@ import SwiftUI
 
 /// Layout constants for `HomePrayerCardView`.
 private enum HomePrayerCardMetrics {
+  static let coverSize: CGFloat = 46
+  static let coverCornerRadius: CGFloat = 12
   /// Space above and below a row's content. Rows own their own vertical rhythm,
   /// so the enclosing section is handed zero vertical content insets — see
   /// `HomeScreen.PrayersContent()`. Between two rows this reads as 12 above and
@@ -46,9 +48,9 @@ struct HomePrayerCardView: View {
       // margin open the prayer too.
       Button(action: onTap) {
         HStack(spacing: 12) {
-          RoundedRectangle(cornerRadius: 12)
-            .fill(Color.gray)
-            .frame(width: 46, height: 46)
+          PrayerCoverImage(prayerID: prayer.id)
+            .frame(width: HomePrayerCardMetrics.coverSize, height: HomePrayerCardMetrics.coverSize)
+            .clipShape(RoundedRectangle(cornerRadius: HomePrayerCardMetrics.coverCornerRadius))
 
           VStack(alignment: .leading, spacing: 8) {
             Text(name)
