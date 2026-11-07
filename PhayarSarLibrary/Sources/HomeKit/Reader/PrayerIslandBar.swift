@@ -543,7 +543,10 @@ struct PrayerIslandBar: View {
         // the window hands every other touch straight back to the page.
         if isOpen {
           Color.black.opacity(PrayerIslandMetrics.scrimOpacity)
-            .frame(width: bounds.width, height: bounds.height)
+            // The controls keep the bottom safe area, but their backdrop must
+            // cover the home-indicator region too. Let the colour expand rather
+            // than fixing it to the geometry's safe-area-constrained height.
+            .ignoresSafeArea(.container)
             .contentShape(Rectangle())
             .onTapGesture { setOpen(false) }
             .transition(.opacity)
@@ -658,9 +661,8 @@ struct PrayerIslandBar: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
-    // The window this is drawn in has no navigation bar and no safe area worth
-    // respecting — it exists precisely to be the whole screen. See
-    // `PrayerIslandPresenter`.
+    // Controls extend through the top safe area to reach the island. Keep the
+    // other edges available for system bars; only the scrim fills every edge.
     .ignoresSafeArea(edges: .top)
     // The glyph changes under the finger that changed it, so the click belongs
     // to the control rather than to the page starting or stopping.

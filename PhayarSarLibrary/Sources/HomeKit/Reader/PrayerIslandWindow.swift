@@ -168,7 +168,8 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
       } else {
         let host = UIHostingController(rootView: bar)
         host.view.backgroundColor = .clear
-        // Only the top edge is intentionally extended by the bar itself.
+        // The island controls extend through the top edge; their full-screen
+        // scrim ignores the remaining container safe area independently.
         // Keep the host's other safe-area regions intact, including a system
         // bar that may arrive during the next fold or rotation.
         host.view.insetsLayoutMarginsFromSafeArea = false
