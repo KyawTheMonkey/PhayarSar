@@ -603,12 +603,24 @@
     "En": "Start a session",
     "Mm": "တရားထိုင်ရန် စတင်မည်"
   },
-  "meditation_coming_soon_title": {
-    "En": "Coming soon",
-    "Mm": "မကြာမီ ရောက်ရှိလာမည်"
+  "meditation_style_incense_stick": {
+    "En": "Incense stick",
+    "Mm": "ထီးမီးတိုင်"
   },
-  "meditation_coming_soon_message": {
-    "En": "Guided sessions are being prepared. They will appear here as soon as they are ready.",
-    "Mm": "လမ်းညွှန်တရားထိုင်ခြင်းများကို ပြင်ဆင်နေပါသည်။ အဆင်သင့်ဖြစ်သည်နှင့် ဤနေရာတွင် ပေါ်လာပါမည်။"
+  "meditation_style_incense_stick_summary": {
+    "En": "Sit for as long as one stick burns.",
+    "Mm": "ထီးမီးတိုင် တစ်ချောင်း ကုန်သည်အထိ ထိုင်ပါ။"
+  },
+  "meditation_style_candle_stick": {
+    "En": "Candle stick",
+    "Mm": "ဖယောင်းတိုင်"
+  },
+  "meditation_style_candle_stick_summary": {
+    "En": "Rest your eyes on a single flame.",
+    "Mm": "မီးလျှံ တစ်ခုတည်းကို စူးစိုက်ကြည့်ပါ။"
+  },
+  "meditation_creator_unavailable": {
+    "En": "Meditation is available on iPhone and iPad.",
+    "Mm": "တရားထိုင်ခြင်းကို iPhone နှင့် iPad တွင်သာ အသုံးပြုနိုင်ပါသည်။"
   }
 }

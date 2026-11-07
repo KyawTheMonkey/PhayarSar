@@ -26,11 +26,7 @@ public enum MeditationScreenMetrics {
 public struct MeditationScreen: View {
   @ObserveInjection private var injectionObserver
 
-  /// The CTA has nowhere to go until the feature lands. Saying so in an alert
-  /// keeps the button honest — it does something, and what it does is tell the
-  /// truth. Replace this with a `navigator.navigate(to:)` when the session
-  /// screen exists; nothing else on this screen has to change.
-  @State private var isShowingComingSoon = false
+  @EnvironmentObject private var navigator: AppNavigatorModel
 
   public init() {}
 
@@ -47,7 +43,7 @@ public struct MeditationScreen: View {
           message: L10n.meditationEmptyMessage,
           actionTitle: L10n.meditationStartSession
         ) {
-          isShowingComingSoon = true
+          navigator.present(.meditationSessionCreator)
         }
         .appHorizontalInset()
         .offset(y: MeditationScreenMetrics.verticalOffset)
@@ -55,11 +51,6 @@ public struct MeditationScreen: View {
       }
     }
     .appBackground()
-    .alert(L10n.meditationComingSoonTitle, isPresented: $isShowingComingSoon) {
-      Button(L10n.close, role: .cancel) {}
-    } message: {
-      Text(L10n.meditationComingSoonMessage)
-    }
     .enableInjection()
   }
 }

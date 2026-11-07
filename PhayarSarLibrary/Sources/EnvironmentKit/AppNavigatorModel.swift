@@ -134,10 +134,20 @@ public enum SheetDestination: Identifiable, Hashable, Codable {
   /// a back button.
   case profile
 
+  /// The meditation session creator — one style per screen, swiped through.
+  ///
+  /// A sheet rather than a push because starting a session is a detour off the
+  /// meditation tab that ends in either a session or nothing, and a sheet is
+  /// the shape of a decision the user can back out of. It carries no id: the
+  /// styles it offers are `MeditationStyle`'s cases, not stored records.
+  case meditationSessionCreator
+
   public var id: String {
     switch self {
     case .profile:
       return "profile"
+    case .meditationSessionCreator:
+      return "meditationSessionCreator"
     }
   }
 }

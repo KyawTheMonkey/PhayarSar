@@ -8,6 +8,7 @@
 import AuthKit
 import EnvironmentKit
 import HomeKit
+import MeditationKit
 import SwiftUI
 
 /// Turns a `RouterDestination` into the screen it names.
@@ -50,6 +51,13 @@ struct SheetView: View {
         ProfileScreen()
       }
       .presentationDragIndicator(.visible)
+
+    case .meditationSessionCreator:
+      // Bare, unlike the profile sheet. No `NavigationStack` — this screen has
+      // no title and no bar, so a stack would contribute nothing but an empty
+      // one — and no presentation modifiers, because the creator sets its own
+      // from inside. See `creatorSheetPresentation()`.
+      MeditationSessionCreatorScreen()
     }
   }
 }

@@ -548,6 +548,18 @@ struct PrayerIslandBar: View {
   /// replaces it rather than landing on top of it.
   @State private var swapWork: DispatchWorkItem?
 
+  /// Whether shutting the sheet should start the reading again.
+  ///
+  /// Set when opening the sheet is what stopped it, and cleared the moment the
+  /// reader stops it themselves — the transport buttons and a reading that ends
+  /// under the sheet all clear it. So the pause an open costs is returned on the
+  /// way out, and a pause the reader asked for is not undone behind their back.
+  ///
+  /// `@State` rather than something derived from ``state``, because the answer
+  /// has to survive the change: by the time the sheet is shutting, the only
+  /// record that the reading *was* running is this flag.
+  @State private var resumeOnClose = false
+
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   private var isPlaying: Bool { state == .playing }
@@ -708,7 +720,12 @@ struct PrayerIslandBar: View {
     // A reading that ends while the sheet is down leaves the sheet with nothing
     // to control. Shut rather than left hanging, so the next reading opens from
     // the pill the reader last saw it as.
-    .onValueChange(state) { if state == .stopped { setOpen(false) } }
+    .onValueChange(state) {
+      if state == .stopped {
+        resumeOnClose = false
+        setOpen(false)
+      }
+    }
     // Put straight into the state it should already be in, without animating
     // into it.
     //
@@ -729,10 +746,20 @@ struct PrayerIslandBar: View {
       // missed. It is the same argument `PrayerViewController` already makes for
       // pausing when the app stops being the active one.
       //
-      // Nothing resumes on the way out. They came here to intervene, so the page
-      // waits until they say otherwise — and the pill's glyph is showing play by
-      // then, which is one tap away.
-      if isOpen, isPlaying {
+      // And shutting it gives the reading back, because that pause was the
+      // chrome's doing rather than the reader's. An earlier version left the
+      // page stopped and one tap away, which read as the sheet having taken
+      // something: a reader who opened it to change the pace had to ask twice
+      // for a reading they never ended. Only the transport buttons end it now —
+      // see ``intervening(_:)`` — so stop still stops, and pause still pauses.
+      if isOpen {
+        resumeOnClose = isPlaying
+
+        if isPlaying {
+          onToggle()
+        }
+      } else if resumeOnClose {
+        resumeOnClose = false
         onToggle()
       }
 
@@ -1212,7 +1239,7 @@ struct PrayerIslandBar: View {
       control(
         systemImage: isPlaying ? "pause.fill" : "play.fill",
         label: isPlaying ? L10n.pausePrayer : L10n.playPrayer,
-        action: dismissing(onToggle)
+        action: intervening(onToggle)
       )
       .frame(width: PrayerIslandMetrics.controlSize)
 
@@ -1223,7 +1250,7 @@ struct PrayerIslandBar: View {
         systemImage: "stop.fill",
         label: L10n.stopPrayer,
         tint: AppColor.error,
-        action: dismissing(onStop)
+        action: intervening(onStop)
       )
       .frame(width: PrayerIslandMetrics.controlSize)
     }
@@ -1335,6 +1362,22 @@ struct PrayerIslandBar: View {
   /// ``setOpen(_:)`` ignores a request for the state it is already in.
   private func dismissing(_ change: @escaping () -> Void) -> () -> Void {
     {
+      change()
+      setOpen(false)
+    }
+  }
+
+  /// The same, for a control that decides whether the reading runs.
+  ///
+  /// Dismissing alone would let the sheet's own pause be undone a moment later
+  /// by ``resumeOnClose`` — the reader would tap pause, watch the sheet go, and
+  /// hear the prayer carry on. Anything that settles the question of playing or
+  /// not settles it for good, so the flag goes first and the shut has nothing
+  /// left to restore. Pace is not one of those: choosing a speed says how to
+  /// read, not whether to.
+  private func intervening(_ change: @escaping () -> Void) -> () -> Void {
+    {
+      resumeOnClose = false
       change()
       setOpen(false)
     }
