@@ -69,7 +69,15 @@ public struct KloudStore<Entity: KloudEntity> {
   public func insert(_ configure: (Entity) -> Void) throws -> Entity {
     let object = try make()
     configure(object)
-    try save()
+    do {
+      try save()
+    } catch {
+      // A failed creation must not remain pending and appear when an unrelated
+      // feature saves later, especially after its creator has been cancelled.
+      context.delete(object)
+      context.processPendingChanges()
+      throw error
+    }
     return object
   }
 
