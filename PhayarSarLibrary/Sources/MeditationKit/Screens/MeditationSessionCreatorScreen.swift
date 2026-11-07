@@ -30,7 +30,7 @@ public struct MeditationSessionCreatorScreen: View {
 
   public var body: some View {
     MeditationStyleCollection()
-      .ignoresSafeArea()
+      .ignoresSafeArea(edges: .vertical)
       .creatorSheetPresentation()
       .enableInjection()
   }

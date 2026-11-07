@@ -82,14 +82,18 @@ final class MeditationStyleCell: UICollectionViewCell {
     stack.translatesAutoresizingMaskIntoConstraints = false
     contentView.addSubview(stack)
 
+    // The field remains full bleed, but a vertical system bar can reserve
+    // just one side of the cell. Centre and constrain the readable content
+    // inside its own safe area so it follows that asymmetry while resizing.
+    let safeArea = contentView.safeAreaLayoutGuide
     NSLayoutConstraint.activate([
-      stack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+      stack.centerYAnchor.constraint(equalTo: safeArea.centerYAnchor),
       stack.leadingAnchor.constraint(
-        equalTo: contentView.leadingAnchor,
+        equalTo: safeArea.leadingAnchor,
         constant: MeditationStyleCellMetrics.horizontalInset
       ),
       stack.trailingAnchor.constraint(
-        equalTo: contentView.trailingAnchor,
+        equalTo: safeArea.trailingAnchor,
         constant: -MeditationStyleCellMetrics.horizontalInset
       ),
     ])

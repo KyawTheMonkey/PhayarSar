@@ -213,9 +213,9 @@ public struct HomeScreen: View {
       viewModel.onAppear()
     }
     .background(AppBackgroundGradient())
-    .safeAreaInset(edge: .top, content: {
+    .homeNavigationBar {
       HomeNavView(progress: progress, stretch: stretch, docked: docked)
-    })
+    }
     // Above the bar, so the title stays legible once it lands on it. Applied
     // after `safeAreaInset` so it draws over the bar rather than under it.
     .overlay {
@@ -226,7 +226,7 @@ public struct HomeScreen: View {
         navBottom: navBottom,
         centreX: contentFrame.midX
       )
-      .ignoresSafeArea()
+      .ignoresSafeArea(edges: .top)
     }
     .hideNavBar()
     .enableInjection()
@@ -266,4 +266,17 @@ public struct HomeScreen: View {
     HomeScreen()
   }
   .environmentObject(AppNavigatorModel())
+}
+
+private extension View {
+  /// Let the system reserve the custom bar's space alongside a vertical status
+  /// area too. The older inset presentation keeps the same content placement.
+  @ViewBuilder
+  func homeNavigationBar<Bar: View>(@ViewBuilder content: () -> Bar) -> some View {
+    if #available(iOS 26.0, macOS 26.0, *) {
+      safeAreaBar(edge: .top, content: content)
+    } else {
+      safeAreaInset(edge: .top, content: content)
+    }
+  }
 }
