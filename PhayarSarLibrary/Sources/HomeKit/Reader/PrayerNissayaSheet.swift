@@ -216,6 +216,8 @@ final class PrayerNissayaSheet: UIView {
   private var restingFrame: CGRect = .zero
 
   private var animator: UIViewPropertyAnimator?
+  private var isReadyForLayout = false
+  private var hasArrived = false
 
   /// Called once the sheet has left the screen, whether it was dismissed by the
   /// reader or torn down from outside.
@@ -260,7 +262,7 @@ final class PrayerNissayaSheet: UIView {
     panel.addSubview(clipper)
 
     scrollView.showsVerticalScrollIndicator = false
-    scrollView.contentInsetAdjustmentBehavior = .never
+    scrollView.contentInset.bottom = PrayerNissayaSheetMetrics.contentBottomInset
     // Off until the sheet has arrived. A scroll view that can be dragged while
     // its own panel is still moving takes the drag that was meant for the
     // panel's grabber.
@@ -390,17 +392,9 @@ final class PrayerNissayaSheet: UIView {
     )
     meaning.accessibilityLabel = "\(L10n.nissayaMeaning), \(text)"
 
+    isReadyForLayout = true
+    setNeedsLayout()
     layoutIfNeeded()
-
-    // Measured at the width the sheet will actually be. The content cannot be
-    // measured against a panel that has no width yet, and the panel has none
-    // until it is given a frame.
-    panel.frame = bounds
-    panel.layoutIfNeeded()
-
-    scrollView.contentInset.bottom = PrayerNissayaSheetMetrics.contentBottomInset
-      + host.safeAreaInsets.bottom
-    restingFrame = measureRestingFrame()
     panel.frame = offscreenFrame
     // Again at the height it will actually open at, so that the reveal below is
     // measured against the sheet's own bounds rather than the screen's.
@@ -417,9 +411,8 @@ final class PrayerNissayaSheet: UIView {
       // Otherwise the panel keeps every drag for itself, and a sheet short
       // enough to read whole can be pushed away from anywhere on it rather than
       // only by its grabber.
-      self.scrollView.isScrollEnabled =
-        self.scrollView.contentSize.height + self.scrollView.contentInset.bottom
-          > self.scrollView.bounds.height
+      self.hasArrived = true
+      self.updateScrolling()
 
       // The sheet has landed; now the line it was opened for is marked.
       self.markedLine?.revealMark()
@@ -432,6 +425,7 @@ final class PrayerNissayaSheet: UIView {
   /// Puts the sheet away.
   func dismiss() {
     animator?.stopAnimation(true)
+    hasArrived = false
     scrollView.isScrollEnabled = false
 
     let animator = PrayerNissayaSheetMetrics.travel
@@ -447,6 +441,53 @@ final class PrayerNissayaSheet: UIView {
 
     self.animator = animator
     animator.startAnimation()
+  }
+
+  // MARK: - Live layout
+
+  /// A fold changes both the panel's width and the text's height. Re-measure
+  /// against this sheet's own safe area on every layout, including inset-only
+  /// changes, and keep any downward drag at the same fraction of its travel.
+  /// The paper reaches the bottom; automatic scroll adjustment protects the
+  /// text from the home indicator without borrowing an ancestor's stale inset.
+  override func layoutSubviews() {
+    super.layoutSubviews()
+    guard isReadyForLayout else { return }
+
+    let previous = restingFrame
+    let travel = previous.isEmpty ? 0 :
+      (panel.frame.minY - previous.minY)
+        / (previous.height + PrayerNissayaSheetMetrics.shadowRadius)
+    let available = safeAreaLayoutGuide.layoutFrame
+
+    panel.frame = CGRect(
+      x: available.minX,
+      y: panel.frame.minY,
+      width: available.width,
+      height: previous.isEmpty ? bounds.height : panel.bounds.height
+    )
+    panel.layoutIfNeeded()
+    restingFrame = measureRestingFrame()
+    panel.frame = restingFrame.offsetBy(
+      dx: 0,
+      dy: travel * (restingFrame.height + PrayerNissayaSheetMetrics.shadowRadius)
+    )
+    panel.layoutIfNeeded()
+    scrollView.layoutIfNeeded()
+    content.layoutIfNeeded()
+    if hasArrived { updateScrolling() }
+  }
+
+  override func safeAreaInsetsDidChange() {
+    super.safeAreaInsetsDidChange()
+    setNeedsLayout()
+  }
+
+  private func updateScrolling() {
+    let insets = scrollView.adjustedContentInset
+    scrollView.isScrollEnabled =
+      measuredContentHeight(for: scrollView.bounds.width) + insets.top + insets.bottom
+        > scrollView.bounds.height
   }
 
   // MARK: - Drawing
@@ -514,15 +555,15 @@ final class PrayerNissayaSheet: UIView {
       return
     }
 
-    let visible = scrollView.bounds.height - scrollView.contentInset.bottom
+    let insets = scrollView.adjustedContentInset
+    let visible = scrollView.bounds.height - insets.bottom
     let overshoot = frame.maxY + PrayerNissayaSheetMetrics.markerRevealMargin - visible
 
     guard overshoot > 0 else { return }
 
-    let limit = scrollView.contentSize.height + scrollView.contentInset.bottom
+    let limit = measuredContentHeight(for: scrollView.bounds.width) + insets.bottom
       - scrollView.bounds.height
-
-    scrollView.contentOffset.y = max(0, min(overshoot, limit))
+    scrollView.contentOffset.y = max(-insets.top, min(overshoot, limit))
   }
 
   /// The sheet's text: its own face and leading, in whichever ink the caller is
@@ -553,11 +594,35 @@ final class PrayerNissayaSheet: UIView {
   /// Where the sheet comes to rest: as tall as it needs to be, up to a limit,
   /// and sitting on the bottom of the screen.
   private func measureRestingFrame() -> CGRect {
-    let wanted = scrollView.contentSize.height + scrollView.contentInset.bottom
-    let limit = bounds.height * PrayerNissayaSheetMetrics.maximumHeightFraction
+    let insets = scrollView.adjustedContentInset
+    let available = safeAreaLayoutGuide.layoutFrame
+    let wanted = measuredContentHeight(for: available.width) + insets.top + insets.bottom
+    let limit = available.height * PrayerNissayaSheetMetrics.maximumHeightFraction
+      + safeAreaInsets.bottom
     let height = min(wanted, limit)
 
-    return CGRect(x: 0, y: bounds.height - height, width: bounds.width, height: height)
+    return CGRect(
+      x: available.minX,
+      y: bounds.maxY - height,
+      width: available.width,
+      height: height
+    )
+  }
+
+  /// Ask Auto Layout for the text's height at its actual width. A scroll view
+  /// can still report a zero contentSize during the first parent layout pass;
+  /// using it to size the parent collapsed the sheet to its bottom padding.
+  /// The fitting height also follows Burmese rewrapping immediately on a fold.
+  private func measuredContentHeight(for width: CGFloat) -> CGFloat {
+    let size = content.systemLayoutSizeFitting(
+      CGSize(
+        width: max(width - PrayerReaderMetrics.horizontalInset * 2, 0),
+        height: UIView.layoutFittingCompressedSize.height
+      ),
+      withHorizontalFittingPriority: .required,
+      verticalFittingPriority: .fittingSizeLevel
+    )
+    return PrayerNissayaSheetMetrics.contentTopInset + size.height
   }
 
   /// Where the sheet waits before it comes up, and where it goes back to.
