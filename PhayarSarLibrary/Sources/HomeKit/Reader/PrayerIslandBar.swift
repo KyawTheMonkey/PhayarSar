@@ -19,47 +19,32 @@ enum PrayerIslandMetrics {
 
   // MARK: Where it hangs
 
-  /// How far below the cutout the pill comes to rest.
-  ///
-  /// Fourteen rather than twelve, to leave room under the soft edge of the mask
-  /// — see ``maskSoftness``. A blurred edge needs somewhere to finish.
-  static let gap: CGFloat = 14
-
-  static var shutTop: CGFloat { AppDynamicIsland.cutoutBottom + gap }
+  /// The clearance below the window's top safe area. The safe area already
+  /// includes the hardware and its surrounding breathing room; adding the old
+  /// fourteen-point cutout gap here would count that space twice.
+  static let gap: CGFloat = 3
 
   // MARK: The island's stand-in
 
-  /// A capsule drawn over the cutout, so the hardware can appear to move.
+  /// An animation origin, deliberately not a measurement of the camera.
   ///
-  /// The island itself cannot be animated — it is a hole, not a view. But a
-  /// black capsule lying exactly over a black hole is indistinguishable from it,
-  /// and a black capsule slightly *larger* than the hole reads as the hole
-  /// having grown. That is the whole trick: this sits invisible on the hardware
-  /// until something needs to pass through it, swells to let that happen, and
-  /// springs back.
-  ///
-  /// Cut a shade inside the measured cutout at rest, because the error can only
-  /// be afforded in one direction. Smaller than the hole is invisible; larger is
-  /// a black rim around somebody's Dynamic Island.
-  static let proxyInset: CGFloat = 2
+  /// iPhone 18 Pro and older islands cannot share an exact covering capsule.
+  /// Keep the origin small and fade the chrome at rest so even a future cutout
+  /// narrower than this one cannot acquire a black rim from our overlay.
+  static let originSize = CGSize(width: 60, height: 16)
 
-  /// How far it swells while something is crossing. Wider than it is taller,
-  /// because the island's own animations are: it is a shape that stretches
-  /// sideways and barely thickens.
-  static let bulgeWidth: CGFloat = 24
-  static let bulgeHeight: CGFloat = 10
+  /// The stand-in swells only during a crossing. It is transparent at rest,
+  /// when only the real hardware should be visible.
+  static let bulgeWidth: CGFloat = 80
+  static let bulgeHeight: CGFloat = 28
 
-  static var cutoutCentre: CGFloat {
-    AppDynamicIsland.cutoutTop + AppDynamicIsland.cutoutSize.height / 2
-  }
-
-  static func proxy(in bounds: CGRect, bulge: CGFloat) -> CGRect {
-    let width = AppDynamicIsland.cutoutSize.width - proxyInset * 2 + bulgeWidth * bulge
-    let height = AppDynamicIsland.cutoutSize.height - proxyInset * 2 + bulgeHeight * bulge
+  static func proxy(in bounds: CGRect, topInset: CGFloat, bulge: CGFloat) -> CGRect {
+    let width = originSize.width + bulgeWidth * bulge
+    let height = originSize.height + bulgeHeight * bulge
 
     return CGRect(
       x: bounds.midX - width / 2,
-      y: cutoutCentre - height / 2,
+      y: bounds.minY + topInset / 2 - height / 2,
       width: width,
       height: height
     )
@@ -96,11 +81,9 @@ enum PrayerIslandMetrics {
 
   // MARK: Shut
 
-  /// The cutout's own width — the one measurement of the hardware this control
-  /// still borrows, and it borrows it for looks rather than for fit. Two objects
-  /// of the same width read as a pair; two of different widths read as one thing
-  /// and a coincidence.
-  static var shutWidth: CGFloat { AppDynamicIsland.cutoutSize.width }
+  /// Sized for the transport and verse count, independently of the hardware.
+  /// A smaller camera should not shrink either control's touch target.
+  static let shutWidth: CGFloat = 126
 
   static let shutHeight: CGFloat = 34
 
@@ -127,58 +110,25 @@ enum PrayerIslandMetrics {
   /// Out here rather than inside the view because the window needs it too — see
   /// ``PrayerIslandWindow/interactiveRect``, which is the only part of the
   /// screen that window will take a touch in.
-  static func shutRect(in bounds: CGRect) -> CGRect {
+  static func shutRect(in bounds: CGRect, topInset: CGFloat) -> CGRect {
     CGRect(
       x: bounds.midX - shutWidth / 2,
-      y: shutTop,
+      y: bounds.minY + topInset + gap,
       width: shutWidth,
       height: shutHeight
     )
   }
 
-  /// What the pill shrinks to while it is inside the island.
-  ///
-  /// Well inside the hardware on both axes, which it has to be: nothing masks
-  /// the pill any more, so being invisible at rest means genuinely fitting
-  /// within the hole. A capsule the cutout's own width tucked into the cutout's
-  /// own capsule is inside it by about a twentieth of a point at the place they
-  /// nearly meet — the two curves are almost the same curve — so it is cut down
-  /// until there is room to be wrong.
-  ///
-  /// Growing to full size on the way out is not a compromise, either. Something
-  /// squeezed through an opening should arrive larger than the gap it came from.
-  static let hiddenWidth: CGFloat = 100
-  static let hiddenHeight: CGFloat = 24
+  /// The same origin for the pill and the sheet, so their handoff agrees even
+  /// when the hardware's dimensions differ. Both shapes are transparent here.
+  static let seedHeight: CGFloat = originSize.height
 
-  static func hiddenRect(in bounds: CGRect) -> CGRect {
+  static func seed(in bounds: CGRect, topInset: CGFloat) -> CGRect {
     CGRect(
-      x: bounds.midX - hiddenWidth / 2,
-      y: cutoutCentre - hiddenHeight / 2,
-      width: hiddenWidth,
-      height: hiddenHeight
-    )
-  }
-
-  // MARK: The seed
-  /// The size the sheet grows out of and shrinks back into, sitting in the
-  /// cutout.
-  ///
-  /// Cut well inside the hardware on both axes. A shape the cutout's own width
-  /// tucked into the cutout's own capsule is inside it by about a twentieth of a
-  /// point at the place they nearly meet — the two curves are almost the same
-  /// curve — so any error in the measured hardware would show its shoulders
-  /// against the page. This is small enough to be safely invisible, which is all
-  /// it has to be: it is only ever on screen for the instant before the sheet
-  /// grows out of it.
-  static var seedWidth: CGFloat { shutWidth - 12 }
-  static var seedHeight: CGFloat { shutHeight - 8 }
-
-  static func seed(in bounds: CGRect) -> CGRect {
-    CGRect(
-      x: bounds.midX - seedWidth / 2,
-      y: AppDynamicIsland.cutoutTop + (AppDynamicIsland.cutoutSize.height - seedHeight) / 2,
-      width: seedWidth,
-      height: seedHeight
+      x: bounds.midX - originSize.width / 2,
+      y: bounds.minY + topInset / 2 - originSize.height / 2,
+      width: originSize.width,
+      height: originSize.height
     )
   }
 
@@ -198,29 +148,28 @@ enum PrayerIslandMetrics {
   /// Side margins when open.
   static let openInset: CGFloat = 12
 
-  /// The sheet hangs from the cutout's own top edge, because that is where the
-  /// pill has travelled back to before it opens. It covers the clock while it is
-  /// down, exactly as the system's own expanded island does.
-  static var openTop: CGFloat { AppDynamicIsland.cutoutTop }
+  /// A visual margin, not the camera's top edge. The sheet covers the status
+  /// area; its contents start below the actual safe area on each device.
+  static let openTop: CGFloat = 11
 
-  /// Fixed rather than intrinsic, so the growth has a number to animate to. The
-  /// title earns its one line by scaling instead.
-  static let openHeight: CGFloat = 152
+  /// Room for the title, progress and controls below the safe area. Added to
+  /// the device's top clearance so a deeper status area cannot squeeze them.
+  static let openBodyHeight: CGFloat = 108
 
   static let openRadius: CGFloat = 28
 
   /// How far below the sheet's own top edge anything may be drawn: past the
   /// hardware it has opened around, and a breath more.
-  static var openContentTop: CGFloat {
-    AppDynamicIsland.cutoutBottom - openTop + 8
+  static func openContentTop(topInset: CGFloat) -> CGFloat {
+    max(topInset - openTop, 0)
   }
 
-  static func sheet(in bounds: CGRect) -> CGRect {
+  static func sheet(in bounds: CGRect, topInset: CGFloat) -> CGRect {
     CGRect(
       x: openInset,
       y: openTop,
       width: max(bounds.width - openInset * 2, shutWidth),
-      height: openHeight
+      height: openContentTop(topInset: topInset) + openBodyHeight
     )
   }
 
@@ -428,27 +377,29 @@ enum PrayerIslandMetrics {
 /// as one swollen object, and the illusion cost more than it returned: the
 /// island is a live system control that grows under a touch, with no API to say
 /// when or by how much, so a shape sharing its edge is a shape that will
-/// eventually be caught out. This one hangs eight points clear and shares
-/// nothing but a width and a colour.
+/// eventually be caught out. This one follows the window's safe area, and its
+/// width belongs to its controls rather than to the camera.
 ///
-/// It has two states. Shut, it is a capsule the width of the cutout carrying the
+/// It has two states. Shut, it is a capsule below the cutout carrying the
 /// transport glyph and the verse the reading is on. Open, it is a sheet reaching
 /// nearly the full width of the screen with the prayer's name, the count again,
 /// and every control the bottom bar has. A tap anywhere on it but the pause
 /// button opens it; a tap anywhere off it shuts it again, and using any control
 /// inside it shuts it too.
 ///
-/// Between readings it waits inside the island's own outline, masked away, and
-/// travels down from behind it when a reading starts. Nothing is faded in or
-/// out as a whole: the mask has a soft edge shaped like the hardware, so the
-/// pill dissolves into the island rather than appearing in front of it — which
-/// is also why the entrance survives the cutout constants being a point or two
-/// off.
+/// Between readings it is transparent at an origin in the status area, and
+/// travels down from there when reading starts. The origin is only an animation
+/// anchor: the hardware has no public frame and changes between generations,
+/// so no resting shape relies on fitting inside it.
 ///
 /// Shown only where there is an island to hang from, and only while the phone is
 /// upright. Everywhere else ``PrayerPlaybackBar`` keeps the job it has always
 /// had. See ``AppDynamicIsland/docks(verticalSizeClass:)``.
 struct PrayerIslandBar: View {
+  /// Measured from the scene's app window before the overlay discards its safe
+  /// area. Shared with the window's touch rectangle so drawing and taps agree.
+  let topInset: CGFloat
+
   let state: PrayerPlaybackState
 
   /// How fast the page is reading itself.
@@ -508,8 +459,8 @@ struct PrayerIslandBar: View {
   /// closed again mid-flight replaces it rather than landing on top of it.
   @State private var stageWork: DispatchWorkItem?
 
-  /// How far the island's stand-in has swollen: 0 the hardware's own size, 1
-  /// open enough for something to pass through.
+  /// How far the island's stand-in has swollen: 0 transparent at the animation
+  /// origin, 1 open enough for something to pass through.
   @State private var bulge: CGFloat = 0
 
   /// The swell's own schedule — when to let go, and when to spring back. Its own
@@ -519,9 +470,8 @@ struct PrayerIslandBar: View {
   /// Whether the chrome is currently the sheet rather than the pill.
   ///
   /// Two shapes rather than one that changes, because each needs something the
-  /// other must not have. The pill is masked by the hardware's own outline so
-  /// that it can slide out from behind the island; the sheet must not be, because
-  /// it opens *around* the cutout and reaches above it.
+  /// other must not have. The pill travels below the status area; the sheet
+  /// opens around the cutout and reaches above it.
   /// The sheet also wants corners concentric with the display, which only a real
   /// shape in the hierarchy can strike — see ``sheetShape``.
   ///
@@ -584,8 +534,8 @@ struct PrayerIslandBar: View {
       // The size this layout was written for, whatever size the shape happens to
       // be at the moment. See the contents layer below.
       let natural = isSheet
-        ? PrayerIslandMetrics.sheet(in: bounds).size
-        : PrayerIslandMetrics.shutRect(in: bounds).size
+        ? PrayerIslandMetrics.sheet(in: bounds, topInset: topInset).size
+        : PrayerIslandMetrics.shutRect(in: bounds, topInset: topInset).size
 
       ZStack(alignment: .topLeading) {
         // Anywhere off the sheet shuts it, exactly as a tap outside the theme
@@ -602,32 +552,32 @@ struct PrayerIslandBar: View {
         // The black.
         //
         // Two branches, and neither is about looks — each can do something the
-        // other cannot. The pill has to be masked by the hardware's outline so
-        // it can slide out from behind the island; the sheet must *not* be,
-        // because it opens around the cutout and reaches above it. The sheet
-        // also wants corners concentric with the display, which only a real
+        // other cannot. The pill travels below the status area; the sheet
+        // opens around the cutout and reaches above it. The sheet also wants
+        // corners concentric with the display, which only a real
         // `ConcentricRectangle` in the hierarchy can strike.
         //
         // They hand over at the one moment they agree — see ``isSheet``.
         if isSheet {
           sheetShape
+            .opacity(Double(min(max(openness, 0), 1)))
             .frame(width: rect.width, height: rect.height)
             .modifier(PrayerIslandElastic(x: pullX, y: pullY, size: rect.size))
             .offset(x: rect.minX, y: rect.minY)
             .allowsHitTesting(false)
         } else {
-          // The island itself, standing in for the hardware so that it can
-          // appear to swell and let the pill through. Invisible unless it is
-          // doing that — see ``PrayerIslandMetrics/proxy(in:bulge:)``.
+          // Only visible during a crossing. A guessed hardware capsule left
+          // opaque at rest produced a black lip on the smaller iPhone island.
           Capsule(style: .circular)
             .fill(PrayerIslandMetrics.ground)
+            .opacity(Double(min(max(bulge, 0), 1)))
             .frame(
-              width: PrayerIslandMetrics.proxy(in: bounds, bulge: bulge).width,
-              height: PrayerIslandMetrics.proxy(in: bounds, bulge: bulge).height
+              width: PrayerIslandMetrics.proxy(in: bounds, topInset: topInset, bulge: bulge).width,
+              height: PrayerIslandMetrics.proxy(in: bounds, topInset: topInset, bulge: bulge).height
             )
             .offset(
-              x: PrayerIslandMetrics.proxy(in: bounds, bulge: bulge).minX,
-              y: PrayerIslandMetrics.proxy(in: bounds, bulge: bulge).minY
+              x: PrayerIslandMetrics.proxy(in: bounds, topInset: topInset, bulge: bulge).minX,
+              y: PrayerIslandMetrics.proxy(in: bounds, topInset: topInset, bulge: bulge).minY
             )
             .allowsHitTesting(false)
 
@@ -638,6 +588,7 @@ struct PrayerIslandBar: View {
                 .strokeBorder(PrayerIslandMetrics.edge, lineWidth: 0.5)
             }
             .frame(width: rect.width, height: rect.height)
+            .opacity(Double(min(max(travel, 0), 1)))
             .offset(x: rect.minX, y: rect.minY)
             .allowsHitTesting(false)
         }
@@ -654,7 +605,7 @@ struct PrayerIslandBar: View {
           // the layer is still there and still measured — nothing has to be
           // rebuilt on the way back in.
           .opacity(
-            Double(emergence)
+            Double(isSheet ? min(max(openness, 0), 1) : emergence)
               * (1 - Double(swap) * (1 - PrayerIslandMetrics.contentFloor))
           )
           // Laid out once, at the size the layout is *for*, and scaled to
@@ -664,8 +615,8 @@ struct PrayerIslandBar: View {
           // Everything in here was being laid out afresh on every frame of a
           // growth or a collapse, at widths it was never designed for: a title,
           // a caption, a progress bar and seven controls do not fit in the
-          // hundred and fourteen points the sheet passes through on its way to
-          // and from the cutout. SwiftUI does something with the overflow, and
+          // small origin the sheet passes through on its way to and from the
+          // status area. SwiftUI does something with the overflow, and
           // what it does is arbitrary — a speed label squeezed to nothing with
           // its marker left stranded beside the title, which is exactly what it
           // looked like.
@@ -791,18 +742,18 @@ struct PrayerIslandBar: View {
   /// once the pill is home.
   private func frame(in bounds: CGRect) -> CGRect {
     guard isSheet else {
-      // Behind the island, or on its way out from there. Constant size — coming
-      // and going is pure travel.
+      // A small transparent origin in the status area grows into the control
+      // below it, without needing to trace the hardware's exact outline.
       return interpolate(
-        PrayerIslandMetrics.hiddenRect(in: bounds),
-        PrayerIslandMetrics.shutRect(in: bounds),
+        PrayerIslandMetrics.seed(in: bounds, topInset: topInset),
+        PrayerIslandMetrics.shutRect(in: bounds, topInset: topInset),
         travel
       )
     }
 
     return interpolate(
-      PrayerIslandMetrics.seed(in: bounds),
-      PrayerIslandMetrics.sheet(in: bounds),
+      PrayerIslandMetrics.seed(in: bounds, topInset: topInset),
+      PrayerIslandMetrics.sheet(in: bounds, topInset: topInset),
       openness
     )
   }
@@ -1172,14 +1123,14 @@ struct PrayerIslandBar: View {
       // The hole it has opened around. Nothing may be drawn here and nothing can
       // be tapped here, so the layout steps over the whole band.
       Spacer()
-        .frame(height: PrayerIslandMetrics.openContentTop)
+        .frame(height: PrayerIslandMetrics.openContentTop(topInset: topInset))
 
       HStack(spacing: 12) {
         Text(title)
           .font(AppFont.listItemTitle)
           .foregroundStyle(PrayerIslandMetrics.ink)
           // One line, whatever it costs the type. See
-          // ``PrayerIslandMetrics/openHeight`` — the sheet animates to a fixed
+          // ``PrayerIslandMetrics/openBodyHeight`` — the sheet animates to a fixed
           // height, so it cannot be allowed to follow a title.
           .lineLimit(1)
           .minimumScaleFactor(0.7)

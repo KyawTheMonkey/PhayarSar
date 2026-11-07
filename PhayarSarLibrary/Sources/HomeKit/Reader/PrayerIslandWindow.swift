@@ -81,16 +81,19 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
 
   func updateUIViewController(_ controller: UIViewController, context: Context) {
     context.coordinator.show(
-      PrayerIslandBar(
-        state: state,
-        speed: speed,
-        progress: progress,
-        title: title,
-        isOpen: $isOpen,
-        onToggle: onToggle,
-        onStop: onStop,
-        onSpeed: onSpeed
-      ),
+      { topInset in
+        PrayerIslandBar(
+          topInset: topInset,
+          state: state,
+          speed: speed,
+          progress: progress,
+          title: title,
+          isOpen: $isOpen,
+          onToggle: onToggle,
+          onStop: onStop,
+          onSpeed: onSpeed
+        )
+      },
       isOpen: isOpen,
       isActive: state != .stopped
     )
@@ -116,9 +119,15 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
     /// Re-rooted rather than left alone, because the bar's closures capture the
     /// current `body`'s state — the same reason ``PrayerReader`` re-sets the
     /// reader's callbacks every time through.
-    func show(_ bar: PrayerIslandBar, isOpen: Bool, isActive: Bool) {
-      guard let scene = Self.scene else { return }
+    func show(_ makeBar: (CGFloat) -> PrayerIslandBar, isOpen: Bool, isActive: Bool) {
+      guard let scene = Self.scene,
+        let appWindow = scene.windows.first(where: { $0.isKeyWindow })
+      else { return }
 
+      // Read the app window, never the hosting view: that view deliberately
+      // removes its safe area to draw above the navigation and status bars.
+      let topInset = appWindow.safeAreaInsets.top
+      let bar = makeBar(topInset)
       let window = self.window ?? make(in: scene)
 
       if let host {
@@ -147,7 +156,7 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
         guard isActive else { return .zero }
         guard !isOpen else { return window.bounds }
 
-        return PrayerIslandMetrics.shutRect(in: window.bounds)
+        return PrayerIslandMetrics.shutRect(in: window.bounds, topInset: topInset)
       }()
 
       window.isHidden = false
