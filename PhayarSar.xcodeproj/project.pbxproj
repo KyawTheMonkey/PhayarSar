@@ -149,6 +149,7 @@
 		C8FCD1362BA482C400AB5BD3 /* DailyPrayingTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1352BA482C400AB5BD3 /* DailyPrayingTime.swift */; };
 		C8FCD1462BA54F9D00AB5BD3 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FCD1452BA54F9D00AB5BD3 /* Date.swift */; };
 		EA578F0C2BF996EF00366ADC /* AfterAppearViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA578F0B2BF996EF00366ADC /* AfterAppearViewModifier.swift */; };
+		C8B3AD003030A10000000001 /* BeadsKit in Frameworks */ = {isa = PBXBuildFile; productRef = C8B3AD003030A10000000002 /* BeadsKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -369,6 +370,7 @@
 				C8A1B2C63030A10000000006 /* AuthKit in Frameworks */,
 				C8A1B2C73030A10000000007 /* MiscKit in Frameworks */,
 				C8A1B2C93030A10000000009 /* MeditationKit in Frameworks */,
+				C8B3AD003030A10000000001 /* BeadsKit in Frameworks */,
 				C874B5362FA2FA0900FA0FED /* DesignKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -776,6 +778,7 @@
 				C8A1B2C53030A10000000005 /* AuthKit */,
 				C8A1B2C83030A10000000008 /* MiscKit */,
 				C8A1B2CA3030A1000000000A /* MeditationKit */,
+				C8B3AD003030A10000000002 /* BeadsKit */,
 			);
 			productName = PhayarSar;
 			productReference = C82039AA2B1CABE4000EEF61 /* PhayarSar.app */;
@@ -1778,6 +1781,10 @@
 		C8E5D4C04030000000000014 /* LocalisationKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LocalisationKit;
+		};
+		C8B3AD003030A10000000002 /* BeadsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BeadsKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 

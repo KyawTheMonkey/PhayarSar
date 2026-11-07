@@ -6,6 +6,7 @@
 //
 
 import AuthKit
+import BeadsKit
 import EnvironmentKit
 import HomeKit
 import MeditationKit
@@ -58,6 +59,12 @@ struct SheetView: View {
       // one — and no presentation modifiers, because the creator sets its own
       // from inside. See `creatorSheetPresentation()`.
       MeditationSessionCreatorScreen()
+
+    case .beadsCreator:
+      NavigationStack {
+        BeadsCreatorScreen()
+      }
+      .presentationDragIndicator(.visible)
     }
   }
 }

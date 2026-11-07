@@ -6,6 +6,7 @@
 //
 
 import AuthKit
+import BeadsKit
 import DesignKit
 import EnvironmentKit
 import FirebaseCore
@@ -100,7 +101,7 @@ struct PhayarSarApp: App {
       // Every entity in the app goes in this list. A feature module that adds
       // one has to be named here too, because this is the only place that links
       // them all.
-      schema: KloudSchema([AuthProfileRecord.self, PrayerConfigurationRecord.self]),
+      schema: KloudSchema([AuthProfileRecord.self, PrayerConfigurationRecord.self, BeadsRecord.self]),
       mode: AuthManager.shared.preferredSyncMode
     )
   }

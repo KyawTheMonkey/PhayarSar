@@ -142,12 +142,17 @@ public enum SheetDestination: Identifiable, Hashable, Codable {
   /// styles it offers are `MeditationStyle`'s cases, not stored records.
   case meditationSessionCreator
 
+  /// Creating a bead set is a cancellable detour from the beads collection.
+  case beadsCreator
+
   public var id: String {
     switch self {
     case .profile:
       return "profile"
     case .meditationSessionCreator:
       return "meditationSessionCreator"
+    case .beadsCreator:
+      return "beadsCreator"
     }
   }
 }

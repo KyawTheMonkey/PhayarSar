@@ -5,6 +5,7 @@
 //  Created by Kyaw Zay Ya Lin Tun on 08/08/2026.
 //
 
+import BeadsKit
 import DesignKit
 import EnvironmentKit
 import HomeKit
@@ -97,6 +98,8 @@ struct AppTabView: View {
       HomeScreen()
     case .meditation:
       MeditationScreen()
+    case .beads:
+      BeadsScreen()
     case .settings:
       SettingsScreen()
     default:
