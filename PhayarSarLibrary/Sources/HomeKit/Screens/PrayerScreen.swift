@@ -123,11 +123,15 @@ public struct PrayerScreen: View {
   /// goes straight through to the page.
   @State private var isIslandOpen = false
 
-  /// Whether the phone is upright, which is half of whether there is an island
-  /// to dock to. See ``AppDynamicIsland/docks(verticalSizeClass:)``.
-  #if os(iOS)
-  @Environment(\.verticalSizeClass) private var verticalSizeClass
-  #endif
+  /// Opening the island pauses a running recitation temporarily. Keep the
+  /// promise to resume outside the overlay so a fold cannot destroy it before
+  /// the controls have handed off to the bottom bar.
+  @State private var resumesAfterIsland = false
+
+  /// Reported by the reader's attached scene during layout. An unfolded phone
+  /// can have regular height and a side status bar, so a size class alone must
+  /// not decide where its playback controls belong.
+  @State private var docksToIsland = false
 
   /// How fast the page reads itself.
   ///
@@ -289,6 +293,10 @@ public struct PrayerScreen: View {
     .onValueChange(docksToIsland) {
       if !docksToIsland {
         isIslandOpen = false
+        if resumesAfterIsland, playback == .paused {
+          playback = .playing
+        }
+        resumesAfterIsland = false
       }
     }
     .onAppear { PrayerReadingControl.shared.attach(readingControlHandle) }
@@ -404,37 +412,26 @@ public struct PrayerScreen: View {
         .animation(PrayerPlaybackMetrics.handover, value: isPlaying)
       }
 
-      // And the same controls docked to the cutout, where there is one.
-      //
-      // Not drawn in this hierarchy at all, despite being written here. The
-      // chrome has to sit above the navigation bar to reach the cutout, and
-      // nothing inside a `NavigationStack` can — so this raises a window of its
-      // own and draws there. See ``PrayerIslandPresenter``, which is a view that
-      // shows nothing and exists only so that SwiftUI owns that window's
-      // lifetime.
-      //
-      // Built only on the devices that can use it, unlike the bar above: this is
-      // a fact about the hardware rather than about the reading, so there is no
-      // state in it worth keeping alive on a phone that will never show it.
-      // Compiled only where there is a `UIWindow` to raise. `docksToIsland` is
-      // already `false` off iOS, but that is a runtime answer and this needs a
-      // compile-time one — ``PrayerIslandPresenter`` does not exist on macOS.
+    }
+    .background {
+      // A full-size, noninteractive probe follows this reader's own scene even
+      // when no island can be used. It must survive folding and report local
+      // layout changes so the bottom bar can take over inside the detail column.
       #if os(iOS)
-      if docksToIsland {
-        PrayerIslandPresenter(
-          state: playback,
-          speed: speed,
-          progress: playbackProgress,
-          title: prayer.title,
-          isOpen: $isIslandOpen,
-          onToggle: togglePlayback,
-          onStop: stopPlayback,
-          onSpeed: setSpeed
-        )
-        .frame(width: 0, height: 0)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-      }
+      PrayerIslandPresenter(
+        state: playback,
+        speed: speed,
+        progress: playbackProgress,
+        title: prayer.title,
+        isOpen: $isIslandOpen,
+        isDocked: $docksToIsland,
+        resumeOnClose: $resumesAfterIsland,
+        onToggle: togglePlayback,
+        onStop: stopPlayback,
+        onSpeed: setSpeed
+      )
+      .allowsHitTesting(false)
+      .accessibilityHidden(true)
       #endif
     }
   }
@@ -442,12 +439,6 @@ public struct PrayerScreen: View {
   /// Whether the page is given over to playback, paused or not.
   private var isPlaying: Bool { playback != .stopped }
 
-  /// Whether this reading's controls belong on the cutout rather than at the
-  /// foot of the page.
-  ///
-  /// Re-read on rotation, which is the point: turning the phone on its side puts
-  /// the cutout down one edge, and the controls go back to the bottom bar for as
-  /// long as they are held that way.
   /// Whether the navigation bar should be showing the prayer's name.
   ///
   /// Only while the island is carrying the reading. Everywhere else the title is
@@ -456,15 +447,6 @@ public struct PrayerScreen: View {
   @MainActor
   private var hidesNavigationTitle: Bool {
     isPlaying && docksToIsland
-  }
-
-  @MainActor
-  private var docksToIsland: Bool {
-    #if os(iOS)
-    return AppDynamicIsland.docks(verticalSizeClass: verticalSizeClass)
-    #else
-    return false
-    #endif
   }
 
   // MARK: - Configuration

@@ -208,22 +208,24 @@ final class PrayerViewController: UIViewController {
       object: nil
     )
 
-    // Resigning active rather than entering the background, which is the wider
+    // Deactivating rather than entering the background, which is the wider
     // net and the right one. Backgrounding stops the run loop, so the timer
     // would go quiet on its own — but a control centre pulled halfway down, an
     // incoming call, or the app switcher leaves the app running with the page
     // half covered, and a reading that carries on behind that is a reading the
-    // reader has missed.
+    // reader has missed. Each callback checks this reader's current scene:
+    // another window becoming inactive must not pause a prayer here, and
+    // retaining a scene from setup would go stale if the view changes windows.
     NotificationCenter.default.addObserver(
       self,
-      selector: #selector(applicationWillResignActive),
-      name: UIApplication.willResignActiveNotification,
+      selector: #selector(sceneWillDeactivate(_:)),
+      name: UIScene.willDeactivateNotification,
       object: nil
     )
     NotificationCenter.default.addObserver(
       self,
-      selector: #selector(applicationDidBecomeActive),
-      name: UIApplication.didBecomeActiveNotification,
+      selector: #selector(sceneDidActivate(_:)),
+      name: UIScene.didActivateNotification,
       object: nil
     )
   }
@@ -534,7 +536,7 @@ final class PrayerViewController: UIViewController {
       // the Live Activity, tapped from the Lock Screen or from another app. The
       // page cannot scroll where nobody is looking, so the request is kept
       // rather than carried out: ``resumesWhenActive`` is exactly this promise,
-      // and ``applicationDidBecomeActive()`` is where it comes due.
+      // and ``sceneDidActivate(_:)`` is where it comes due.
       //
       // The shell is left believing the page is playing, and that is the honest
       // answer to give it — that *is* what the page will be doing the moment the
@@ -569,11 +571,10 @@ final class PrayerViewController: UIViewController {
 
   /// Whether there is a screen for the page to move on.
   ///
-  /// Both halves matter and neither implies the other. An inactive app has no
-  /// screen at all; an active app can still have this reader loaded behind
-  /// something the reader pushed on top of it.
+  /// Activation belongs to this reader's scene. A different window can remain
+  /// active while this one is covered or backgrounded.
   private var isReadable: Bool {
-    UIApplication.shared.applicationState == .active && view.window != nil
+    viewIfLoaded?.window?.windowScene?.activationState == .foregroundActive
   }
 
   /// Takes the pace ``PrayerScreen`` is showing.
@@ -825,12 +826,16 @@ final class PrayerViewController: UIViewController {
     animator.startAnimation()
   }
 
-  /// The app is going away, or being covered over.
+  /// This scene is going away, or being covered over.
   ///
   /// Reported like any other pause, so the bar shows what is true — and so the
   /// reader who comes back to a paused page and presses play themselves gets
   /// exactly what they asked for rather than a page that starts twice.
-  @objc private func applicationWillResignActive() {
+  @objc private func sceneWillDeactivate(_ notification: Notification) {
+    guard let scene = notification.object as? UIWindowScene,
+      scene === viewIfLoaded?.window?.windowScene
+    else { return }
+
     guard playback == .playing else { return }
 
     pausePlayback(reporting: true)
@@ -844,12 +849,16 @@ final class PrayerViewController: UIViewController {
   /// ``viewDidDisappear(_:)`` — and the window check covers the rest: a reader
   /// pushed forward to another screen leaves this one loaded, and it must not
   /// start reading to itself underneath whatever they went to.
-  @objc private func applicationDidBecomeActive() {
+  @objc private func sceneDidActivate(_ notification: Notification) {
+    guard let scene = notification.object as? UIWindowScene,
+      scene === viewIfLoaded?.window?.windowScene
+    else { return }
+
     guard resumesWhenActive else { return }
 
     resumesWhenActive = false
 
-    guard playback == .paused, view.window != nil else { return }
+    guard playback == .paused, isReadable else { return }
 
     resumePlayback()
     onPlaybackChange?(.playing)

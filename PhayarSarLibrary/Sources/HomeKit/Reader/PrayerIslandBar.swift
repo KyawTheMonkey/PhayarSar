@@ -394,7 +394,7 @@ enum PrayerIslandMetrics {
 ///
 /// Shown only where there is an island to hang from, and only while the phone is
 /// upright. Everywhere else ``PrayerPlaybackBar`` keeps the job it has always
-/// had. See ``AppDynamicIsland/docks(verticalSizeClass:)``.
+/// had. See ``AppDynamicIsland/docks(in:)``.
 struct PrayerIslandBar: View {
   /// Measured from the scene's app window before the overlay discards its safe
   /// area. Shared with the window's touch rectangle so drawing and taps agree.
@@ -422,6 +422,18 @@ struct PrayerIslandBar: View {
   /// open, it takes them anywhere so the scrim can hear a tap. See
   /// ``PrayerIslandPresenter``.
   @Binding var isOpen: Bool
+
+  /// Whether shutting the sheet should start the reading again.
+  ///
+  /// Set when opening the sheet is what stopped it, and cleared the moment the
+  /// reader stops it themselves — the transport buttons and a reading that ends
+  /// under the sheet all clear it. So the pause an open costs is returned on the
+  /// way out, and a pause the reader asked for is not undone behind their back.
+  ///
+  /// Owned by the screen so folding can remove this window without losing the
+  /// promise to resume. A reading that was already paused before opening the
+  /// sheet keeps that pause when the controls move to the bottom bar.
+  @Binding var resumeOnClose: Bool
 
   /// Play when paused, pause when playing.
   let onToggle: () -> Void
@@ -497,18 +509,6 @@ struct PrayerIslandBar: View {
   /// The pending exchange, held so a sheet opened and shut again mid-blur
   /// replaces it rather than landing on top of it.
   @State private var swapWork: DispatchWorkItem?
-
-  /// Whether shutting the sheet should start the reading again.
-  ///
-  /// Set when opening the sheet is what stopped it, and cleared the moment the
-  /// reader stops it themselves — the transport buttons and a reading that ends
-  /// under the sheet all clear it. So the pause an open costs is returned on the
-  /// way out, and a pause the reader asked for is not undone behind their back.
-  ///
-  /// `@State` rather than something derived from ``state``, because the answer
-  /// has to survive the change: by the time the sheet is shutting, the only
-  /// record that the reading *was* running is this flag.
-  @State private var resumeOnClose = false
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -661,7 +661,7 @@ struct PrayerIslandBar: View {
     // The window this is drawn in has no navigation bar and no safe area worth
     // respecting — it exists precisely to be the whole screen. See
     // `PrayerIslandPresenter`.
-    .ignoresSafeArea()
+    .ignoresSafeArea(edges: .top)
     // The glyph changes under the finger that changed it, so the click belongs
     // to the control rather than to the page starting or stopping.
     .appSelectionFeedback(trigger: state)

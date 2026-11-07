@@ -1,4 +1,5 @@
-#if canImport(UIKit)
+#if os(iOS)
+import DesignKit
 import PrayersKit
 import SwiftUI
 import UIKit
@@ -65,22 +66,26 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
   /// because the window needs it too — it decides whether a touch anywhere on
   /// screen belongs to this chrome or to the page under it.
   @Binding var isOpen: Bool
+  @Binding var isDocked: Bool
+  @Binding var resumeOnClose: Bool
 
   let onToggle: () -> Void
   let onStop: () -> Void
   let onSpeed: (PrayerPlaybackSpeed) -> Void
 
-  func makeUIViewController(context: Context) -> UIViewController {
-    // Nothing is ever drawn in it. The controller exists so that SwiftUI has
-    // something whose lifetime it understands to hang the window off.
-    let controller = UIViewController()
-    controller.view.isUserInteractionEnabled = false
-    controller.view.backgroundColor = .clear
+  func makeUIViewController(context: Context) -> PrayerIslandSourceController {
+    let controller = PrayerIslandSourceController()
+    controller.onLayout = { [weak coordinator = context.coordinator] view in
+      coordinator?.layout(in: view)
+    }
+    controller.onDisappear = { [weak coordinator = context.coordinator] in
+      coordinator?.hideWindow()
+    }
     return controller
   }
 
-  func updateUIViewController(_ controller: UIViewController, context: Context) {
-    context.coordinator.show(
+  func updateUIViewController(_ controller: PrayerIslandSourceController, context: Context) {
+    context.coordinator.configure(
       { topInset in
         PrayerIslandBar(
           topInset: topInset,
@@ -89,22 +94,27 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
           progress: progress,
           title: title,
           isOpen: $isOpen,
+          resumeOnClose: $resumeOnClose,
           onToggle: onToggle,
           onStop: onStop,
           onSpeed: onSpeed
         )
       },
       isOpen: isOpen,
-      isActive: state != .stopped
+      isActive: state != .stopped,
+      onDockingChange: { isDocked = $0 }
     )
+    controller.view.setNeedsLayout()
   }
 
   func makeCoordinator() -> Coordinator {
     Coordinator()
   }
 
-  static func dismantleUIViewController(_ controller: UIViewController, coordinator: Coordinator) {
-    coordinator.hide()
+  static func dismantleUIViewController(_ controller: PrayerIslandSourceController, coordinator: Coordinator) {
+    controller.onLayout = nil
+    controller.onDisappear = nil
+    coordinator.hideWindow()
   }
 
   // MARK: Coordinator
@@ -113,38 +123,55 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
   final class Coordinator {
     private var window: PrayerIslandWindow?
     private var host: UIHostingController<PrayerIslandBar>?
+    private var makeBar: ((CGFloat) -> PrayerIslandBar)?
+    private var onDockingChange: ((Bool) -> Void)?
+    private var isOpen = false
+    private var isActive = false
+    private var reportedDocking: Bool?
 
-    /// Raises the window if it is not up, and re-roots it on every pass.
-    ///
-    /// Re-rooted rather than left alone, because the bar's closures capture the
-    /// current `body`'s state — the same reason ``PrayerReader`` re-sets the
-    /// reader's callbacks every time through.
-    func show(_ makeBar: (CGFloat) -> PrayerIslandBar, isOpen: Bool, isActive: Bool) {
-      guard let scene = Self.scene,
-        let appWindow = scene.windows.first(where: { $0.isKeyWindow })
-      else { return }
+    func configure(
+      _ makeBar: @escaping (CGFloat) -> PrayerIslandBar,
+      isOpen: Bool,
+      isActive: Bool,
+      onDockingChange: @escaping (Bool) -> Void
+    ) {
+      self.makeBar = makeBar
+      self.isOpen = isOpen
+      self.isActive = isActive
+      self.onDockingChange = onDockingChange
+    }
 
-      // Read the app window, never the hosting view: that view deliberately
-      // removes its safe area to draw above the navigation and status bars.
+    /// Read at layout time, from the scene that actually contains the reader.
+    /// A fold can move the system bar without a size-class change, and another
+    /// foreground scene must never acquire this reader's playback window.
+    func layout(in source: UIView) {
+      guard let appWindow = source.window,
+        let scene = appWindow.windowScene,
+        AppDynamicIsland.docks(in: appWindow),
+        let makeBar
+      else {
+        reportDocking(false)
+        hideWindow()
+        return
+      }
+
+      reportDocking(true)
+      if let window, window.windowScene !== scene {
+        hideWindow()
+      }
+      let window = self.window ?? make(in: scene)
       let topInset = appWindow.safeAreaInsets.top
       let bar = makeBar(topInset)
-      let window = self.window ?? make(in: scene)
 
       if let host {
         host.rootView = bar
       } else {
         let host = UIHostingController(rootView: bar)
         host.view.backgroundColor = .clear
-        // Both of these say the same thing twice, and after the first attempt
-        // at this feature that is deliberate. A hosting controller inherits the
-        // scene's safe area, which would lay the bar out below the status bar —
-        // the whole of what this window exists to get above. The bar asks for
-        // the full screen itself with `ignoresSafeArea`; this makes sure there
-        // is no safe area left for it to have to ask about.
+        // Only the top edge is intentionally extended by the bar itself.
+        // Keep the host's other safe-area regions intact, including a system
+        // bar that may arrive during the next fold or rotation.
         host.view.insetsLayoutMarginsFromSafeArea = false
-        if #available(iOS 16.4, *) {
-          host.safeAreaRegions = []
-        }
         window.rootViewController = host
         self.host = host
       }
@@ -163,7 +190,7 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
     }
 
     /// Takes the window down for good.
-    func hide() {
+    func hideWindow() {
       window?.isHidden = true
       window?.rootViewController = nil
       window = nil
@@ -183,10 +210,65 @@ struct PrayerIslandPresenter: UIViewControllerRepresentable {
       return window
     }
 
-    private static var scene: UIWindowScene? {
-      let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-      return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+    private func reportDocking(_ isDocked: Bool) {
+      guard reportedDocking != isDocked else { return }
+      reportedDocking = isDocked
+      // UIKit can lay out during a SwiftUI update. Deliver the binding change
+      // after that pass, and discard an obsolete report from an interrupted fold.
+      DispatchQueue.main.async { [weak self] in
+        guard let self, self.reportedDocking == isDocked else { return }
+        self.onDockingChange?(isDocked)
+      }
     }
+  }
+}
+
+/// A local layout probe instead of a global scene observer. It stays mounted
+/// when the island is unavailable so unfolding can hand the controls to the
+/// bottom bar and folding back can restore them without restarting playback.
+final class PrayerIslandSourceController: UIViewController {
+  var onLayout: ((UIView) -> Void)?
+  var onDisappear: (() -> Void)?
+
+  override func loadView() {
+    view = UIView()
+    view.backgroundColor = .clear
+    view.isUserInteractionEnabled = false
+  }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    if #available(iOS 27.1, *) {
+      registerForTraitChanges(UITraitCollection.systemTraitsAffectingVerticalBarEdge) {
+        (self: PrayerIslandSourceController, _) in
+        self.view.setNeedsLayout()
+      }
+    }
+  }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    onLayout?(view)
+  }
+
+  override func viewSafeAreaInsetsDidChange() {
+    super.viewSafeAreaInsetsDidChange()
+    view.setNeedsLayout()
+  }
+
+  override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    view.setNeedsLayout()
+  }
+
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    view.setNeedsLayout()
+  }
+
+  override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    onDisappear?()
   }
 }
 #endif
