@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-buddha-virtues desc-buddha-virtues">
+<title id="title-buddha-virtues">ဘုရားဂုဏ်တော် (၉)ပါး</title>
+<desc id="desc-buddha-virtues">A bodhi leaf encircled by nine points. Original flat-colour vector illustration for PhayarSar.</desc>
+<defs><clipPath id="crop-buddha-virtues"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<g clip-path="url(#crop-buddha-virtues)">
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
+<circle cx="400" cy="387" r="268" fill="#DDA547"/><polygon points="24,776 24,632 776,449 776,776" fill="#C65D3B"/><g transform="translate(400 375) rotate(180) scale(2.12)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#182F32"/></g><path d="M400 215V566M400 349L337 300M400 409L470 351" fill="none" stroke="#F2E5BF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><circle cx="400.0" cy="152.0" r="13" fill="#F2E5BF"/><circle cx="551.06" cy="206.98" r="13" fill="#F2E5BF"/><circle cx="631.43" cy="346.19" r="13" fill="#F2E5BF"/><circle cx="603.52" cy="504.5" r="13" fill="#F2E5BF"/><circle cx="480.37" cy="607.83" r="13" fill="#F2E5BF"/><circle cx="319.63" cy="607.83" r="13" fill="#F2E5BF"/><circle cx="196.48" cy="504.5" r="13" fill="#F2E5BF"/><circle cx="168.57" cy="346.19" r="13" fill="#F2E5BF"/><circle cx="248.94" cy="206.98" r="13" fill="#F2E5BF"/><rect x="285" y="675" width="230" height="14" rx="0" fill="#182F32"/>
+</g>
+</svg>

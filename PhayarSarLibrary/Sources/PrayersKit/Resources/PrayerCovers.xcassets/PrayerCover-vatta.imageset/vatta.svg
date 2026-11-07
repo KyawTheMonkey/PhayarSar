@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-vatta desc-vatta">
+<title id="title-vatta">ဝဋ္ဋသုတ်</title>
+<desc id="desc-vatta">A young quail in a quiet refuge beyond the flames. Original flat-colour vector illustration for PhayarSar.</desc>
+<defs><clipPath id="crop-vatta"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<g clip-path="url(#crop-vatta)">
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#C65D3B"/>
+<path d="M41 665Q-9 535.0 88 405Q76 578.3333333333334 135 665Z" fill="#DDA547"/><path d="M151 665Q101 585.0 198 505Q186 611.6666666666666 245 665Z" fill="#DDA547"/><path d="M608 665Q558 546.5 655 428Q643 586.0 702 665Z" fill="#DDA547"/><path d="M688 665Q638 490.0 735 315Q723 548.3333333333334 782 665Z" fill="#DDA547"/><circle cx="400" cy="431" r="235" fill="#F2E5BF"/><circle cx="400" cy="431" r="193" fill="#346963"/><path d="M249 523Q400 675 551 523Z" fill="#182F32"/><ellipse cx="382" cy="464" rx="94" ry="74" fill="#DDA547"/><circle cx="448" cy="413" r="47" fill="#DDA547"/><path d="M312 450Q370 411 408 464Q368 506 325 489Z" fill="#C65D3B"/><polygon points="488,413 523,429 489,436" fill="#F2E5BF"/><circle cx="461" cy="405" r="7" fill="#182F32"/><path d="M249 523Q400 576 551 523M273 555Q400 601 527 555" fill="none" stroke="#DE9870" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

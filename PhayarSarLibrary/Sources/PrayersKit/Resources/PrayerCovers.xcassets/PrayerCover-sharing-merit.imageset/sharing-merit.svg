@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-sharing-merit desc-sharing-merit">
+<title id="title-sharing-merit">ဆုတောင်း အမျှဝေ</title>
+<desc id="desc-sharing-merit">Libation water spreading into widening ripples. Original flat-colour vector illustration for PhayarSar.</desc>
+<defs><clipPath id="crop-sharing-merit"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<g clip-path="url(#crop-sharing-merit)">
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
+<circle cx="263" cy="226" r="157" fill="#DDA547"/><rect x="24" y="578" width="752" height="160" rx="0" fill="#346963"/><ellipse cx="460" cy="623" rx="121" ry="22" fill="none" stroke="#F2E5BF" stroke-width="10"/><ellipse cx="460" cy="669" rx="213" ry="22" fill="none" stroke="#F2E5BF" stroke-width="10"/><ellipse cx="460" cy="722" rx="311" ry="22" fill="none" stroke="#F2E5BF" stroke-width="10"/><g transform="translate(348 308) rotate(24)"><path d="M-92-90H73L97-25L68 108Q-9 150-96 104L-115-19Z" fill="#C65D3B"/><path d="M73-48L165-95L134-15L88 10Z" fill="#182F32"/><rect x="-95" y="-113" width="157" height="24" rx="8" fill="#182F32"/><path d="M-70-72H-26L-16 104L-63 98Z" fill="#F2E5BF"/></g><path d="M520 288Q478 433 463 578" fill="none" stroke="#346963" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/><path d="M463 578L460 622" fill="none" stroke="#F2E5BF" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/><circle cx="460" cy="623" r="15" fill="#DDA547"/>
+</g>
+</svg>

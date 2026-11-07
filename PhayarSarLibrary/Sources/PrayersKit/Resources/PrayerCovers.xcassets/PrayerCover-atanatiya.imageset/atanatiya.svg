@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-atanatiya desc-atanatiya">
+<title id="title-atanatiya">အာဋာနာဋိယသုတ်</title>
+<desc id="desc-atanatiya">Four directional gateways surrounding a lotus. Original flat-colour vector illustration for PhayarSar.</desc>
+<defs><clipPath id="crop-atanatiya"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<g clip-path="url(#crop-atanatiya)">
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
+<circle cx="400" cy="400" r="281" fill="#91A68A"/><g transform="translate(400 400) rotate(0)"><rect x="-92" y="-280" width="184" height="118" rx="0" fill="#182F32"/><rect x="-50" y="-245" width="100" height="83" rx="0" fill="#F2E5BF"/><rect x="-113" y="-301" width="226" height="28" rx="0" fill="#C65D3B"/></g><g transform="translate(400 400) rotate(90)"><rect x="-92" y="-280" width="184" height="118" rx="0" fill="#182F32"/><rect x="-50" y="-245" width="100" height="83" rx="0" fill="#F2E5BF"/><rect x="-113" y="-301" width="226" height="28" rx="0" fill="#C65D3B"/></g><g transform="translate(400 400) rotate(180)"><rect x="-92" y="-280" width="184" height="118" rx="0" fill="#182F32"/><rect x="-50" y="-245" width="100" height="83" rx="0" fill="#F2E5BF"/><rect x="-113" y="-301" width="226" height="28" rx="0" fill="#C65D3B"/></g><g transform="translate(400 400) rotate(270)"><rect x="-92" y="-280" width="184" height="118" rx="0" fill="#182F32"/><rect x="-50" y="-245" width="100" height="83" rx="0" fill="#F2E5BF"/><rect x="-113" y="-301" width="226" height="28" rx="0" fill="#C65D3B"/></g><circle cx="400" cy="400" r="151" fill="#346963"/><g transform="translate(400 460) scale(0.73)"><path d="M0 20C-94 20-155-32-151-95C-72-96-17-55 0 20Z" fill="#DDA547"/><path d="M0 20C94 20 155-32 151-95C72-96 17-55 0 20Z" fill="#DDA547"/><path d="M0 20C-69-23-72-110 0-176C72-110 69-23 0 20Z" fill="#F2E5BF"/><path d="M-130 27Q0 104 130 27Q0 50-130 27Z" fill="#F2E5BF"/></g>
+</g>
+</svg>

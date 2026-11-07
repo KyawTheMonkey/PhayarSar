@@ -137,7 +137,7 @@ let package = Package(
     .target(
       name: "PrayersKit",
       dependencies: ["EnvironmentKit", "DesignKit", "KloudKit"],
-      resources: [.process("Prayers")]
+      resources: [.process("Prayers"), .process("Resources")]
     ),
     .target(
       name: "SettingsKit",
