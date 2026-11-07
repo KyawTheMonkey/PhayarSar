@@ -186,6 +186,20 @@ public enum AppColor {
     )
   }
 
+  // MARK: - Beads
+
+  /// A polished, dark bead keeps its material in either appearance. The lifted
+  /// rim in dark mode separates the silhouette from the canvas without turning
+  /// the whole strand into a light-coloured material.
+  public enum Beads {
+    public static let core = Color.dynamic(light: Palette.BeadMaterial.coreLight, dark: Palette.BeadMaterial.coreDark)
+    public static let warmth = Color.dynamic(light: Palette.BeadMaterial.warmthLight, dark: Palette.BeadMaterial.warmthDark)
+    public static let rim = Color.dynamic(light: Palette.BeadMaterial.rimLight, dark: Palette.BeadMaterial.rimDark)
+    public static let reflection = Color.dynamic(light: Palette.BeadMaterial.reflectionLight, dark: Palette.BeadMaterial.reflectionDark)
+    public static let thread = Color.dynamic(light: Palette.BeadMaterial.threadLight, dark: Palette.BeadMaterial.threadDark)
+    public static let shadow = Color.dynamic(light: Palette.BeadMaterial.shadowLight, dark: Palette.BeadMaterial.shadowDark)
+  }
+
   // MARK: - Grey
   public static let grey50 = Color.dynamic(
     light: Palette.Grey.grey50Light,
@@ -233,6 +247,21 @@ public enum AppColor {
 /// TextSecondary, TextTertiary) — do not use these directly, go through
 /// `AppColor`.
 fileprivate enum Palette {
+  enum BeadMaterial {
+    static let coreLight = Color(hex: "#160F15")
+    static let coreDark = Color(hex: "#241923")
+    static let warmthLight = Color(hex: "#542C38")
+    static let warmthDark = Color(hex: "#744452")
+    static let rimLight = Color(hex: "#987583")
+    static let rimDark = Color(hex: "#C3A1B1")
+    static let reflectionLight = Color(hex: "#FFF3EA")
+    static let reflectionDark = Color(hex: "#FFF7F0")
+    static let threadLight = Color(hex: "#A28772")
+    static let threadDark = Color(hex: "#C7AD94")
+    static let shadowLight = Color(hex: "#21151D", alpha: 0.24)
+    static let shadowDark = Color(hex: "#080509", alpha: 0.52)
+  }
+
   /// Fixed paper colours — see `AppColor.Page` for why these have no light/dark
   /// pair, and for why the three in each set differ in hue rather than only in
   /// brightness.

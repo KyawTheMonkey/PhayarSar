@@ -622,5 +622,65 @@
   "meditation_creator_unavailable": {
     "En": "Meditation is available on iPhone and iPad.",
     "Mm": "တရားထိုင်ခြင်းကို iPhone နှင့် iPad တွင်သာ အသုံးပြုနိုင်ပါသည်။"
+  },
+  "beads_empty_title": {
+    "En": "No beads yet",
+    "Mm": "ပုတီး မရှိသေးပါ"
+  },
+  "beads_empty_message": {
+    "En": "Add your first bead set to begin your practice.",
+    "Mm": "ပုတီးစိပ်ရန် ပထမဆုံး ပုတီးတစ်ကုံး ထည့်ပါ။"
+  },
+  "beads_add": {
+    "En": "Add Beads",
+    "Mm": "ပုတီးထည့်ရန်"
+  },
+  "beads_name": {
+    "En": "Name",
+    "Mm": "အမည်"
+  },
+  "beads_name_placeholder": {
+    "En": "Morning practice",
+    "Mm": "မနက်ခင်း ပုတီးစိပ်"
+  },
+  "beads_count": {
+    "En": "Bead count",
+    "Mm": "ပုတီးစေ့ အရေအတွက်"
+  },
+  "beads_count_hint": {
+    "En": "Enter a whole number from 1 to 10,000.",
+    "Mm": "၁ မှ ၁၀,၀၀၀ အထိ ကိန်းပြည့် ထည့်ပါ။"
+  },
+  "beads_count_summary": {
+    "En": "{0} beads",
+    "Mm": "ပုတီးစေ့ {0} စေ့"
+  },
+  "beads_count_one": {
+    "En": "1 bead",
+    "Mm": "ပုတီးစေ့ ၁ စေ့"
+  },
+  "beads_save_error": {
+    "En": "Couldn’t save your beads. Please try again.",
+    "Mm": "ပုတီးကို မသိမ်းဆည်းနိုင်ပါ။ ထပ်မံကြိုးစားပါ။"
+  },
+  "beads_load_error": {
+    "En": "Couldn’t load your beads",
+    "Mm": "ပုတီးများကို မဖွင့်နိုင်ပါ"
+  },
+  "beads_try_again": {
+    "En": "Try again",
+    "Mm": "ထပ်မံကြိုးစားရန်"
+  },
+  "beads_add_one": {
+    "En": "Add one bead",
+    "Mm": "ပုတီးစေ့တစ်စေ့ ထည့်ရန်"
+  },
+  "beads_remove_one": {
+    "En": "Remove one bead",
+    "Mm": "ပုတီးစေ့တစ်စေ့ လျှော့ရန်"
+  },
+  "beads_preview_count": {
+    "En": "Showing {0} of {1} beads",
+    "Mm": "ပုတီးစေ့ {1} စေ့အနက် {0} စေ့ကို ပြထားပါသည်"
   }
 }
