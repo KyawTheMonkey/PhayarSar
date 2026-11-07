@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-maccharaja desc-maccharaja">
+<title id="title-maccharaja">မစ္ဆရာဇသုတ်</title>
+<desc id="desc-maccharaja">A fish beneath rain and replenished water. Original flat-colour vector illustration for PhayarSar.</desc>
+<defs><clipPath id="crop-maccharaja"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<g clip-path="url(#crop-maccharaja)">
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#182F32"/>
+<circle cx="585" cy="209" r="130" fill="#91A68A"/><path d="M133 126l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M216 162l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M299 126l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M382 162l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M465 126l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M548 162l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M631 126l-19 42q19 27 38 0Z" fill="#F2E5BF"/><path d="M24 460Q212 381 400 460T776 460V776H24Z" fill="#346963"/><path d="M24 670Q212 591 400 670T776 670" fill="none" stroke="#91A68A" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/><path d="M175 525Q349 337 565 505L669 415V624L565 551Q349 719 175 525Z" fill="#DDA547"/><path d="M175 525Q290 408 357 430Q264 529 357 619Q290 642 175 525Z" fill="#F2E5BF"/><path d="M387 477Q456 501 478 534Q432 574 383 578Z" fill="#C65D3B"/><circle cx="256" cy="505" r="11" fill="#182F32"/>
+</g>
+</svg>

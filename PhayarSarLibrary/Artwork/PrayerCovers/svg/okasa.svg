@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-okasa desc-okasa">
+<title id="title-okasa">သြကာသ ကန်တော့ချိုး</title>
+<desc id="desc-okasa">Joined palms and a quiet rising sun. Original flat-colour vector illustration for PhayarSar.</desc>
+<defs><clipPath id="crop-okasa"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<g clip-path="url(#crop-okasa)">
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
+<circle cx="420" cy="323" r="242" fill="#DDA547"/><polygon points="24,624 776,418 776,776 24,776" fill="#346963"/><path d="M229 624L291 467L347 359L383 179Q396 152 405 186L410 488L357 641Z" fill="#182F32"/><path d="M571 624L509 467L453 359L417 179Q404 152 395 186L390 488L443 641Z" fill="#F2E5BF"/><path d="M307 479L355 423L368 345Q375 323 387 344L377 460L341 527Z" fill="#DE9870"/><path d="M493 479L445 423L432 345Q425 323 413 344L423 460L459 527Z" fill="#DDA547"/><rect x="188" y="636" width="424" height="22" rx="0" fill="#DDA547"/><rect x="145" y="674" width="510" height="18" rx="0" fill="#F2E5BF"/>
+</g>
+</svg>
