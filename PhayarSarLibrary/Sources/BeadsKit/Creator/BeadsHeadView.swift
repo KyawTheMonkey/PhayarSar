@@ -46,7 +46,7 @@ struct BeadsHeadView: View {
     ZStack(alignment: .topLeading) {
       // A low, broad reflection keeps this slightly larger bead from reading
       // as an eye beside the connector and cord.
-      PolishedBead(reflectionStrength: 0.42)
+      PolishedBead(diameter: diameter, reflectionStrength: 0.42)
         .frame(width: diameter, height: diameter)
         .scaleEffect(x: 1, y: 0.94)
         .position(BeadsHeadMetrics.anchor)

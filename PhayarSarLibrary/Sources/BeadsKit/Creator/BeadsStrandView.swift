@@ -62,7 +62,7 @@ struct BeadsStrandView: View {
 
         ForEach(firstIndex..<(firstIndex + visibleCount), id: \.self) { index in
           let bead = geometry.beads[index - firstIndex]
-          PolishedBead()
+          PolishedBead(diameter: bead.diameter)
             .frame(width: bead.diameter, height: bead.diameter)
             .transition(reduceMotion ? .opacity : .scale(scale: 0.05).combined(with: .opacity))
             .position(bead.position)
@@ -102,62 +102,60 @@ struct BeadsStrandView: View {
 // MARK: - Material
 
 struct PolishedBead: View {
+  let diameter: CGFloat
   var reflectionStrength: Double = 1
 
   var body: some View {
-    GeometryReader { proxy in
-      let diameter = proxy.size.width
-      Circle()
-        .fill(
-          RadialGradient(
-            stops: [
-              .init(color: AppColor.Beads.rim, location: 0),
-              .init(color: AppColor.Beads.warmth, location: 0.3),
-              .init(color: AppColor.Beads.core, location: 0.7),
-              .init(color: AppColor.Beads.warmth, location: 1),
-            ],
-            center: UnitPoint(x: 0.28, y: 0.22),
-            startRadius: 0,
-            endRadius: diameter * 0.95
+    Circle()
+      .fill(
+        RadialGradient(
+          stops: [
+            .init(color: AppColor.Beads.rim, location: 0),
+            .init(color: AppColor.Beads.warmth, location: 0.3),
+            .init(color: AppColor.Beads.core, location: 0.7),
+            .init(color: AppColor.Beads.warmth, location: 1),
+          ],
+          center: UnitPoint(x: 0.28, y: 0.22),
+          startRadius: 0,
+          endRadius: diameter * 0.95
+        )
+      )
+      .overlay {
+        Circle()
+          .strokeBorder(
+            LinearGradient(
+              colors: [AppColor.Beads.reflection.opacity(0.65 * reflectionStrength), AppColor.Beads.core, AppColor.Beads.rim.opacity(0.7)],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
+            ),
+            lineWidth: diameter * 0.025
           )
-        )
-        .overlay {
-          Circle()
-            .strokeBorder(
-              LinearGradient(
-                colors: [AppColor.Beads.reflection.opacity(0.65 * reflectionStrength), AppColor.Beads.core, AppColor.Beads.rim.opacity(0.7)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-              ),
-              lineWidth: diameter * 0.025
+      }
+      .overlay(alignment: .topLeading) {
+        Ellipse()
+          .fill(
+            LinearGradient(
+              colors: [AppColor.Beads.reflection.opacity(0.95 * reflectionStrength), AppColor.Beads.reflection.opacity(0.05 * reflectionStrength)],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
             )
-        }
-        .overlay(alignment: .topLeading) {
-          Ellipse()
-            .fill(
-              LinearGradient(
-                colors: [AppColor.Beads.reflection.opacity(0.95 * reflectionStrength), AppColor.Beads.reflection.opacity(0.05 * reflectionStrength)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-              )
-            )
-            .frame(width: diameter * 0.28, height: diameter * 0.17)
-            .rotationEffect(.degrees(-38))
-            .offset(x: diameter * 0.19, y: diameter * 0.15)
-        }
-        .overlay(alignment: .bottomTrailing) {
-          Ellipse()
-            .fill(AppColor.Beads.rim.opacity(0.35))
-            .frame(width: diameter * 0.34, height: diameter * 0.07)
-            .rotationEffect(.degrees(-28))
-            .offset(x: -diameter * 0.13, y: -diameter * 0.15)
-        }
-        .shadow(
-          color: AppColor.Beads.shadow,
-          radius: BeadsStrandMetrics.shadowRadius,
-          y: BeadsStrandMetrics.shadowOffset
-        )
-    }
+          )
+          .frame(width: diameter * 0.28, height: diameter * 0.17)
+          .rotationEffect(.degrees(-38))
+          .offset(x: diameter * 0.19, y: diameter * 0.15)
+      }
+      .overlay(alignment: .bottomTrailing) {
+        Ellipse()
+          .fill(AppColor.Beads.rim.opacity(0.35))
+          .frame(width: diameter * 0.34, height: diameter * 0.07)
+          .rotationEffect(.degrees(-28))
+          .offset(x: -diameter * 0.13, y: -diameter * 0.15)
+      }
+      .shadow(
+        color: AppColor.Beads.shadow,
+        radius: BeadsStrandMetrics.shadowRadius,
+        y: BeadsStrandMetrics.shadowOffset
+      )
   }
 }
 
