@@ -84,6 +84,12 @@ final class PrayerViewController: UIViewController {
   /// cares when the answer changes.
   private var centredVerse: Int?
 
+  /// Layout and programmatic rewinds must not replace a saved position with
+  /// the top of the page. Completion remains latched until another deliberate
+  /// reading starts, so the final rewind cannot recreate Home's card.
+  private var isTrackingReading = false
+  private var hasFinishedReading = false
+
   /// Line by identity, for the cell provider. A dictionary rather than
   /// `lines[indexPath.row]`: the cell provider is handed an identifier, and
   /// looking it up is what keeps the two from drifting apart mid-update.
@@ -242,10 +248,12 @@ final class PrayerViewController: UIViewController {
     super.viewDidAppear(animated)
     PrayerRemoteHost.shared.attach(reader: self)
     reportPosition()
+    restoreReading()
   }
 
   override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
+    isTrackingReading = false
     PrayerRemoteHost.shared.detach(reader: self)
     // A page nobody is looking at should not be turning itself. Reported, so
     // the shell's controls are not still showing pause when the reader comes
@@ -321,6 +329,43 @@ final class PrayerViewController: UIViewController {
     cell.configure(with: line, style: style)
   }
 
+  // MARK: - Continuing a reading
+
+  private func restoreReading() {
+    guard !isTrackingReading, !lines.isEmpty else { return }
+    hasFinishedReading = false
+    tableView.layoutIfNeeded()
+    let saved = PrayerContinuationStore.shared.reading
+    let row: Int
+    if let saved, saved.prayerID == prayer.id {
+      row = lines.firstIndex { $0.id.verse == saved.verseID && $0.id.line == saved.line } ?? 0
+    } else {
+      row = 0
+    }
+    tableView.scrollToRow(at: IndexPath(row: row, section: 0), at: .top, animated: false)
+    isTrackingReading = true
+    saveReading(row: row)
+  }
+
+  private func saveReading(row: Int) {
+    guard isTrackingReading, !hasFinishedReading, lines.indices.contains(row),
+          let ordinal = ordinalByVerse[lines[row].id.verse]
+    else { return }
+    PrayerContinuationStore.shared.save(.init(
+      prayerID: prayer.id,
+      verseID: lines[row].id.verse,
+      line: lines[row].id.line,
+      verse: ordinal + 1,
+      verses: verses.count,
+      fraction: Double(row) / Double(max(lines.count, 1))
+    ))
+  }
+
+  private func finishReading() {
+    hasFinishedReading = true
+    PrayerContinuationStore.shared.finish(prayerID: prayer.id)
+  }
+
   // MARK: - Content
 
   /// Flattens the prayer into the rows the table shows.
@@ -365,7 +410,15 @@ final class PrayerViewController: UIViewController {
       lines.map { Item.line(prayer: prayer.id, line: $0.id) },
       toSection: .verses
     )
-    dataSource.apply(snapshot, animatingDifferences: animated)
+    let prayerID = prayer.id
+    dataSource.apply(snapshot, animatingDifferences: animated) { [weak self] in
+      DispatchQueue.main.async { [weak self] in
+        guard let self, self.prayer.id == prayerID,
+              self.viewIfLoaded?.window != nil, !self.isTrackingReading
+        else { return }
+        self.restoreReading()
+      }
+    }
   }
 
   /// Pushes the current style into rows that are already on screen.
@@ -405,6 +458,8 @@ final class PrayerViewController: UIViewController {
   /// finishing, and the page would stay stepped back with nothing to put it
   /// right. A `UIView` animation's completion runs either way.
   private func follow(_ id: PrayerVerseLine.ID, at indexPath: IndexPath) {
+    hasFinishedReading = false
+    saveReading(row: indexPath.row)
     focusRelease?.cancel()
     focusRelease = nil
 
@@ -603,6 +658,7 @@ final class PrayerViewController: UIViewController {
   /// page the two are the same thing, which is the common case answering
   /// correctly for free.
   private func startPlayback() {
+    hasFinishedReading = false
     resumesWhenActive = false
 
     // Both of these are the page doing something else with the same line. A tap
@@ -767,6 +823,7 @@ final class PrayerViewController: UIViewController {
       // Not the next prayer, either. The reader asked for *this* one to be
       // read, and carrying on into whatever follows it in the catalog is a
       // decision they did not make.
+      finishReading()
       endPlayback(reporting: true)
       // And back to the opening line, so the prayer is left as it was found
       // rather than at the tail the reading ran out on — ready to be read
@@ -788,6 +845,7 @@ final class PrayerViewController: UIViewController {
   private func recite() {
     guard let recitedRow, lines.indices.contains(recitedRow) else { return }
 
+    saveReading(row: recitedRow)
     let indexPath = IndexPath(row: recitedRow, section: 0)
     let offset = offset(centring: tableView.rectForRow(at: indexPath))
 
@@ -1103,6 +1161,7 @@ final class PrayerViewController: UIViewController {
     }
 
     if prayerChanged {
+      isTrackingReading = false
       indexVerses()
       guard isViewLoaded else { return }
 
@@ -1276,6 +1335,7 @@ extension PrayerViewController: UITableViewDelegate {
   /// The reader taking hold of the page ends the follow: they have found what
   /// they were following, or they no longer care where it went.
   func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    hasFinishedReading = false
     stopFollowingScroll()
     releaseFocus()
     // A hand on the page pauses the reading rather than fighting it for the
@@ -1374,6 +1434,19 @@ extension PrayerViewController: UITableViewDelegate {
   /// under the middle of the page actually changes.
   func scrollViewDidScroll(_ scrollView: UIScrollView) {
     reportPosition()
+    guard isTrackingReading, playback == .stopped || playback == .paused,
+          scrollView.isDragging || scrollView.isDecelerating,
+          let row = firstReadableRow
+    else { return }
+
+    guard !hasFinishedReading else { return }
+    let bottom = scrollView.contentSize.height + scrollView.adjustedContentInset.bottom
+    if scrollView.contentOffset.y + scrollView.bounds.height >= bottom,
+       scrollView.contentOffset.y > -scrollView.adjustedContentInset.top {
+      finishReading()
+    } else {
+      saveReading(row: row)
+    }
   }
 
 }

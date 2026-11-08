@@ -2,6 +2,7 @@ import DesignKit
 import EnvironmentKit
 import Inject
 import LocalisationKit
+import PrayersKit
 import SwiftUI
 import UtilKit
 
@@ -53,6 +54,7 @@ public struct HomeScreen: View {
   @ObserveInjection private var injectionObserver
   @EnvironmentObject private var navigator: AppNavigatorModel
   @StateObject private var viewModel = HomeViewModel()
+  @ObservedObject private var continuation = PrayerContinuationStore.shared
   @State private var scrollOffset: CGFloat = 0
   @State private var segmentTop: CGFloat = .greatestFiniteMagnitude
   @State private var contentFrame: CGRect = .zero
@@ -115,6 +117,13 @@ public struct HomeScreen: View {
     pinScrollDistance = max(segmentTop - navBottom, 0)
   }
 
+  private var continuingReadings: [PrayerContinuationStore.Reading] {
+    guard let reading = continuation.reading,
+          PrayerCatalog.shared.prayer(id: reading.prayerID) != nil
+    else { return [] }
+    return [reading]
+  }
+
   public var body: some View {
     ScrollView {
       VStack(spacing: 0) {
@@ -136,8 +145,17 @@ public struct HomeScreen: View {
         ) {
           HomeTitleAnchor()
 
-          AppListSection("Continue") {
-            OngoingPrayerView()
+          HomeContinueCarousel(items: continuingReadings) { reading in
+            if let prayer = PrayerCatalog.shared.prayer(id: reading.prayerID) {
+              OngoingPrayerView(
+                prayer: prayer,
+                category: viewModel.sections.first { section in
+                  section.prayers.contains { $0.id == prayer.id }
+                }?.category,
+                reading: reading,
+                onTap: { navigator.navigate(to: .prayer(prayerID: prayer.id)) }
+              )
+            }
           }
 
           // The picker is a section header so it pins under the nav bar once it
