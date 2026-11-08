@@ -30,6 +30,7 @@ public struct AppOptionPickerSheet<Option: Hashable>: View {
   private let options: [Option]
   private let label: (Option) -> String
   private let systemImage: (Option) -> String?
+  private let flagEmoji: (Option) -> String?
 
   @Binding private var selection: Option
   @Environment(\.dismiss) private var dismiss
@@ -42,18 +43,23 @@ public struct AppOptionPickerSheet<Option: Hashable>: View {
   ///   - label: The localised name for an option.
   ///   - systemImage: Optional SF Symbol per option. Return `nil` throughout to
   ///     leave the icon column out entirely.
+  ///   - flagEmoji: A decorative waving flag in the icon column. When present,
+  ///     it takes precedence over the SF Symbol; the label remains the
+  ///     accessible name, since a country name is not a language name.
   public init(
     title: String,
     options: [Option],
     selection: Binding<Option>,
     label: @escaping (Option) -> String,
-    systemImage: @escaping (Option) -> String? = { _ in nil }
+    systemImage: @escaping (Option) -> String? = { _ in nil },
+    flagEmoji: @escaping (Option) -> String? = { _ in nil }
   ) {
     self.title = title
     self.options = options
     self._selection = selection
     self.label = label
     self.systemImage = systemImage
+    self.flagEmoji = flagEmoji
   }
 
   public var body: some View {
@@ -82,7 +88,10 @@ public struct AppOptionPickerSheet<Option: Hashable>: View {
       dismiss()
     } label: {
       HStack(spacing: AppSettingsRowMetrics.iconSpacing) {
-        if let systemImage = systemImage(option) {
+        if let flagEmoji = flagEmoji(option) {
+          AppWavingFlag(flagEmoji)
+            .frame(width: max(AppSettingsRowMetrics.iconColumn, AppWavingFlagMetrics.glyphSize))
+        } else if let systemImage = systemImage(option) {
           Image(systemName: systemImage)
             .font(.system(size: 20, weight: .regular))
             .foregroundStyle(isSelected(option) ? AppColor.primary : AppColor.textSecondary)
@@ -136,8 +145,11 @@ public enum AppOptionPickerMetrics {
   /// Computed rather than `.medium` so the sheet is as short as its contents —
   /// a half-screen sheet holding three rows looks like something failed to
   /// load. Pass it to `presentationDetents(_:)`.
-  public static func height(for count: Int) -> CGFloat {
-    topPadding + header + CGFloat(count) * row + bottom
+  /// `minimumRowContentHeight` reserves room for artwork taller than the title,
+  /// without making text-only pickers inherit the flag picker's larger rows.
+  public static func height(for count: Int, minimumRowContentHeight: CGFloat = 0) -> CGFloat {
+    let rowHeight = max(row, minimumRowContentHeight + AppSettingsRowMetrics.verticalPadding * 2)
+    return topPadding + header + CGFloat(count) * rowHeight + bottom
   }
 }
 

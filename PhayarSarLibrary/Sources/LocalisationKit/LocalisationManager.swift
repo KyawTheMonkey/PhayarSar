@@ -12,6 +12,15 @@ public enum Language: String, CaseIterable, Sendable {
     case .myanmar: return "မြန်မာ"
     }
   }
+
+  /// Decorative cues for the picker; the native language name remains the
+  /// option's accessible label.
+  public var flagEmoji: String {
+    switch self {
+    case .english: return "🇬🇧"
+    case .myanmar: return "🇲🇲"
+    }
+  }
 }
 
 /// Localization Manager handles language switching and string retrieval with multi-argument support

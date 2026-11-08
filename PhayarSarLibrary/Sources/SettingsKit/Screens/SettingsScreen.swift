@@ -98,9 +98,13 @@ public struct SettingsScreen: View {
         title: L10n.language,
         options: Language.allCases,
         selection: languageSelection,
-        label: { $0.displayName }
+        label: { $0.displayName },
+        flagEmoji: { $0.flagEmoji }
       )
-      .optionSheetDetent(for: Language.allCases.count)
+      .optionSheetDetent(
+        for: Language.allCases.count,
+        minimumRowContentHeight: AppWavingFlagMetrics.glyphSize
+      )
 
     case .developer:
       AppActionPickerSheet(
@@ -404,9 +408,11 @@ private extension View {
   /// `presentationDetents` is iOS-only; the package also builds for macOS 13,
   /// where a sheet is sized by its content anyway and needs no help.
   @ViewBuilder
-  func optionSheetDetent(for count: Int) -> some View {
+  func optionSheetDetent(for count: Int, minimumRowContentHeight: CGFloat = 0) -> some View {
     #if os(iOS)
-    presentationDetents([.height(AppOptionPickerMetrics.height(for: count))])
+    presentationDetents([.height(AppOptionPickerMetrics.height(
+      for: count, minimumRowContentHeight: minimumRowContentHeight
+    ))])
       .presentationDragIndicator(.visible)
     #else
     self

@@ -27,6 +27,12 @@ public enum Typography {
 // MARK: - Type scale, matches Design Tokens page (Lora display / Inter UI+body)
 
 public enum AppFont {
+  /// Use the system's colour emoji face rather than a bundled text font, so
+  /// flags retain their native artwork when rendered into a shader layer.
+  public static func emoji(size: CGFloat) -> Font {
+    .system(size: size)
+  }
+
   // MARK: - Display (Lora) — screen titles, prayer/section headers
   
   /// Lora 700 · 34pt — app name, large screen titles
