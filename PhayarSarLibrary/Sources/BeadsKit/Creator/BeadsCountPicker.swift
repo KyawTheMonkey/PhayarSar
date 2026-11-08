@@ -59,19 +59,25 @@ struct BeadsCountPicker: View {
           .foregroundStyle(AppColor.textSecondary)
       }
 
-      AppSegmentedPicker(
+      Picker(
+        L10n.beadsCount,
         selection: Binding(
           get: { count },
           set: { value in
             setCount(value)
           }
-        ),
-        items: BeadsCountPickerMetrics.presets
-      ) { preset in
-        Text(preset.formatted())
-          .accessibilityLabel(Beads.countLabel(for: preset))
-          .accessibilityIdentifier("beads.preset.\(preset)")
+        )
+      ) {
+        ForEach(BeadsCountPickerMetrics.presets, id: \.self) { preset in
+          Text(preset.formatted())
+            .tag(preset)
+            .accessibilityLabel(Beads.countLabel(for: preset))
+            .accessibilityIdentifier("beads.preset.\(preset)")
+        }
       }
+      .pickerStyle(.segmented)
+      .labelsHidden()
+      .accessibilityLabel(L10n.beadsCount)
 
       if !isValid {
         Text(L10n.beadsCountHint)
