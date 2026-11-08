@@ -11,7 +11,7 @@ struct Beads: Identifiable, Sendable {
   /// Nil for bead sets saved before recitations were introduced.
   let recitation: BeadsRecitation?
 
-  static let defaultCount = 108
+  static let defaultCount = 9
   static let countRange = 1...10_000
   static let defaultRounds = 1
   static let roundsRange = 1...10_000
