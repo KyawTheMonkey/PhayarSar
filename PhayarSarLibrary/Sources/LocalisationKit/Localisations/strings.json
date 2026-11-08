@@ -798,5 +798,9 @@
   "continue_prayer_progress": {
     "En": "{0} of {1} verses",
     "Mm": "ဂါထာ {1} ပုဒ်အနက် {0} ပုဒ်"
+  },
+  "home_search": {
+    "En": "Search",
+    "Mm": "ရှာရန်"
   }
 }
