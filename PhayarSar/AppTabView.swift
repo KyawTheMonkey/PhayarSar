@@ -30,11 +30,13 @@ struct AppTabView: View {
   }
 
   var body: some View {
-    Group {
-      if useSplitView {
-        splitView
-      } else {
-        tabStackView
+    BeadsNavigationContext {
+      Group {
+        if useSplitView {
+          splitView
+        } else {
+          tabStackView
+        }
       }
     }
     .tint(DesignKit.AppColor.primary)

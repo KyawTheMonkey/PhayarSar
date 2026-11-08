@@ -79,12 +79,16 @@ public struct BeadsPrayerSelectionScreen: View {
   private func finish() {
     guard let selection else { return }
     do {
-      if let beadsID = draft.beadsID {
+      if draft.commitsRecitationImmediately, let beadsID = draft.beadsID {
         try BeadsStore.shared.updateRecitation(id: beadsID, recitation: .prayer(selection))
         navigator.dismissSheet()
       } else {
         draft.pick(selection)
-        navigator.popSheetToRoot()
+        if let beadsID = draft.beadsID {
+          navigator.pop(to: .beadsEditor(beadsID: beadsID))
+        } else {
+          navigator.popSheetToRoot()
+        }
       }
     } catch {
       didFailToSave = true
@@ -150,6 +154,7 @@ private struct BeadsSelectablePrayerText: UIViewRepresentable {
     // link, so choose TextKit 1 up front instead of switching engines on access
     // to `layoutManager` after the user has begun selecting.
     let view = BeadsPrayerTextView.make()
+    view.keyboardDismissMode = .interactive
     view.isEditable = false
     view.isSelectable = true
     view.backgroundColor = .clear

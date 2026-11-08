@@ -34,6 +34,8 @@ struct RouteView: View {
       PrayerScreen(prayerID: prayerID)
     case let .nissaya(prayerID):
       NissayaScreen(prayerID: prayerID)
+    case let .beadsEditor(beadsID):
+      BeadsCreatorScreen(beadsID: beadsID)
     case .beadsPrayerBrowser:
       BeadsPrayerBrowserScreen()
     case let .beadsPrayerSelection(prayerID, location):
@@ -76,7 +78,7 @@ struct SheetView: View {
       .presentationDragIndicator(.visible)
 
     case let .beadsRecitationEditor(beadsID):
-      BeadsCreatorContext(beadsID: beadsID) {
+      BeadsCreatorContext(beadsID: beadsID, commitsRecitationImmediately: true) {
         NavigationStack(path: $navigator.sheetPath) {
           BeadsPrayerBrowserScreen()
             .navigationDestination(for: RouterDestination.self) { RouteView(destination: $0) }

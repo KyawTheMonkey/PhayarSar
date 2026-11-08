@@ -5,15 +5,16 @@ import LocalisationKit
 import SwiftUI
 
 public enum BeadsScreenMetrics {
-  public static let verticalPadding: CGFloat = 24
+  public static let rowSpacing: CGFloat = 4
 }
 
-/// Uses the shared empty state inside a scrollable viewport so large Burmese
-/// type can grow without pushing the action offscreen.
+/// A native list owns swipe actions and row accessibility. The empty state
+/// keeps its prominent Add action; saved sets move that action into the bar.
 public struct BeadsScreen: View {
   @ObserveInjection private var injectionObserver
   @EnvironmentObject private var navigator: AppNavigatorModel
   @ObservedObject private var store = BeadsStore.shared
+  @State private var didFailToDelete = false
 
   public init() {}
 
@@ -42,60 +43,81 @@ public struct BeadsScreen: View {
           }
         }
       } else {
-        ScrollView {
-          VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
-            AppListSection {
-              ForEach(store.beads) { beads in
-                VStack(alignment: .leading, spacing: AppCardMetrics.contentSpacing) {
-                  Text(beads.name)
-                    .font(AppFont.listItemTitle)
-                    .foregroundStyle(AppColor.textPrimary)
-                  Text(Beads.countLabel(for: beads.count))
-                    .font(AppFont.subheadline)
-                    .foregroundStyle(AppColor.textSecondary)
-                  Text(Beads.roundsLabel(for: beads.rounds))
-                    .font(AppFont.subheadline)
-                    .foregroundStyle(AppColor.textSecondary)
-                  if let recitation = beads.recitation {
-                    switch recitation {
-                    case let .typed(text):
-                      Text(text)
-                        .font(AppFont.body)
-                        .foregroundStyle(AppColor.textPrimary)
-                    case let .prayer(passage):
-                      BeadsPassageView(
-                        passage: passage,
-                        revealTrigger: store.recitationReveal?.beadsID == beads.id
-                          ? store.recitationReveal?.id : nil,
-                        isRevealActive: navigator.presentedSheet == nil,
-                        shouldReveal: store.recitationReveal?.id != store.revealedRecitationID,
-                        onRevealCompleted: store.didRevealRecitation
-                      ) {
-                        navigator.present(.beadsRecitationEditor(beadsID: beads.id), path: [
-                          .beadsPrayerSelection(prayerID: passage.prayerID, location: passage.location)
-                        ])
-                      }
-                    }
-                  }
-                }
-                .padding(.vertical, AppListSectionMetrics.labelGap)
-                .accessibilityElement(children: .contain)
-
-                if beads.id != store.beads.last?.id {
-                  AppDivider()
-                }
-              }
-            }
-            AppButton(L10n.beadsAdd, systemImage: "plus", action: addBeads)
-              .appHorizontalInset()
-          }
-          .padding(.vertical, BeadsScreenMetrics.verticalPadding)
-        }
+        beadsList
       }
     }
     .appBackground()
+    .toolbar {
+      if !store.beads.isEmpty {
+        ToolbarItem(placement: .primaryAction) {
+          Button(action: addBeads) {
+            Image(systemName: "plus")
+          }
+          .accessibilityLabel(L10n.beadsAdd)
+        }
+      }
+    }
+    .alert(L10n.deleteFailed, isPresented: $didFailToDelete) {
+      Button(L10n.done, role: .cancel) {}
+    }
     .onAppear { store.reload() }
     .enableInjection()
+  }
+
+  private var beadsList: some View {
+    List {
+      Section {
+        ForEach(store.beads) { beads in
+          Button {
+            navigator.navigate(to: .beadsEditor(beadsID: beads.id))
+          } label: {
+            HStack(spacing: AppSettingsRowMetrics.iconSpacing) {
+              VStack(alignment: .leading, spacing: BeadsScreenMetrics.rowSpacing) {
+                Text(beads.name)
+                  .font(AppFont.listItemTitle)
+                  .foregroundStyle(AppColor.textPrimary)
+                  .fixedSize(horizontal: false, vertical: true)
+                Text(L10n.beadsListSummary(
+                  .init(stringLiteral: Beads.countLabel(for: beads.count)),
+                  .init(stringLiteral: Beads.roundsLabel(for: beads.rounds))
+                ))
+                  .font(AppFont.subheadline)
+                  .foregroundStyle(AppColor.textSecondary)
+                  .fixedSize(horizontal: false, vertical: true)
+              }
+              Spacer(minLength: 0)
+              Image(systemName: "chevron.right")
+                .font(AppFont.caption)
+                .foregroundStyle(AppColor.textTertiary)
+                .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
+          }
+          .buttonStyle(.plain)
+          .listRowInsets(AppListSectionMetrics.contentInsets)
+          .listRowBackground(AppColor.surface)
+          .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) { deleteBeads(id: beads.id) } label: {
+              Label(L10n.delete, systemImage: "trash")
+            }
+          }
+        }
+      }
+    }
+    #if os(iOS)
+    .listStyle(.insetGrouped)
+    #else
+    .listStyle(.inset)
+    #endif
+    .scrollContentBackground(.hidden)
+  }
+
+  private func deleteBeads(id: UUID) {
+    do {
+      try store.delete(id: id)
+    } catch {
+      didFailToDelete = true
+    }
   }
 
   private func addBeads() {

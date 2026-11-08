@@ -104,6 +104,19 @@ public final class AppNavigatorModel: ObservableObject {
     paths[selectedTab] = path
   }
 
+  /// Returns from a picker to the form that opened it without discarding
+  /// that form's draft or assuming it sits at the stack's root.
+  public func pop(to destination: RouterDestination) {
+    if presentedSheet != nil {
+      guard let index = sheetPath.lastIndex(of: destination) else { return }
+      sheetPath = Array(sheetPath.prefix(through: index))
+    } else {
+      guard let path = paths[selectedTab],
+            let index = path.lastIndex(of: destination) else { return }
+      paths[selectedTab] = Array(path.prefix(through: index))
+    }
+  }
+
   /// Unwinds a tab back to its root.
   ///
   /// - Parameter tab: Defaults to the current tab.
@@ -150,6 +163,8 @@ public enum RouterDestination: Hashable, Codable {
   /// The study screen — each verse against its translation, pushed from the
   /// detail screen's "Nissaya" quick action.
   case nissaya(prayerID: String)
+  /// The saved set is edited in place within the Beads navigation stack.
+  case beadsEditor(beadsID: UUID)
   case beadsPrayerBrowser
   case beadsPrayerSelection(prayerID: String, location: PrayerPassageLocation? = nil)
 }

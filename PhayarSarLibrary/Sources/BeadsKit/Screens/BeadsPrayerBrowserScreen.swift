@@ -48,11 +48,12 @@ public struct BeadsPrayerBrowserScreen: View {
       .frame(maxWidth: BeadsCreatorMetrics.maxWidth)
       .frame(maxWidth: .infinity)
     }
+    .appKeyboardDismissal()
     .appBackground()
     .navigationTitle(L10n.beadsPrayerChoose)
     .searchable(text: $query, prompt: L10n.beadsPrayerSearch)
     .toolbar {
-      if draft.beadsID != nil {
+      if draft.commitsRecitationImmediately {
         ToolbarItem(placement: .cancellationAction) {
           Button(L10n.cancel) { navigator.dismissSheet() }
         }

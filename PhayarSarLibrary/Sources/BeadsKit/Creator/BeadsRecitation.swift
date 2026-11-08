@@ -24,14 +24,26 @@ final class BeadsRecitationDraft: ObservableObject {
   @Published var passage: PrayerPassage?
   @Published private(set) var passageRevealID: UUID?
   private(set) var revealedPassageID: UUID?
-  let beadsID: UUID?
+  private(set) var beadsID: UUID?
+  /// The passage-only editor commits on Done. The full form must return to
+  /// its draft instead, or choosing a passage would save through Cancel.
+  let commitsRecitationImmediately: Bool
 
-  init(beadsID: UUID? = nil, prayerID: String? = nil, verseID: Int? = nil) {
+  init(
+    beadsID: UUID? = nil, prayerID: String? = nil, verseID: Int? = nil,
+    commitsRecitationImmediately: Bool = false
+  ) {
     self.beadsID = beadsID
+    self.commitsRecitationImmediately = commitsRecitationImmediately
     if let beadsID,
-       case let .prayer(passage)? = BeadsStore.shared.beads.first(where: { $0.id == beadsID })?.recitation {
-      self.mode = .prayer
-      self.passage = passage
+       let recitation = BeadsStore.shared.beads.first(where: { $0.id == beadsID })?.recitation {
+      switch recitation {
+      case let .typed(text):
+        self.typedText = text
+      case let .prayer(passage):
+        self.mode = .prayer
+        self.passage = passage
+      }
     } else if beadsID == nil, let prayerID, let verseID,
               let prayer = PrayerCatalog.shared.prayer(id: prayerID) {
       // Use the same source document as the picker: a verse spans every reader
@@ -42,6 +54,34 @@ final class BeadsRecitationDraft: ObservableObject {
         pick(passage)
       }
     }
+  }
+
+  /// Called when a pushed editor first appears. Returning from its picker
+  /// must reuse the current draft; reopening the set starts a fresh one.
+  func prepareToEdit(beadsID: UUID) {
+    guard self.beadsID != beadsID else { return }
+    self.beadsID = beadsID
+    mode = .typed
+    typedText = ""
+    passage = nil
+    passageRevealID = nil
+    revealedPassageID = nil
+    switch BeadsStore.shared.beads.first(where: { $0.id == beadsID })?.recitation {
+    case let .typed(text): typedText = text
+    case let .prayer(passage):
+      mode = .prayer
+      self.passage = passage
+    case nil: break
+    }
+  }
+
+  func endEditing() {
+    beadsID = nil
+    mode = .typed
+    typedText = ""
+    passage = nil
+    passageRevealID = nil
+    revealedPassageID = nil
   }
 
   var recitation: BeadsRecitation? {
@@ -65,6 +105,30 @@ final class BeadsRecitationDraft: ObservableObject {
   }
 }
 
+/// Navigation destinations are siblings, so injecting the draft on the editor
+/// alone would leave its pushed browser without it. Keep the draft above the
+/// tab stacks, and discard it only when its editor leaves the navigator's path.
+/// Add sheets install their own `BeadsCreatorContext` and remain independent.
+public struct BeadsNavigationContext<Content: View>: View {
+  @EnvironmentObject private var navigator: AppNavigatorModel
+  @StateObject private var draft = BeadsRecitationDraft()
+  private let content: Content
+
+  public init(@ViewBuilder content: () -> Content) {
+    self.content = content()
+  }
+
+  public var body: some View {
+    content
+      .environmentObject(draft)
+      .onChange(of: navigator.paths) { paths in
+        guard let beadsID = draft.beadsID else { return }
+        let isEditing = paths.values.contains { $0.contains(.beadsEditor(beadsID: beadsID)) }
+        if !isEditing { draft.endEditing() }
+      }
+  }
+}
+
 /// Owns a draft for the lifetime of the entire modal stack, not an individual
 /// screen. Browser pushes and breadcrumb detours inherit the same object, and
 /// dismissing the sheet drops both inactive and active source drafts together.
@@ -74,10 +138,12 @@ public struct BeadsCreatorContext<Content: View>: View {
 
   public init(
     beadsID: UUID? = nil, prayerID: String? = nil, verseID: Int? = nil,
+    commitsRecitationImmediately: Bool = false,
     @ViewBuilder content: () -> Content
   ) {
     _draft = StateObject(wrappedValue: BeadsRecitationDraft(
-      beadsID: beadsID, prayerID: prayerID, verseID: verseID
+      beadsID: beadsID, prayerID: prayerID, verseID: verseID,
+      commitsRecitationImmediately: commitsRecitationImmediately
     ))
     self.content = content()
   }
@@ -99,6 +165,12 @@ struct BeadsRecitationSection: View {
   @EnvironmentObject private var draft: BeadsRecitationDraft
   @EnvironmentObject private var navigator: AppNavigatorModel
 
+  private var isEditorVisible: Bool {
+    if navigator.presentedSheet != nil { return navigator.sheetPath.isEmpty }
+    guard let beadsID = draft.beadsID else { return false }
+    return navigator.paths[navigator.selectedTab]?.last == .beadsEditor(beadsID: beadsID)
+  }
+
   var body: some View {
     VStack(spacing: BeadsRecitationMetrics.contentSpacing) {
       AppListSection(L10n.beadsRecitation) {
@@ -109,6 +181,7 @@ struct BeadsRecitationSection: View {
       if draft.mode == .typed {
         AppListSection {
           TextEditor(text: $draft.typedText)
+            .scrollDismissesKeyboard(.interactively)
             .font(AppFont.body)
             .frame(minHeight: BeadsRecitationMetrics.editorHeight)
             .scrollContentBackground(.hidden)
@@ -128,7 +201,7 @@ struct BeadsRecitationSection: View {
           if let passage = draft.passage {
             BeadsPassageView(
               passage: passage, revealTrigger: draft.passageRevealID,
-              isRevealActive: navigator.sheetPath.isEmpty,
+              isRevealActive: isEditorVisible,
               shouldReveal: draft.passageRevealID != draft.revealedPassageID,
               onRevealCompleted: draft.didRevealPassage
             ) {

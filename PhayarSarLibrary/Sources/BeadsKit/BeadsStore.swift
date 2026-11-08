@@ -114,6 +114,38 @@ final class BeadsStore: ObservableObject {
     reload()
   }
 
+  /// Edit the existing identity and keep its creation date, so saving does not
+  /// turn an edit into a duplicate or move the set to the top of the list.
+  func update(id: UUID, name: String, count: Int, rounds: Int, recitation: BeadsRecitation) throws {
+    guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
+    let store = KloudStack.shared.store(for: BeadsRecord.self)
+    guard let record = try store.first(where: NSPredicate(format: "id == %@", id as NSUUID)) else {
+      throw CocoaError(.validationMissingMandatoryProperty)
+    }
+    let data = try JSONEncoder().encode(recitation)
+    let previous = (record.name, record.count, record.rounds, record.recitationData)
+    record.name = name
+    record.count = NSNumber(value: count)
+    record.rounds = NSNumber(value: rounds)
+    record.recitationData = data
+    do {
+      try store.save()
+    } catch {
+      // A later save elsewhere must not commit an edit that reported failure.
+      (record.name, record.count, record.rounds, record.recitationData) = previous
+      throw error
+    }
+    reload()
+  }
+
+  func delete(id: UUID) throws {
+    guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
+    try KloudStack.shared.store(for: BeadsRecord.self).delete(
+      where: NSPredicate(format: "id == %@", id as NSUUID)
+    )
+    reload()
+  }
+
   func updateRecitation(id: UUID, recitation: BeadsRecitation) throws {
     guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
     let store = KloudStack.shared.store(for: BeadsRecord.self)

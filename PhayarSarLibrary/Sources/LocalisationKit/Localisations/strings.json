@@ -635,6 +635,22 @@
     "En": "Add Beads",
     "Mm": "ပုတီးထည့်ရန်"
   },
+  "beads_edit": {
+    "En": "Edit Beads",
+    "Mm": "ပုတီးပြင်ဆင်ရန်"
+  },
+  "beads_save_changes": {
+    "En": "Save Changes",
+    "Mm": "ပြင်ဆင်ချက်များ သိမ်းမည်"
+  },
+  "beads_delete": {
+    "En": "Delete Beads",
+    "Mm": "ပုတီးဖျက်ရန်"
+  },
+  "beads_list_summary": {
+    "En": "{0} · {1}",
+    "Mm": "{0} · {1}"
+  },
   "beads_name": {
     "En": "Name",
     "Mm": "အမည်"
