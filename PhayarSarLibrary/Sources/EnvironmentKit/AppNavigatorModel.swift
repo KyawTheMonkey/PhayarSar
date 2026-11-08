@@ -173,8 +173,10 @@ public enum SheetDestination: Identifiable, Hashable, Codable {
   /// styles it offers are `MeditationStyle`'s cases, not stored records.
   case meditationSessionCreator
 
-  /// Creating a bead set is a cancellable detour from the beads collection.
-  case beadsCreator
+  /// Creating a bead set is a cancellable detour. The reader supplies source
+  /// ids so the draft can resolve a whole verse without coupling navigation
+  /// to prayer models or the reader's reshaped display text.
+  case beadsCreator(prayerID: String? = nil, verseID: Int? = nil)
 
   /// Re-selecting a saved bead set's passage uses the same browser and picker,
   /// but Done updates that record rather than creating a second bead set.
@@ -186,7 +188,10 @@ public enum SheetDestination: Identifiable, Hashable, Codable {
       return "profile"
     case .meditationSessionCreator:
       return "meditationSessionCreator"
-    case .beadsCreator:
+    case let .beadsCreator(prayerID, verseID):
+      if let prayerID, let verseID {
+        return "beadsCreator-\(prayerID)-\(verseID)"
+      }
       return "beadsCreator"
     case let .beadsRecitationEditor(beadsID):
       return "beadsRecitationEditor-\(beadsID.uuidString)"

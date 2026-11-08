@@ -110,6 +110,10 @@ final class PrayerViewController: UIViewController {
   /// this one cannot draw above.
   var onSheetChange: ((Bool) -> Void)?
 
+  /// Routing stays in the SwiftUI shell; the reader reports the source verse,
+  /// not a single display row or its pronunciation-dependent text.
+  var onBeads: ((Prayer.ID, Prayer.Verse.ID) -> Void)?
+
   /// Whether the page is reading itself, and how far into doing so.
   ///
   /// Owned here rather than in ``PrayerScreen``, which only *asks*. The shell
@@ -1166,7 +1170,7 @@ final class PrayerViewController: UIViewController {
 /// the one UIKit puts at the trailing edge, nearest the thumb that opened the
 /// tray.
 private enum PrayerLineAction {
-  /// Count this line on the beads.
+  /// Start a bead set with this line's whole verse as its recitation.
   case beads
 
   /// Open the verse's nissaya in the inline sheet.
@@ -1334,18 +1338,25 @@ extension PrayerViewController: UITableViewDelegate {
       style: .normal,
       title: action.title
     ) { [weak self] _, _, completion in
-      // Reported as performed either way, so that the tray closes itself rather
-      // than sitting open over the line. Beads and Report are not bound yet, so
-      // for those that closing is the whole of it.
+      // Close the tray before presenting anything above the selected verse.
       completion(true)
 
-      guard case .nissaya = action else { return }
+      guard let self else { return }
+      let prayerID = self.prayer.id
 
       // After the tray, not under it. The sheet leaves from the row's own rect,
       // and a row still sliding back from a swipe is not yet where that rect
       // says it is.
-      DispatchQueue.main.asyncAfter(deadline: .now() + PrayerReaderMetrics.trayClose) {
-        self?.openNissaya(for: line)
+      DispatchQueue.main.asyncAfter(deadline: .now() + PrayerReaderMetrics.trayClose) { [weak self] in
+        guard let self, self.prayer.id == prayerID else { return }
+        switch action {
+        case .beads:
+          self.onBeads?(prayerID, line.verse)
+        case .nissaya:
+          self.openNissaya(for: line)
+        case .report:
+          break
+        }
       }
     }
 

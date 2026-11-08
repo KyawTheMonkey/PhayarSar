@@ -66,8 +66,8 @@ struct SheetView: View {
       // from inside. See `creatorSheetPresentation()`.
       MeditationSessionCreatorScreen()
 
-    case .beadsCreator:
-      BeadsCreatorContext {
+    case let .beadsCreator(prayerID, verseID):
+      BeadsCreatorContext(prayerID: prayerID, verseID: verseID) {
         NavigationStack(path: $navigator.sheetPath) {
           BeadsCreatorScreen()
             .navigationDestination(for: RouterDestination.self) { RouteView(destination: $0) }

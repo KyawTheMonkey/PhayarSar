@@ -26,12 +26,21 @@ final class BeadsRecitationDraft: ObservableObject {
   private(set) var revealedPassageID: UUID?
   let beadsID: UUID?
 
-  init(beadsID: UUID? = nil) {
+  init(beadsID: UUID? = nil, prayerID: String? = nil, verseID: Int? = nil) {
     self.beadsID = beadsID
     if let beadsID,
        case let .prayer(passage)? = BeadsStore.shared.beads.first(where: { $0.id == beadsID })?.recitation {
       self.mode = .prayer
       self.passage = passage
+    } else if beadsID == nil, let prayerID, let verseID,
+              let prayer = PrayerCatalog.shared.prayer(id: prayerID) {
+      // Use the same source document as the picker: a verse spans every reader
+      // row derived from it, regardless of pronunciation or display settings.
+      let document = PrayerPassageDocument(prayer: prayer)
+      if let range = document.verses.first(where: { $0.verseID == verseID })?.range,
+         let passage = document.passage(in: range) {
+        pick(passage)
+      }
     }
   }
 
@@ -63,8 +72,13 @@ public struct BeadsCreatorContext<Content: View>: View {
   @StateObject private var draft: BeadsRecitationDraft
   private let content: Content
 
-  public init(beadsID: UUID? = nil, @ViewBuilder content: () -> Content) {
-    _draft = StateObject(wrappedValue: BeadsRecitationDraft(beadsID: beadsID))
+  public init(
+    beadsID: UUID? = nil, prayerID: String? = nil, verseID: Int? = nil,
+    @ViewBuilder content: () -> Content
+  ) {
+    _draft = StateObject(wrappedValue: BeadsRecitationDraft(
+      beadsID: beadsID, prayerID: prayerID, verseID: verseID
+    ))
     self.content = content()
   }
 

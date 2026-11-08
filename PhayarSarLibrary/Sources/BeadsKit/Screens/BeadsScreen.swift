@@ -99,7 +99,7 @@ public struct BeadsScreen: View {
   }
 
   private func addBeads() {
-    navigator.present(.beadsCreator)
+    navigator.present(.beadsCreator())
   }
 }
 

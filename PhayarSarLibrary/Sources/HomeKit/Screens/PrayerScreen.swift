@@ -1,5 +1,6 @@
 import ActivitiesKit
 import DesignKit
+import EnvironmentKit
 import Inject
 import LocalisationKit
 import PrayersKit
@@ -26,6 +27,7 @@ import UtilKit
 /// `RouterDestination.prayer(prayerID:)`.
 public struct PrayerScreen: View {
   @ObserveInjection private var injectionObserver
+  @EnvironmentObject private var navigator: AppNavigatorModel
 
   /// The catalog in reading order — which is the order the switcher scrubs in.
   /// See ``PrayerCatalog/orderedPrayers()``, whose whole purpose is that "next"
@@ -323,6 +325,10 @@ public struct PrayerScreen: View {
         prayer: prayer,
         settings: settings,
         onSheetChange: showNissaya,
+        onBeads: { prayerID, verseID in
+          close()
+          navigator.present(.beadsCreator(prayerID: prayerID, verseID: verseID))
+        },
         playback: playback,
         speed: speed,
         onPlaybackChange: { playback = $0 },
@@ -734,6 +740,7 @@ private struct PrayerReader: UIViewControllerRepresentable {
   let settings: PrayerSettings
   /// Called when the reader opens or closes its inline nissaya sheet.
   let onSheetChange: (Bool) -> Void
+  let onBeads: (Prayer.ID, Prayer.Verse.ID) -> Void
   /// What the shell's controls are asking the page to do.
   let playback: PrayerPlaybackState
   /// And how fast to do it.
@@ -748,6 +755,7 @@ private struct PrayerReader: UIViewControllerRepresentable {
   func makeUIViewController(context: Context) -> PrayerViewController {
     let controller = PrayerViewController(prayer: prayer, settings: settings)
     controller.onSheetChange = onSheetChange
+    controller.onBeads = onBeads
     controller.onPlaybackChange = onPlaybackChange
     controller.onProgressChange = onProgressChange
 
@@ -758,6 +766,7 @@ private struct PrayerReader: UIViewControllerRepresentable {
     // Re-set on every pass, because the closure captures the current `body`'s
     // state — a stale one would be writing to a `State` that has moved on.
     controller.onSheetChange = onSheetChange
+    controller.onBeads = onBeads
     controller.onPlaybackChange = onPlaybackChange
     controller.onProgressChange = onProgressChange
     controller.update(prayer: prayer, settings: settings)
@@ -785,6 +794,7 @@ private struct PrayerReader: View {
   /// Unused on macOS, which has no reader and so no sheet. Here so that the
   /// call site does not have to know which platform it is building for.
   let onSheetChange: (Bool) -> Void
+  let onBeads: (Prayer.ID, Prayer.Verse.ID) -> Void
   /// Unused for the same reason: there is no page here to read itself.
   let playback: PrayerPlaybackState
   let speed: PrayerPlaybackSpeed
@@ -812,16 +822,19 @@ private struct PrayerReader: View {
   NavigationStack {
     PrayerScreen(prayerID: "Khandha")
   }
+  .environmentObject(AppNavigatorModel())
 }
 
 #Preview("Named verses") {
   NavigationStack {
     PrayerScreen(prayerID: "ပဋ္ဌာန်းအကျယ်")
   }
+  .environmentObject(AppNavigatorModel())
 }
 
 #Preview("Not found") {
   NavigationStack {
     PrayerScreen(prayerID: "no-such-prayer")
   }
+  .environmentObject(AppNavigatorModel())
 }
