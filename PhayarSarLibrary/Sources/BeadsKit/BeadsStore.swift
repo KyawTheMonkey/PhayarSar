@@ -7,9 +7,23 @@ struct Beads: Identifiable, Sendable {
   let id: UUID
   let name: String
   let count: Int
+  let rounds: Int
 
   static let defaultCount = 108
   static let countRange = 1...10_000
+  static let defaultRounds = 1
+  static let roundsRange = 1...10_000
+
+  static func roundsNumber(_ rounds: Int) -> String {
+    rounds.formatted(.number.grouping(.never).locale(
+      Locale(identifier: LocalisationManager.shared.currentLanguage == .myanmar ? "my_MM" : "en_US")
+    ))
+  }
+
+  static func roundsLabel(for rounds: Int) -> String {
+    let number = L10n.Arg(stringLiteral: roundsNumber(rounds))
+    return rounds == 1 ? L10n.beadsRoundsOne(number) : L10n.beadsRoundsSummary(number)
+  }
 
   static func countLabel(for count: Int) -> String {
     count == 1 ? L10n.beadsCountOne : L10n.beadsCountSummary(.init(stringLiteral: count.formatted()))
@@ -55,7 +69,13 @@ final class BeadsStore: ObservableObject {
               let count = record.count?.intValue,
               Beads.countRange.contains(count), seen.insert(id).inserted
         else { return nil }
-        return Beads(id: id, name: name, count: count)
+        // Older bead sets predate round targets. A missing target means one
+        // complete strand, so migration never hides an existing saved set.
+        let rounds = record.rounds?.intValue ?? Beads.defaultRounds
+        return Beads(
+          id: id, name: name, count: count,
+          rounds: Beads.roundsRange.contains(rounds) ? rounds : Beads.defaultRounds
+        )
       }
       didFailToLoad = false
     } catch {
@@ -63,7 +83,7 @@ final class BeadsStore: ObservableObject {
     }
   }
 
-  func add(id: UUID, name: String, count: Int) throws {
+  func add(id: UUID, name: String, count: Int, rounds: Int) throws {
     guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
     let store = KloudStack.shared.store(for: BeadsRecord.self)
     // KloudStore.insert removes a failed insertion from the context, so Cancel
@@ -72,6 +92,7 @@ final class BeadsStore: ObservableObject {
       record.id = id
       record.name = name
       record.count = NSNumber(value: count)
+      record.rounds = NSNumber(value: rounds)
       record.createdAt = .now
     }
     reload()

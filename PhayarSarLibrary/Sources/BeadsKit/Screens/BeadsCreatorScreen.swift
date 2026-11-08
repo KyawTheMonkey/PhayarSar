@@ -18,6 +18,8 @@ public struct BeadsCreatorScreen: View {
   @State private var name = ""
   @State private var count = Beads.defaultCount
   @State private var isValidCount = true
+  @State private var rounds = Beads.defaultRounds
+  @State private var isValidRounds = true
   @State private var didFailToSave = false
 
   public init() {}
@@ -39,6 +41,7 @@ public struct BeadsCreatorScreen: View {
           TextField(L10n.beadsNamePlaceholder, text: $name)
             .accessibilityLabel(L10n.beadsName)
         }
+        BeadsRoundsPicker(rounds: $rounds, isValid: $isValidRounds)
         if didFailToSave {
           Text(L10n.beadsSaveError)
             .font(AppFont.subheadline)
@@ -46,8 +49,8 @@ public struct BeadsCreatorScreen: View {
             .appHorizontalInset()
         }
         AppButton(L10n.beadsAdd, systemImage: "plus", action: save)
-          .disabled(trimmedName.isEmpty || !isValidCount)
-          .opacity(trimmedName.isEmpty || !isValidCount ? 0.5 : 1)
+          .disabled(trimmedName.isEmpty || !isValidCount || !isValidRounds)
+          .opacity(trimmedName.isEmpty || !isValidCount || !isValidRounds ? 0.5 : 1)
           .appHorizontalInset()
       }
       .font(AppFont.body)
@@ -69,9 +72,11 @@ public struct BeadsCreatorScreen: View {
   }
 
   private func save() {
-    guard !trimmedName.isEmpty, isValidCount, Beads.countRange.contains(count) else { return }
+    guard !trimmedName.isEmpty, isValidCount, isValidRounds,
+          Beads.countRange.contains(count), Beads.roundsRange.contains(rounds)
+    else { return }
     do {
-      try BeadsStore.shared.add(id: draftID, name: trimmedName, count: count)
+      try BeadsStore.shared.add(id: draftID, name: trimmedName, count: count, rounds: rounds)
       navigator.dismissSheet()
     } catch {
       didFailToSave = true

@@ -53,6 +53,9 @@ public struct BeadsScreen: View {
                   Text(Beads.countLabel(for: beads.count))
                     .font(AppFont.subheadline)
                     .foregroundStyle(AppColor.textSecondary)
+                  Text(Beads.roundsLabel(for: beads.rounds))
+                    .font(AppFont.subheadline)
+                    .foregroundStyle(AppColor.textSecondary)
                 }
                 .padding(.vertical, AppListSectionMetrics.labelGap)
                 .accessibilityElement(children: .combine)
