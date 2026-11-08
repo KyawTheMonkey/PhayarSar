@@ -147,6 +147,13 @@ notification payload. Name new cases `<subject><Screen>(<id>:)`.
   `AppSettingsRow`, `AppEmptyStateView`, …) before writing a new one. New shared
   components go in `DesignKit/Components/` with a public `*Metrics` enum for
   their constants.
+- **Input screens dismiss the keyboard interactively while scrolling.** Apply
+  `.appKeyboardDismissal()` (UtilKit) to the containing `ScrollView` or `List`;
+  it also resigns the current input on outside taps without swallowing button
+  actions or taps inside text inputs. Nested `TextEditor`s additionally use
+  `.scrollDismissesKeyboard(.interactively)`; UIKit scroll views use
+  `keyboardDismissMode = .interactive`. Preserve text selection and native
+  input interactions when outside-tap dismissal would interfere with them.
 - **Burmese text needs vertical room.** Stacked diacritics are why padding
   values look generous; don't tighten them to match a Latin-only mock.
 - **`Inject` for live reload.** Screens and non-trivial views carry
