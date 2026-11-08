@@ -5,13 +5,17 @@ import SwiftUI
 enum BeadsStrandMetrics {
   static let height: CGFloat = 240
   static let drawingWidth: CGFloat = 340
+  /// Reserve room for the cord at the leading edge while keeping the whole
+  /// object, rather than just the counting loop, centred in its viewport.
+  static let centerX = drawingWidth / 2 + BeadsHeadMetrics.leadingReach / 2
+  static let centerY = height / 2
   static let maximumVisibleBeads = 108
   static let samples = 540
   static let maximumDiameter: CGFloat = 34
   static let minimumDiameter: CGFloat = 12
   static let beadsPerCoil = 36
   static let minimumRadius: CGFloat = 22
-  static let maximumRadius: CGFloat = 116
+  static let maximumRadius: CGFloat = 100
   static let radiusPerBead: CGFloat = 6.8
   static let coilHorizontalSpread: CGFloat = 16
   static let coilVerticalSpread: CGFloat = 28
@@ -48,6 +52,14 @@ struct BeadsStrandView: View {
         BeadsThread(radius: geometry.radius, coils: geometry.coils, perspective: geometry.perspective)
           .stroke(AppColor.Beads.thread, lineWidth: BeadsStrandMetrics.threadWidth)
 
+        if visibleCount == 1, let bead = geometry.beads.first {
+          Path { path in
+            path.move(to: bead.position)
+            path.addLine(to: geometry.head.position)
+          }
+          .stroke(AppColor.Beads.thread, lineWidth: BeadsStrandMetrics.threadWidth)
+        }
+
         ForEach(firstIndex..<(firstIndex + visibleCount), id: \.self) { index in
           let bead = geometry.beads[index - firstIndex]
           PolishedBead()
@@ -56,8 +68,18 @@ struct BeadsStrandView: View {
             .position(bead.position)
             .zIndex(bead.position.y)
         }
+
+        BeadsHeadView(diameter: geometry.head.diameter, count: count)
+          .position(
+            x: geometry.head.position.x + BeadsHeadMetrics.width / 2 - BeadsHeadMetrics.anchor.x,
+            y: geometry.head.position.y + BeadsHeadMetrics.height / 2 - BeadsHeadMetrics.anchor.y
+          )
+          .zIndex(.infinity)
       }
       .frame(width: BeadsStrandMetrics.drawingWidth, height: BeadsStrandMetrics.height)
+      // Coils can put the outermost leading join above or below their centre.
+      // Move the complete drawing so the head always meets the centre line.
+      .offset(y: BeadsStrandMetrics.centerY - geometry.head.position.y)
       .scaleEffect(scale)
       .frame(width: proxy.size.width, height: proxy.size.height)
     }
@@ -79,7 +101,9 @@ struct BeadsStrandView: View {
 
 // MARK: - Material
 
-private struct PolishedBead: View {
+struct PolishedBead: View {
+  var reflectionStrength: Double = 1
+
   var body: some View {
     GeometryReader { proxy in
       let diameter = proxy.size.width
@@ -101,7 +125,7 @@ private struct PolishedBead: View {
           Circle()
             .strokeBorder(
               LinearGradient(
-                colors: [AppColor.Beads.reflection.opacity(0.65), AppColor.Beads.core, AppColor.Beads.rim.opacity(0.7)],
+                colors: [AppColor.Beads.reflection.opacity(0.65 * reflectionStrength), AppColor.Beads.core, AppColor.Beads.rim.opacity(0.7)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
               ),
@@ -112,7 +136,7 @@ private struct PolishedBead: View {
           Ellipse()
             .fill(
               LinearGradient(
-                colors: [AppColor.Beads.reflection.opacity(0.95), AppColor.Beads.reflection.opacity(0.05)],
+                colors: [AppColor.Beads.reflection.opacity(0.95 * reflectionStrength), AppColor.Beads.reflection.opacity(0.05 * reflectionStrength)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
               )
@@ -149,6 +173,7 @@ struct BeadsStrandGeometry {
   let coils: CGFloat
   let perspective: CGFloat
   let beads: [Bead]
+  let head: Bead
 
   init(count: Int) {
     let count = min(max(count, 1), BeadsStrandMetrics.maximumVisibleBeads)
@@ -163,18 +188,32 @@ struct BeadsStrandGeometry {
     self.perspective = perspective
 
     if count == 1 {
+      let diameter = BeadsStrandMetrics.maximumDiameter
+      let beadX = BeadsStrandMetrics.centerX + diameter * BeadsHeadMetrics.diameterScale / 2
       beads = [Bead(
-        position: CGPoint(x: BeadsStrandMetrics.drawingWidth / 2, y: BeadsStrandMetrics.height / 2),
-        diameter: BeadsStrandMetrics.maximumDiameter
+        position: CGPoint(x: beadX, y: BeadsStrandMetrics.centerY),
+        diameter: diameter
       )]
+      head = Bead(
+        position: CGPoint(x: beadX - diameter * (1 + BeadsHeadMetrics.diameterScale) / 2, y: BeadsStrandMetrics.centerY),
+        diameter: diameter * BeadsHeadMetrics.diameterScale
+      )
       return
     }
 
     // Uniform angles bunch up the beads at an oval's ends. Sampling its arc
     // length keeps the physical gaps even, including where the coils cross.
-    let points = (0...BeadsStrandMetrics.samples).map { sample in
+    let samples = (0..<BeadsStrandMetrics.samples).map { sample in
       Self.point(fraction: CGFloat(sample) / CGFloat(BeadsStrandMetrics.samples), radius: radius, coils: coils, perspective: perspective)
     }
+
+    // The head belongs to the leading join, including on a coiled strand.
+    // Start the arc there and leave room for it *in addition* to the selected
+    // counting beads; replacing the first sphere would silently display one
+    // fewer counting bead than the value the user chose.
+    let joinIndex = samples.indices.min { samples[$0].x < samples[$1].x } ?? 0
+    var points = Array(samples[joinIndex...]) + Array(samples[..<joinIndex])
+    points.append(points[0])
     var distances: [CGFloat] = [0]
     for index in 1..<points.count {
       distances.append(distances[index - 1] + hypot(points[index].x - points[index - 1].x, points[index].y - points[index - 1].y))
@@ -182,11 +221,14 @@ struct BeadsStrandGeometry {
     let length = distances.last ?? 0
     let diameter = min(
       BeadsStrandMetrics.maximumDiameter,
-      max(BeadsStrandMetrics.minimumDiameter, length / CGFloat(count) * 0.96)
+      max(BeadsStrandMetrics.minimumDiameter, length / (CGFloat(count) + BeadsHeadMetrics.diameterScale) * 0.96)
     )
+    let headDiameter = diameter * BeadsHeadMetrics.diameterScale
+    head = Bead(position: points[0], diameter: headDiameter)
+    let headClearance = headDiameter * BeadsHeadMetrics.joinClearance
     var cursor = 1
     beads = (0..<count).map { index in
-      let target = CGFloat(index) / CGFloat(count) * length
+      let target = headClearance / 2 + (CGFloat(index) + 0.5) / CGFloat(count) * (length - headClearance)
       while cursor < distances.count - 1, distances[cursor] < target { cursor += 1 }
       let previous = cursor - 1
       let fraction = (target - distances[previous]) / max(distances[cursor] - distances[previous], 0.001)
@@ -194,7 +236,7 @@ struct BeadsStrandGeometry {
         x: points[previous].x + (points[cursor].x - points[previous].x) * fraction,
         y: points[previous].y + (points[cursor].y - points[previous].y) * fraction
       )
-      let depth = (position.y - BeadsStrandMetrics.height / 2) / BeadsStrandMetrics.height
+      let depth = (position.y - BeadsStrandMetrics.centerY) / BeadsStrandMetrics.height
       return Bead(position: position, diameter: diameter * (1 + depth * 0.32))
     }
   }
@@ -205,8 +247,8 @@ struct BeadsStrandGeometry {
     let spread = min(1, max(0, coils - 1))
     let localRadius = radius + cos(phase) * BeadsStrandMetrics.coilHorizontalSpread * spread
     return CGPoint(
-      x: BeadsStrandMetrics.drawingWidth / 2 + cos(angle) * localRadius,
-      y: BeadsStrandMetrics.height / 2 + sin(angle) * localRadius * perspective + sin(phase) * BeadsStrandMetrics.coilVerticalSpread * spread
+      x: BeadsStrandMetrics.centerX + cos(angle) * localRadius,
+      y: BeadsStrandMetrics.centerY + sin(angle) * localRadius * perspective + sin(phase) * BeadsStrandMetrics.coilVerticalSpread * spread
     )
   }
 }
