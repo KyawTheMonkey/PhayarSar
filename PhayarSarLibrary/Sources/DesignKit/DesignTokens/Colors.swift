@@ -200,6 +200,23 @@ public enum AppColor {
     public static let shadow = Color.dynamic(light: Palette.BeadMaterial.shadowLight, dark: Palette.BeadMaterial.shadowDark)
   }
 
+  // MARK: - Particle reveal
+
+  /// The light palette carries colour as ink on a pale card; the dark palette
+  /// carries it as light on a dark card. These are transient effect colours,
+  /// separate from chart identities and from the final readable text colour.
+  public enum ParticleReveal {
+    public static let rose = Color.dynamic(
+      light: Palette.Reveal.roseLight, dark: Palette.Reveal.roseDark
+    )
+    public static let violet = Color.dynamic(
+      light: Palette.Reveal.violetLight, dark: Palette.Reveal.violetDark
+    )
+    public static let blue = Color.dynamic(
+      light: Palette.Reveal.blueLight, dark: Palette.Reveal.blueDark
+    )
+  }
+
   // MARK: - Grey
   public static let grey50 = Color.dynamic(
     light: Palette.Grey.grey50Light,
@@ -247,6 +264,15 @@ public enum AppColor {
 /// TextSecondary, TextTertiary) — do not use these directly, go through
 /// `AppColor`.
 fileprivate enum Palette {
+  enum Reveal {
+    static let roseLight = Color(hex: "#B13D72")
+    static let violetLight = Color(hex: "#7750B7")
+    static let blueLight = Color(hex: "#386DB6")
+    static let roseDark = Color(hex: "#F19BC5")
+    static let violetDark = Color(hex: "#BBACFA")
+    static let blueDark = Color(hex: "#92CBFA")
+  }
+
   enum BeadMaterial {
     static let coreLight = Color(hex: "#160F15")
     static let coreDark = Color(hex: "#241923")

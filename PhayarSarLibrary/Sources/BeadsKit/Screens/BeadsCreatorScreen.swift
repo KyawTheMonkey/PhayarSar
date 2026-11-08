@@ -14,6 +14,7 @@ public enum BeadsCreatorMetrics {
 public struct BeadsCreatorScreen: View {
   @ObserveInjection private var injectionObserver
   @EnvironmentObject private var navigator: AppNavigatorModel
+  @EnvironmentObject private var recitationDraft: BeadsRecitationDraft
   @State private var draftID = UUID()
   @State private var name = ""
   @State private var count = Beads.defaultCount
@@ -26,6 +27,10 @@ public struct BeadsCreatorScreen: View {
 
   private var trimmedName: String {
     name.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private var canSave: Bool {
+    !trimmedName.isEmpty && isValidCount && isValidRounds && recitationDraft.recitation != nil
   }
 
   public var body: some View {
@@ -41,6 +46,7 @@ public struct BeadsCreatorScreen: View {
           TextField(L10n.beadsNamePlaceholder, text: $name)
             .accessibilityLabel(L10n.beadsName)
         }
+        BeadsRecitationSection()
         BeadsRoundsPicker(rounds: $rounds, isValid: $isValidRounds)
         if didFailToSave {
           Text(L10n.beadsSaveError)
@@ -49,8 +55,8 @@ public struct BeadsCreatorScreen: View {
             .appHorizontalInset()
         }
         AppButton(L10n.beadsAdd, systemImage: "plus", action: save)
-          .disabled(trimmedName.isEmpty || !isValidCount || !isValidRounds)
-          .opacity(trimmedName.isEmpty || !isValidCount || !isValidRounds ? 0.5 : 1)
+          .disabled(!canSave)
+          .opacity(canSave ? 1 : 0.5)
           .appHorizontalInset()
       }
       .font(AppFont.body)
@@ -73,10 +79,13 @@ public struct BeadsCreatorScreen: View {
 
   private func save() {
     guard !trimmedName.isEmpty, isValidCount, isValidRounds,
-          Beads.countRange.contains(count), Beads.roundsRange.contains(rounds)
+          Beads.countRange.contains(count), Beads.roundsRange.contains(rounds),
+          let recitation = recitationDraft.recitation
     else { return }
     do {
-      try BeadsStore.shared.add(id: draftID, name: trimmedName, count: count, rounds: rounds)
+      try BeadsStore.shared.add(
+        id: draftID, name: trimmedName, count: count, rounds: rounds, recitation: recitation
+      )
       navigator.dismissSheet()
     } catch {
       didFailToSave = true
@@ -107,8 +116,10 @@ private struct BeadsCreatorPreview: View {
   }
 
   var body: some View {
-    NavigationStack {
-      BeadsCreatorScreen()
+    BeadsCreatorContext {
+      NavigationStack {
+        BeadsCreatorScreen()
+      }
     }
     .environmentObject(AppNavigatorModel())
   }

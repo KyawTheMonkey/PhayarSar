@@ -8,6 +8,8 @@ struct Beads: Identifiable, Sendable {
   let name: String
   let count: Int
   let rounds: Int
+  /// Nil for bead sets saved before recitations were introduced.
+  let recitation: BeadsRecitation?
 
   static let defaultCount = 108
   static let countRange = 1...10_000
@@ -38,6 +40,17 @@ final class BeadsStore: ObservableObject {
 
   @Published private(set) var beads: [Beads] = []
   @Published private(set) var didFailToLoad = false
+
+  struct RecitationReveal {
+    let beadsID: UUID
+    let id = UUID()
+  }
+  @Published private(set) var recitationReveal: RecitationReveal?
+  private(set) var revealedRecitationID: UUID?
+
+  func didRevealRecitation() {
+    revealedRecitationID = recitationReveal?.id
+  }
 
   private var changeObserver: NSObjectProtocol?
   private var modeObserver: AnyCancellable?
@@ -74,7 +87,8 @@ final class BeadsStore: ObservableObject {
         let rounds = record.rounds?.intValue ?? Beads.defaultRounds
         return Beads(
           id: id, name: name, count: count,
-          rounds: Beads.roundsRange.contains(rounds) ? rounds : Beads.defaultRounds
+          rounds: Beads.roundsRange.contains(rounds) ? rounds : Beads.defaultRounds,
+          recitation: KloudCodableValue.decode(BeadsRecitation.self, from: record.recitationData)
         )
       }
       didFailToLoad = false
@@ -83,9 +97,10 @@ final class BeadsStore: ObservableObject {
     }
   }
 
-  func add(id: UUID, name: String, count: Int, rounds: Int) throws {
+  func add(id: UUID, name: String, count: Int, rounds: Int, recitation: BeadsRecitation) throws {
     guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
     let store = KloudStack.shared.store(for: BeadsRecord.self)
+    let recitationData = try JSONEncoder().encode(recitation)
     // KloudStore.insert removes a failed insertion from the context, so Cancel
     // after a save error cannot leak the draft into a later unrelated save.
     try store.insert { record in
@@ -93,9 +108,29 @@ final class BeadsStore: ObservableObject {
       record.name = name
       record.count = NSNumber(value: count)
       record.rounds = NSNumber(value: rounds)
+      record.recitationData = recitationData
       record.createdAt = .now
     }
     reload()
+  }
+
+  func updateRecitation(id: UUID, recitation: BeadsRecitation) throws {
+    guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
+    let store = KloudStack.shared.store(for: BeadsRecord.self)
+    guard let record = try store.first(where: NSPredicate(format: "id == %@", id as NSUUID)) else {
+      throw CocoaError(.validationMissingMandatoryProperty)
+    }
+    let previousData = record.recitationData
+    record.recitationData = try JSONEncoder().encode(recitation)
+    do {
+      try store.save()
+    } catch {
+      // A failed edit must not be flushed by an unrelated save after Cancel.
+      record.recitationData = previousData
+      throw error
+    }
+    reload()
+    recitationReveal = RecitationReveal(beadsID: id)
   }
 
   private var isSchemaAvailable: Bool {

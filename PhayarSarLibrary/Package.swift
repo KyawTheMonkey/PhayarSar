@@ -85,7 +85,7 @@ let package = Package(
       dependencies: [
         "UtilKit"
       ],
-      resources: [.process("Fonts")]
+      resources: [.process("Fonts"), .process("Shaders")]
     ),
     .target(
       name: "LocalisationKit",
@@ -166,7 +166,8 @@ let package = Package(
     ),
     .target(
       name: "BeadsKit",
-      dependencies: ["EnvironmentKit", "DesignKit", "KloudKit"]
+      dependencies: ["EnvironmentKit", "DesignKit", "KloudKit", "PrayersKit"],
+      resources: [.process("Shaders")]
     )
   ]
 )

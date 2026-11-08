@@ -31,7 +31,16 @@ public final class AppNavigatorModel: ObservableObject {
 
   /// Presented above the tab bar, not inside a tab, so it is app-wide rather
   /// than per-tab state.
-  @Published public var presentedSheet: SheetDestination?
+  @Published public var presentedSheet: SheetDestination? {
+    didSet {
+      if presentedSheet == nil { sheetPath = [] }
+    }
+  }
+
+  /// Modal detours have their own stack. Putting their pushes in the tab's
+  /// path would change the screen *behind* the sheet and lose the creator's
+  /// draft when a source breadcrumb is followed.
+  @Published public var sheetPath: [RouterDestination] = []
 
   public init() {}
 
@@ -50,13 +59,24 @@ public final class AppNavigatorModel: ObservableObject {
 
   // MARK: - Push
 
-  /// Pushes onto the tab the user is already in.
+  /// Pushes inside the presented sheet, or onto the current tab otherwise.
   ///
   /// The default for cross-module routes too: the destination changes, the tab
   /// does not. A tap should not move the ground under the user, even when the
   /// screen it opens belongs to another module.
   public func navigate(to destination: RouterDestination) {
-    navigate(to: destination, in: selectedTab)
+    navigate(to: [destination])
+  }
+
+  /// Install a deep link's complete ancestry in one update. Sequential pushes
+  /// animate through the browser before reaching the picker; one path lands
+  /// directly on the selection while keeping the browser behind Back.
+  public func navigate(to destinations: [RouterDestination]) {
+    if presentedSheet != nil {
+      sheetPath.append(contentsOf: destinations)
+    } else {
+      paths[selectedTab, default: []].append(contentsOf: destinations)
+    }
   }
 
   /// Selects `tab`, then pushes onto its stack.
@@ -73,8 +93,12 @@ public final class AppNavigatorModel: ObservableObject {
 
   // MARK: - Pop
 
-  /// Drops the top screen of the current tab. No-op at the root.
+  /// Drops the top screen of the active modal or tab stack. No-op at its root.
   public func pop() {
+    if presentedSheet != nil {
+      if !sheetPath.isEmpty { sheetPath.removeLast() }
+      return
+    }
     guard var path = paths[selectedTab], !path.isEmpty else { return }
     path.removeLast()
     paths[selectedTab] = path
@@ -89,8 +113,13 @@ public final class AppNavigatorModel: ObservableObject {
 
   // MARK: - Sheets
 
-  public func present(_ sheet: SheetDestination) {
+  public func present(_ sheet: SheetDestination, path: [RouterDestination] = []) {
+    sheetPath = path
     presentedSheet = sheet
+  }
+
+  public func popSheetToRoot() {
+    sheetPath = []
   }
 
   public func dismissSheet() {
@@ -121,6 +150,8 @@ public enum RouterDestination: Hashable, Codable {
   /// The study screen — each verse against its translation, pushed from the
   /// detail screen's "Nissaya" quick action.
   case nissaya(prayerID: String)
+  case beadsPrayerBrowser
+  case beadsPrayerSelection(prayerID: String, location: PrayerPassageLocation? = nil)
 }
 
 /// Every modally presented screen. Same rules as ``RouterDestination``.
@@ -145,6 +176,10 @@ public enum SheetDestination: Identifiable, Hashable, Codable {
   /// Creating a bead set is a cancellable detour from the beads collection.
   case beadsCreator
 
+  /// Re-selecting a saved bead set's passage uses the same browser and picker,
+  /// but Done updates that record rather than creating a second bead set.
+  case beadsRecitationEditor(beadsID: UUID)
+
   public var id: String {
     switch self {
     case .profile:
@@ -153,6 +188,8 @@ public enum SheetDestination: Identifiable, Hashable, Codable {
       return "meditationSessionCreator"
     case .beadsCreator:
       return "beadsCreator"
+    case let .beadsRecitationEditor(beadsID):
+      return "beadsRecitationEditor-\(beadsID.uuidString)"
     }
   }
 }

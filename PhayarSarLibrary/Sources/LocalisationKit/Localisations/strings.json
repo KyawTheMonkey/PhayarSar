@@ -719,6 +719,58 @@
     "En": "Remove one round",
     "Mm": "တစ်ကြော့ လျှော့ရန်"
   },
+  "beads_recitation": {
+    "En": "Recitation",
+    "Mm": "ရွတ်ဖတ်မည့် ဂါထာ"
+  },
+  "beads_recitation_type": {
+    "En": "Type your recitation",
+    "Mm": "ဂါထာ ကိုယ်တိုင်ရိုက်မည်"
+  },
+  "beads_recitation_pick": {
+    "En": "Pick from prayers",
+    "Mm": "သုတ်တော်များမှ ရွေးမည်"
+  },
+  "beads_recitation_placeholder": {
+    "En": "Type or paste the words you will recite…",
+    "Mm": "ရွတ်ဖတ်မည့် ဂါထာကို ရိုက်ထည့်ပါ…"
+  },
+  "beads_recitation_count_hint": {
+    "En": "One complete recitation = one bead.",
+    "Mm": "ဂါထာတစ်ပုဒ် အပြည့်ရွတ်ပြီးလျှင် ပုတီးတစ်စေ့ ရေတွက်ပါ။"
+  },
+  "beads_recitation_source_hint": {
+    "En": "Opens the prayer picker with this passage selected.",
+    "Mm": "ရွေးထားသော ဂါထာစာသားနှင့်အတူ သုတ်တော်စာသား ရွေးသည့်နေရာကို ဖွင့်ပေးပါမည်။"
+  },
+  "beads_prayer_choose": {
+    "En": "Choose prayer",
+    "Mm": "သုတ်တော် ရွေးရန်"
+  },
+  "beads_prayer_search": {
+    "En": "Search prayers",
+    "Mm": "သုတ်တော် ရှာရန်"
+  },
+  "beads_prayer_search_empty": {
+    "En": "No prayers found",
+    "Mm": "သုတ်တော် မတွေ့ပါ"
+  },
+  "beads_prayer_selection_hint": {
+    "En": "Select the text to recite, then tap Done.",
+    "Mm": "ရွတ်ဖတ်မည့် စာသားကို ရွေးပြီး ပြီးပါပြီ ကို နှိပ်ပါ။"
+  },
+  "beads_prayer_selection_unavailable": {
+    "En": "Prayer text selection is available on iPhone and iPad.",
+    "Mm": "သုတ်တော်စာသား ရွေးခြင်းကို iPhone နှင့် iPad တွင် အသုံးပြုနိုင်ပါသည်။"
+  },
+  "prayer_verse": {
+    "En": "Verse {0}",
+    "Mm": "ဂါထာ {0}"
+  },
+  "prayer_verse_range": {
+    "En": "Verses {0}–{1}",
+    "Mm": "ဂါထာ {0}–{1}"
+  },
   "beads_preview_count": {
     "En": "Showing {0} of {1} beads",
     "Mm": "ပုတီးစေ့ {1} စေ့အနက် {0} စေ့ကို ပြထားပါသည်"

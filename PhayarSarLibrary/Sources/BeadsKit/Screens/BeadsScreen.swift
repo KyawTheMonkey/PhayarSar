@@ -56,9 +56,30 @@ public struct BeadsScreen: View {
                   Text(Beads.roundsLabel(for: beads.rounds))
                     .font(AppFont.subheadline)
                     .foregroundStyle(AppColor.textSecondary)
+                  if let recitation = beads.recitation {
+                    switch recitation {
+                    case let .typed(text):
+                      Text(text)
+                        .font(AppFont.body)
+                        .foregroundStyle(AppColor.textPrimary)
+                    case let .prayer(passage):
+                      BeadsPassageView(
+                        passage: passage,
+                        revealTrigger: store.recitationReveal?.beadsID == beads.id
+                          ? store.recitationReveal?.id : nil,
+                        isRevealActive: navigator.presentedSheet == nil,
+                        shouldReveal: store.recitationReveal?.id != store.revealedRecitationID,
+                        onRevealCompleted: store.didRevealRecitation
+                      ) {
+                        navigator.present(.beadsRecitationEditor(beadsID: beads.id), path: [
+                          .beadsPrayerSelection(prayerID: passage.prayerID, location: passage.location)
+                        ])
+                      }
+                    }
+                  }
                 }
                 .padding(.vertical, AppListSectionMetrics.labelGap)
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .contain)
 
                 if beads.id != store.beads.last?.id {
                   AppDivider()
