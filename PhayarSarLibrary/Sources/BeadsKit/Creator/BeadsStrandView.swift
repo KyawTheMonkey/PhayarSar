@@ -38,50 +38,14 @@ struct BeadsStrandView: View {
     min(max(count, 1), BeadsStrandMetrics.maximumVisibleBeads)
   }
 
-  /// Larger custom sets show a window onto the joining end, named explicitly
-  /// beneath the presets. Advancing that window preserves a visible insertion
-  /// on every + tap without mounting thousands of overlapping sphere views.
-  private var firstIndex: Int { max(0, count - visibleCount) }
-
   var body: some View {
     GeometryReader { proxy in
       let scale = min(proxy.size.width / BeadsStrandMetrics.drawingWidth, 1)
       let geometry = BeadsStrandGeometry(count: visibleCount)
 
-      ZStack {
-        BeadsThread(radius: geometry.radius, coils: geometry.coils, perspective: geometry.perspective)
-          .stroke(AppColor.Beads.thread, lineWidth: BeadsStrandMetrics.threadWidth)
-
-        if visibleCount == 1, let bead = geometry.beads.first {
-          Path { path in
-            path.move(to: bead.position)
-            path.addLine(to: geometry.head.position)
-          }
-          .stroke(AppColor.Beads.thread, lineWidth: BeadsStrandMetrics.threadWidth)
-        }
-
-        ForEach(firstIndex..<(firstIndex + visibleCount), id: \.self) { index in
-          let bead = geometry.beads[index - firstIndex]
-          PolishedBead(diameter: bead.diameter)
-            .frame(width: bead.diameter, height: bead.diameter)
-            .transition(reduceMotion ? .opacity : .scale(scale: 0.05).combined(with: .opacity))
-            .position(bead.position)
-            .zIndex(bead.position.y)
-        }
-
-        BeadsHeadView(diameter: geometry.head.diameter, count: count)
-          .position(
-            x: geometry.head.position.x + BeadsHeadMetrics.width / 2 - BeadsHeadMetrics.anchor.x,
-            y: geometry.head.position.y + BeadsHeadMetrics.height / 2 - BeadsHeadMetrics.anchor.y
-          )
-          .zIndex(.infinity)
-      }
-      .frame(width: BeadsStrandMetrics.drawingWidth, height: BeadsStrandMetrics.height)
-      // Coils can put the outermost leading join above or below their centre.
-      // Move the complete drawing so the head always meets the centre line.
-      .offset(y: BeadsStrandMetrics.centerY - geometry.head.position.y)
-      .scaleEffect(scale)
-      .frame(width: proxy.size.width, height: proxy.size.height)
+      BeadsStrandLoop(frame: BeadsStrandFrame(geometry: geometry), count: count)
+        .scaleEffect(scale)
+        .frame(width: proxy.size.width, height: proxy.size.height)
     }
     .frame(height: BeadsStrandMetrics.height)
     .animation(
@@ -251,34 +215,115 @@ struct BeadsStrandGeometry {
   }
 }
 
-/// Interpolates the thread alongside the spheres when a bracelet grows into a
-/// coil. The closing segment stays under the joining beads at either endpoint.
-private struct BeadsThread: Shape {
-  var radius: CGFloat
-  var coils: CGFloat
-  var perspective: CGFloat
+/// A fixed set of slots lets one spring interpolate the entire loop, including
+/// beads entering or leaving it. Inactive slots collapse into the head with
+/// zero size and opacity, so the thread never jumps to a newly inserted bead's
+/// destination while its neighbours are still travelling there.
+private struct BeadsStrandFrame: VectorArithmetic {
+  private static let stride = 4
+  private static let headValueCount = 3
+  private static let valueCount = headValueCount + BeadsStrandMetrics.maximumVisibleBeads * stride
+  var values: [Double]
 
-  var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>> {
-    get { AnimatablePair(radius, AnimatablePair(coils, perspective)) }
-    set {
-      radius = newValue.first
-      coils = newValue.second.first
-      perspective = newValue.second.second
+  init(geometry: BeadsStrandGeometry) {
+    values = [
+      Double(geometry.head.position.x), Double(geometry.head.position.y),
+      Double(geometry.head.diameter)
+    ]
+    for index in 0..<BeadsStrandMetrics.maximumVisibleBeads {
+      let bead = geometry.beads.indices.contains(index) ? geometry.beads[index] : nil
+      values.append(contentsOf: [
+        Double(bead?.position.x ?? geometry.head.position.x),
+        Double(bead?.position.y ?? geometry.head.position.y),
+        Double(bead?.diameter ?? 0),
+        bead == nil ? 0 : 1
+      ])
     }
   }
 
-  func path(in rect: CGRect) -> Path {
-    Path { path in
-      for sample in 0...BeadsStrandMetrics.samples {
-        let point = BeadsStrandGeometry.point(
-          fraction: CGFloat(sample) / CGFloat(BeadsStrandMetrics.samples),
-          radius: radius,
-          coils: coils,
-          perspective: perspective
-        )
-        if sample == 0 { path.move(to: point) } else { path.addLine(to: point) }
+  private init(values: [Double]) { self.values = values }
+
+  static var zero: Self { Self(values: Array(repeating: 0, count: valueCount)) }
+
+  static func + (lhs: Self, rhs: Self) -> Self {
+    Self(values: zip(lhs.values, rhs.values).map { $0 + $1 })
+  }
+
+  static func - (lhs: Self, rhs: Self) -> Self {
+    Self(values: zip(lhs.values, rhs.values).map { $0 - $1 })
+  }
+
+  mutating func scale(by rhs: Double) {
+    values = values.map { $0 * rhs }
+  }
+
+  var magnitudeSquared: Double { values.reduce(0) { $0 + $1 * $1 } }
+
+  var head: CGPoint { CGPoint(x: values[0], y: values[1]) }
+  var headDiameter: CGFloat { max(0, values[2]) }
+
+  func bead(at index: Int) -> BeadsStrandGeometry.Bead {
+    let offset = Self.headValueCount + index * Self.stride
+    return .init(
+      position: CGPoint(x: values[offset], y: values[offset + 1]),
+      diameter: max(0, values[offset + 2])
+    )
+  }
+
+  func opacity(at index: Int) -> Double {
+    min(1, max(0, values[Self.headValueCount + index * Self.stride + 3]))
+  }
+}
+
+/// Thread segments run through sphere centres using the same interpolated
+/// frame as the spheres. The short joins are covered by the beads themselves;
+/// interpolating coil parameters separately would sweep a very different path
+/// from the beads, exposing large empty loops midway through a preset change.
+private struct BeadsStrandLoop: View, Animatable {
+  nonisolated var frame: BeadsStrandFrame
+  let count: Int
+
+  nonisolated var animatableData: BeadsStrandFrame {
+    get { frame }
+    set { frame = newValue }
+  }
+
+  var body: some View {
+    ZStack {
+      Path { path in
+        path.move(to: frame.head)
+        for index in 0..<BeadsStrandMetrics.maximumVisibleBeads {
+          path.addLine(to: frame.bead(at: index).position)
+        }
+        path.closeSubpath()
       }
-      path.closeSubpath()
+      .stroke(AppColor.Beads.thread, lineWidth: BeadsStrandMetrics.threadWidth)
+
+      ForEach(0..<BeadsStrandMetrics.maximumVisibleBeads, id: \.self) { index in
+        let bead = frame.bead(at: index)
+        PolishedBead(diameter: bead.diameter)
+          .frame(width: bead.diameter, height: bead.diameter)
+          .opacity(frame.opacity(at: index))
+          .position(bead.position)
+          .zIndex(bead.position.y)
+      }
+
+      BeadsHeadView(diameter: frame.headDiameter, count: count)
+        .position(
+          x: frame.head.x + BeadsHeadMetrics.width / 2 - BeadsHeadMetrics.anchor.x,
+          y: frame.head.y + BeadsHeadMetrics.height / 2 - BeadsHeadMetrics.anchor.y
+        )
+        .zIndex(.infinity)
+    }
+    .frame(width: BeadsStrandMetrics.drawingWidth, height: BeadsStrandMetrics.height)
+    // Derive centering from the interpolated head too. A separate offset or
+    // head animation can reach its destination before the loop does.
+    .offset(y: BeadsStrandMetrics.centerY - frame.head.y)
+    // Positions, material sizes and opacity already represent this animation
+    // frame. A second child animation would put them out of step again.
+    .transaction {
+      $0.animation = nil
+      $0.disablesAnimations = true
     }
   }
 }

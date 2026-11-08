@@ -18,6 +18,7 @@ enum BeadsHeadMetrics {
   static let kick: CGFloat = 6
   static let springStiffness: Double = 95
   static let springDamping: Double = 8
+  static let swayDuration: Double = 1.5
   static let width = leadingReach + trailingReach
   static let height = topReach + bottomReach
 
@@ -30,10 +31,62 @@ enum BeadsHeadMetrics {
 struct BeadsHeadView: View {
   @ObserveInjection private var injectionObserver
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @State private var sway: CGFloat = 0
+  @State private var motionStart: Date?
+  @State private var deflection: CGFloat = 0
   @State private var previousCount: Int?
   let diameter: CGFloat
   let count: Int
+
+  var body: some View {
+    TimelineView(.animation(paused: motionStart == nil || reduceMotion)) { timeline in
+      BeadsHeadAssembly(diameter: diameter, sway: sway(at: timeline.date))
+    }
+    .task(id: MotionTrigger(count: count, reduceMotion: reduceMotion)) {
+      let oldCount = previousCount
+      previousCount = count
+      guard let oldCount, oldCount != count, !reduceMotion else {
+        motionStart = nil
+        return
+      }
+
+      deflection = count > oldCount ? -BeadsHeadMetrics.kick : BeadsHeadMetrics.kick
+      motionStart = .now
+      do {
+        try await Task.sleep(for: .seconds(BeadsHeadMetrics.swayDuration))
+      } catch {
+        return
+      }
+      guard !Task.isCancelled else { return }
+      motionStart = nil
+    }
+    .enableInjection()
+  }
+
+  /// The strand supplies an already interpolated diameter and placement.
+  /// Drive only the cord's local deflection with elapsed time: starting another
+  /// implicit spring here would also reanimate those incoming frame values,
+  /// letting the head lag behind the string during a preset change.
+  private func sway(at date: Date) -> CGFloat {
+    guard !reduceMotion, let motionStart else { return 0 }
+    let elapsed = max(0, date.timeIntervalSince(motionStart))
+    let decay = BeadsHeadMetrics.springDamping / 2
+    let frequency = sqrt(BeadsHeadMetrics.springStiffness - decay * decay)
+    return deflection * exp(-decay * elapsed)
+      * (cos(frequency * elapsed) + decay / frequency * sin(frequency * elapsed))
+  }
+
+  private struct MotionTrigger: Hashable {
+    let count: Int
+    let reduceMotion: Bool
+  }
+}
+
+/// Every attachment point is derived from this frame's diameter and sway.
+/// The strand owns interpolation; this renderer must not animate those values
+/// a second time or the head and its knots can drift away from the join.
+private struct BeadsHeadAssembly: View {
+  let diameter: CGFloat
+  let sway: CGFloat
 
   private var root: CGPoint {
     CGPoint(
@@ -77,38 +130,10 @@ struct BeadsHeadView: View {
         .position(BeadsDrapedCord.secondEnd(root: root, sway: sway))
     }
     .frame(width: BeadsHeadMetrics.width, height: BeadsHeadMetrics.height)
-    .task(id: MotionTrigger(count: count, reduceMotion: reduceMotion)) {
-      let oldCount = previousCount
-      previousCount = count
-
-      var transaction = Transaction(animation: nil)
-      transaction.disablesAnimations = true
-      guard let oldCount, oldCount != count, !reduceMotion else {
-        withTransaction(transaction) { sway = 0 }
-        return
-      }
-
-      withTransaction(transaction) {
-        sway = count > oldCount ? -BeadsHeadMetrics.kick : BeadsHeadMetrics.kick
-      }
-
-      // Give the deflection one frame before releasing it. Cancelling this
-      // task on the next count change makes rapid +/- taps restart the same
-      // small gesture instead of queuing up a long series of swings.
-      do {
-        try await Task.sleep(for: .milliseconds(30))
-      } catch {
-        return
-      }
-      guard !Task.isCancelled else { return }
-      withAnimation(.interpolatingSpring(
-        stiffness: BeadsHeadMetrics.springStiffness,
-        damping: BeadsHeadMetrics.springDamping
-      )) {
-        sway = 0
-      }
+    .transaction {
+      $0.animation = nil
+      $0.disablesAnimations = true
     }
-    .enableInjection()
   }
 
   private func wrappedEnd(width: CGFloat, height: CGFloat) -> some View {
@@ -122,11 +147,6 @@ struct BeadsHeadView: View {
       )
       .frame(width: width, height: height)
   }
-
-  private struct MotionTrigger: Hashable {
-    let count: Int
-    let reduceMotion: Bool
-  }
 }
 
 /// Both ends hang on the same side of the join with different lengths and
@@ -135,14 +155,6 @@ struct BeadsHeadView: View {
 private struct BeadsDrapedCord: Shape {
   var root: CGPoint
   var sway: CGFloat
-
-  var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>> {
-    get { AnimatablePair(sway, AnimatablePair(root.x, root.y)) }
-    set {
-      sway = newValue.first
-      root = CGPoint(x: newValue.second.first, y: newValue.second.second)
-    }
-  }
 
   static func firstEnd(root: CGPoint, sway: CGFloat) -> CGPoint {
     CGPoint(x: root.x - 12 + sway, y: root.y + 43 - sway * 0.2)
