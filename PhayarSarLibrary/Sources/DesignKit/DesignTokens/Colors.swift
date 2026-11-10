@@ -205,6 +205,7 @@ public enum AppColor {
   /// colour; these are only the text and controls around them.
   public enum BeadsSession {
     public static let text = Color.dynamic(light: Palette.BeadSession.textLight, dark: Palette.BeadSession.textDark)
+    public static let recitationSheen = Color.dynamic(light: Palette.BeadSession.sheenLight, dark: Palette.BeadSession.sheenDark)
     public static let secondaryText = Color.dynamic(light: Palette.BeadSession.secondaryTextLight, dark: Palette.BeadSession.secondaryTextDark)
     public static let actionSurface = Color.dynamic(light: Palette.BeadSession.actionSurfaceLight, dark: Palette.BeadSession.actionSurfaceDark)
     public static let actionText = Color.dynamic(light: Palette.BeadSession.actionTextLight, dark: Palette.BeadSession.actionTextDark)
@@ -335,6 +336,8 @@ fileprivate enum Palette {
   enum BeadSession {
     static let textLight = Color(hex: "#242528")
     static let textDark = Color(hex: "#F7F2EC")
+    static let sheenLight = Color(hex: "#767577")
+    static let sheenDark = Color(hex: "#FFFFFF")
     static let secondaryTextLight = Color(hex: "#686A6E")
     static let secondaryTextDark = Color(hex: "#9E979C")
     static let actionSurfaceLight = Color(hex: "#11161B")
