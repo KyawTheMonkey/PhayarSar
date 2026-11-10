@@ -35,12 +35,21 @@ struct BeadsHeadView: View {
   @State private var previousCount: Int?
   let diameter: CGFloat
   let count: Int
-  let material: BeadsMaterial
-  let image: CGImage?
+  let blend: BeadsMaterialBlend
+  let images: [BeadsMaterial: [CGImage?]]
+  let rippleSway: CGFloat
 
   var body: some View {
     TimelineView(.animation(paused: motionStart == nil || reduceMotion)) { timeline in
-      BeadsHeadAssembly(diameter: diameter, sway: sway(at: timeline.date), material: material, image: image)
+      blend.render { finish in
+        BeadsHeadAssembly(
+          diameter: diameter, sway: sway(at: timeline.date) + rippleSway,
+          material: finish, image: images[finish]?[0] ?? nil
+        )
+        // Flatten each finish before fading it so the connector stays
+        // behind its two beads through the blend.
+        .compositingGroup()
+      }
     }
     .task(id: MotionTrigger(count: count, reduceMotion: reduceMotion)) {
       let oldCount = previousCount

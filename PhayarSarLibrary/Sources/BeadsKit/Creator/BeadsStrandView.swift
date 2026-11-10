@@ -20,6 +20,7 @@ enum BeadsStrandMetrics {
   static let coilHorizontalSpread: CGFloat = 16
   static let coilVerticalSpread: CGFloat = 28
   static let threadWidth: CGFloat = 1.5
+  static let rippleSlide: CGFloat = 0.28
   static let animationResponse: Double = 0.48
   static let animationDamping: Double = 0.87
 }
@@ -30,31 +31,62 @@ enum BeadsStrandMetrics {
 struct BeadsStrandView: View {
   @ObserveInjection private var injectionObserver
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var previewMaterial: BeadsMaterial
+  @State private var morph: BeadsMaterialMorph?
   let count: Int
   let material: BeadsMaterial
+
+  init(count: Int, material: BeadsMaterial) {
+    self.count = count
+    self.material = material
+    _previewMaterial = State(initialValue: material)
+  }
 
   private var visibleCount: Int {
     min(max(count, 1), BeadsStrandMetrics.maximumVisibleBeads)
   }
 
   var body: some View {
-    let images = (0..<material.patterns).map { BeadsMaterialArtwork.image(for: material, pattern: $0) }
+    let images = (morph?.materials ?? [previewMaterial]).reduce(into: [BeadsMaterial: [CGImage?]]()) { images, finish in
+      images[finish] = (0..<finish.patterns).map { BeadsMaterialArtwork.image(for: finish, pattern: $0) }
+    }
     GeometryReader { proxy in
       let scale = min(proxy.size.width / BeadsStrandMetrics.drawingWidth, 1)
       let geometry = BeadsStrandGeometry(count: visibleCount)
 
-      BeadsStrandLoop(frame: BeadsStrandFrame(geometry: geometry), count: count, material: material, images: images)
-        .scaleEffect(scale)
-        .frame(width: proxy.size.width, height: proxy.size.height)
+      BeadsStrandLoop(
+        frame: BeadsStrandFrame(geometry: geometry), count: count,
+        material: previewMaterial, morph: morph, images: images
+      )
+      .scaleEffect(scale)
+      .frame(width: proxy.size.width, height: proxy.size.height)
     }
     .frame(height: BeadsStrandMetrics.height)
     .animation(
       reduceMotion ? nil : .spring(
-        response: BeadsStrandMetrics.animationResponse,
-        dampingFraction: BeadsStrandMetrics.animationDamping
+        response: BeadsStrandMetrics.animationResponse, dampingFraction: BeadsStrandMetrics.animationDamping
       ),
       value: count
     )
+    .onChange(of: material) { next in
+      morph = BeadsMaterialMorph(
+        from: previewMaterial, to: next, interrupting: morph,
+        visibleCount: visibleCount, reduceMotion: reduceMotion
+      )
+      previewMaterial = next
+    }
+    .onChange(of: reduceMotion) { enabled in
+      if enabled { morph = nil }
+    }
+    .task(id: morph?.start) {
+      guard let morph else { return }
+      do {
+        try await ContinuousClock().sleep(until: morph.end)
+      } catch {
+        return
+      }
+      if self.morph?.start == morph.start { self.morph = nil }
+    }
     // The adjustable count beneath the illustration is the accessible control;
     // announcing every decorative sphere would make it unusable.
     .accessibilityHidden(true)
@@ -223,7 +255,8 @@ private struct BeadsStrandLoop: View, Animatable {
   nonisolated var frame: BeadsStrandFrame
   let count: Int
   let material: BeadsMaterial
-  let images: [CGImage?]
+  let morph: BeadsMaterialMorph?
+  let images: [BeadsMaterial: [CGImage?]]
 
   nonisolated var animatableData: BeadsStrandFrame {
     get { frame }
@@ -231,34 +264,62 @@ private struct BeadsStrandLoop: View, Animatable {
   }
 
   var body: some View {
-    ZStack {
-      Path { path in
+    TimelineView(.animation(paused: morph == nil)) { _ in
+      let now = ContinuousClock.now
+      let solid = BeadsMaterialBlend(material)
+      let head = morph?.sample(at: 0, time: now)
+      let headBlend = head?.blend ?? solid
+      let cord = Path { path in
         path.move(to: frame.head)
         for index in 0..<BeadsStrandMetrics.maximumVisibleBeads {
           path.addLine(to: frame.bead(at: index).position)
         }
         path.closeSubpath()
       }
-      .stroke(material.palette.cord, lineWidth: BeadsStrandMetrics.threadWidth)
+      ZStack {
+        headBlend.render { finish in
+          cord.stroke(finish.palette.cord, lineWidth: BeadsStrandMetrics.threadWidth)
+        }
 
-      ForEach(0..<BeadsStrandMetrics.maximumVisibleBeads, id: \.self) { index in
-        let bead = frame.bead(at: index)
-        BeadsMaterialBead(material: material, diameter: bead.diameter, image: images[index % images.count])
-          .opacity(frame.opacity(at: index))
-          .position(bead.position)
-          .zIndex(bead.position.y)
-      }
+        ForEach(0..<BeadsStrandMetrics.maximumVisibleBeads, id: \.self) { index in
+          let bead = frame.bead(at: index)
+          let opacity = frame.opacity(at: index)
+          if opacity > 0 {
+            let sample = morph?.sample(at: index + 1, time: now)
+            let blend = sample?.blend ?? solid
+            let previous = index == 0 ? frame.head : frame.bead(at: index - 1).position
+            // Slide along the incoming cord segment, so the bead can move
+            // independently while the thread continues to hold its shape.
+            let slide = BeadsStrandMetrics.rippleSlide * (sample?.pull ?? 0)
+            let position = CGPoint(
+              x: bead.position.x + (previous.x - bead.position.x) * slide,
+              y: bead.position.y + (previous.y - bead.position.y) * slide
+            )
+            blend.render { finish in
+              BeadsMaterialBead(
+                material: finish, diameter: bead.diameter,
+                image: images[finish]?[index % finish.patterns] ?? nil
+              )
+            }
+            .opacity(opacity)
+            .position(position)
+            .zIndex(bead.position.y)
+          }
+        }
 
-      BeadsHeadView(diameter: frame.headDiameter, count: count, material: material, image: images[0])
-        .position(
-          x: frame.head.x + BeadsHeadMetrics.width / 2 - BeadsHeadMetrics.anchor.x,
-          y: frame.head.y + BeadsHeadMetrics.height / 2 - BeadsHeadMetrics.anchor.y
+        BeadsHeadView(
+          diameter: frame.headDiameter, count: count, blend: headBlend,
+          images: images, rippleSway: (head?.pull ?? 0) * BeadsHeadMetrics.kick
         )
-        .zIndex(.infinity)
+          .position(
+            x: frame.head.x + BeadsHeadMetrics.width / 2 - BeadsHeadMetrics.anchor.x,
+            y: frame.head.y + BeadsHeadMetrics.height / 2 - BeadsHeadMetrics.anchor.y
+          )
+          .zIndex(.infinity)
+      }
     }
     .frame(width: BeadsStrandMetrics.drawingWidth, height: BeadsStrandMetrics.height)
-    // Derive centering from the interpolated head too. A separate offset or
-    // head animation can reach its destination before the loop does.
+    // The head and cord must stay together even while the count springs.
     .offset(y: BeadsStrandMetrics.centerY - frame.head.y)
     // Positions, material sizes and opacity already represent this animation
     // frame. A second child animation would put them out of step again.
