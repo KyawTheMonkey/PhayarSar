@@ -119,14 +119,25 @@ private struct BeadsSelectionDoneButton: View {
     )) { context in
       let phase = context.date.timeIntervalSinceReferenceDate
         / BeadsPrayerSelectionMetrics.doneJigglePeriod * 2 * .pi
-      Button(L10n.done, action: action)
-        .disabled(!isEnabled)
+      doneButton
         .rotationEffect(.degrees(shouldJiggle
           ? sin(phase) * BeadsPrayerSelectionMetrics.doneJiggleAngle : 0))
     }
     .onAppear { isVisible = true }
     .onDisappear { isVisible = false }
     .enableInjection()
+  }
+
+  @ViewBuilder
+  private var doneButton: some View {
+    let button = Button(L10n.done, action: action)
+    if !isEnabled {
+      button.disabled(true)
+    } else if #available(iOS 26, macOS 26, *) {
+      button.buttonStyle(.glassProminent).tint(AppColor.primary)
+    } else {
+      button.buttonStyle(.borderedProminent).tint(AppColor.primary)
+    }
   }
 }
 
