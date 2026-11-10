@@ -156,12 +156,7 @@ final class BeadsRitualScene: SKScene {
     pendingScheme = nil
     if let pendingMaterial, pendingMaterial != material {
       let palette = pendingMaterial.palette
-      beadMaterial.surface.floatValue = pendingMaterial.surface.rawValue
-      beadMaterial.body.vectorFloat4Value = BeadsSpriteAssets.vector(palette.body)
-      beadMaterial.deep.vectorFloat4Value = BeadsSpriteAssets.vector(palette.deep)
-      beadMaterial.pale.vectorFloat4Value = BeadsSpriteAssets.vector(palette.pale)
-      beadMaterial.glow.vectorFloat4Value = BeadsSpriteAssets.vector(palette.glow)
-      beadMaterial.finish.vectorFloat2Value = SIMD2(pendingMaterial.roughness, pendingMaterial.translucency)
+      beadMaterial.apply(pendingMaterial)
       cord.strokeColor = BeadsSpriteAssets.native(palette.cord)
       tasselColor = BeadsSpriteAssets.native(palette.tassel)
       bindingColor = BeadsSpriteAssets.native(palette.binding)
@@ -383,13 +378,7 @@ final class BeadsRitualScene: SKScene {
   }
 
   private func makeBead(radius: CGFloat) -> SKSpriteNode {
-    let node = SKSpriteNode(texture: BeadsSpriteAssets.blank,
-      size: CGSize(width: BeadsSpriteMetrics.quadSide, height: BeadsSpriteMetrics.quadSide))
-    node.shader = beadMaterial.shader
-    node.setValue(SKAttributeValue(vectorFloat4: SIMD4(Float(radius), 0, 0, 1)), forAttribute: "a_shape")
-    node.setValue(SKAttributeValue(vectorFloat4: SIMD4(1, 0, 0, 0)), forAttribute: "a_state")
-    node.setValue(SKAttributeValue(vectorFloat4: .zero), forAttribute: "a_finger")
-    node.setValue(SKAttributeValue(vectorFloat4: .zero), forAttribute: "a_thumb")
+    let node = beadMaterial.makeSprite(radius: radius)
     strand.addChild(node)
     return node
   }

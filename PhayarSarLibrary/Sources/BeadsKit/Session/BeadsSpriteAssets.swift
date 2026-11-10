@@ -29,6 +29,7 @@ public enum BeadsSpriteMetrics {
 /// matte and furrowed, and not quite round.
 @MainActor
 enum BeadsSpriteAssets {
+  @MainActor
   struct BeadMaterial {
     let shader: SKShader
     let surface: SKUniform
@@ -39,6 +40,27 @@ enum BeadsSpriteAssets {
     let finish: SKUniform
     let skin: SKUniform
     let scale: SKUniform
+
+    func apply(_ material: BeadsMaterial) {
+      let palette = material.palette
+      surface.floatValue = material.surface.rawValue
+      body.vectorFloat4Value = BeadsSpriteAssets.vector(palette.body)
+      deep.vectorFloat4Value = BeadsSpriteAssets.vector(palette.deep)
+      pale.vectorFloat4Value = BeadsSpriteAssets.vector(palette.pale)
+      glow.vectorFloat4Value = BeadsSpriteAssets.vector(palette.glow)
+      finish.vectorFloat2Value = SIMD2(material.roughness, material.translucency)
+    }
+
+    func makeSprite(radius: CGFloat, seed: Float = 1, visible: Bool = false) -> SKSpriteNode {
+      let side = BeadsSpriteMetrics.quadSide
+      let node = SKSpriteNode(texture: BeadsSpriteAssets.blank, size: CGSize(width: side, height: side))
+      node.shader = shader
+      node.setValue(SKAttributeValue(vectorFloat4: SIMD4(Float(radius), 0, 0, seed)), forAttribute: "a_shape")
+      node.setValue(SKAttributeValue(vectorFloat4: visible ? SIMD4(0, 1, 0, 0) : SIMD4(1, 0, 0, 0)), forAttribute: "a_state")
+      node.setValue(SKAttributeValue(vectorFloat4: .zero), forAttribute: "a_finger")
+      node.setValue(SKAttributeValue(vectorFloat4: .zero), forAttribute: "a_thumb")
+      return node
+    }
   }
 
   /// Shader sprites are textured with a flat white pixel. SpriteKit's
