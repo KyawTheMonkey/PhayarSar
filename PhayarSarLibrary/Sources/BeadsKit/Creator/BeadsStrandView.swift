@@ -5,9 +5,7 @@ import SwiftUI
 enum BeadsStrandMetrics {
   static let height: CGFloat = 240
   static let drawingWidth: CGFloat = 340
-  /// Reserve room for the cord at the leading edge while keeping the whole
-  /// object, rather than just the counting loop, centred in its viewport.
-  static let centerX = drawingWidth / 2 + BeadsHeadMetrics.leadingReach / 2
+  static let centerX = drawingWidth / 2
   static let centerY = height / 2
   static let maximumVisibleBeads = 108
   static let samples = 540
@@ -101,6 +99,10 @@ struct BeadsStrandGeometry {
   struct Bead {
     let position: CGPoint
     let diameter: CGFloat
+
+    var bounds: CGRect {
+      CGRect(x: position.x - diameter / 2, y: position.y - diameter / 2, width: diameter, height: diameter)
+    }
   }
 
   let radius: CGFloat
@@ -108,6 +110,14 @@ struct BeadsStrandGeometry {
   let perspective: CGFloat
   let beads: [Bead]
   let head: Bead
+
+  var bounds: CGRect {
+    let fittings = BeadsHeadGeometry(diameter: head.diameter).bounds.offsetBy(
+      dx: head.position.x - BeadsHeadMetrics.anchor.x,
+      dy: head.position.y - BeadsHeadMetrics.anchor.y
+    )
+    return beads.reduce(fittings) { $0.union($1.bounds) }
+  }
 
   init(count: Int) {
     let count = min(max(count, 1), BeadsStrandMetrics.maximumVisibleBeads)
@@ -193,14 +203,15 @@ struct BeadsStrandGeometry {
 /// destination while its neighbours are still travelling there.
 private struct BeadsStrandFrame: VectorArithmetic {
   private static let stride = 4
-  private static let headValueCount = 3
-  private static let valueCount = headValueCount + BeadsStrandMetrics.maximumVisibleBeads * stride
+  private static let strandValueCount = 5
+  private static let valueCount = strandValueCount + BeadsStrandMetrics.maximumVisibleBeads * stride
   var values: [Double]
 
   init(geometry: BeadsStrandGeometry) {
+    let bounds = geometry.bounds
     values = [
       Double(geometry.head.position.x), Double(geometry.head.position.y),
-      Double(geometry.head.diameter)
+      Double(geometry.head.diameter), Double(bounds.midX), Double(bounds.midY)
     ]
     for index in 0..<BeadsStrandMetrics.maximumVisibleBeads {
       let bead = geometry.beads.indices.contains(index) ? geometry.beads[index] : nil
@@ -233,9 +244,10 @@ private struct BeadsStrandFrame: VectorArithmetic {
 
   var head: CGPoint { CGPoint(x: values[0], y: values[1]) }
   var headDiameter: CGFloat { max(0, values[2]) }
+  var center: CGPoint { CGPoint(x: values[3], y: values[4]) }
 
   func bead(at index: Int) -> BeadsStrandGeometry.Bead {
-    let offset = Self.headValueCount + index * Self.stride
+    let offset = Self.strandValueCount + index * Self.stride
     return .init(
       position: CGPoint(x: values[offset], y: values[offset + 1]),
       diameter: max(0, values[offset + 2])
@@ -243,7 +255,7 @@ private struct BeadsStrandFrame: VectorArithmetic {
   }
 
   func opacity(at index: Int) -> Double {
-    min(1, max(0, values[Self.headValueCount + index * Self.stride + 3]))
+    min(1, max(0, values[Self.strandValueCount + index * Self.stride + 3]))
   }
 }
 
@@ -319,8 +331,12 @@ private struct BeadsStrandLoop: View, Animatable {
       }
     }
     .frame(width: BeadsStrandMetrics.drawingWidth, height: BeadsStrandMetrics.height)
-    // The head and cord must stay together even while the count springs.
-    .offset(y: BeadsStrandMetrics.centerY - frame.head.y)
+    // Interpolate the centre with the slots so the whole assembly stays
+    // centred through count changes and a tassel flick never shifts the stage.
+    .offset(
+      x: BeadsStrandMetrics.centerX - frame.center.x,
+      y: BeadsStrandMetrics.centerY - frame.center.y
+    )
     // Positions, material sizes and opacity already represent this animation
     // frame. A second child animation would put them out of step again.
     .transaction {

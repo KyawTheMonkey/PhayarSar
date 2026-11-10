@@ -91,46 +91,71 @@ struct BeadsHeadView: View {
   }
 }
 
-/// Every attachment point is derived from this frame's diameter and sway.
-/// The strand owns interpolation; this renderer must not animate those values
-/// a second time or the head and its knots can drift away from the join.
-private struct BeadsHeadAssembly: View {
+/// The preview centres on the visible fittings at rest. Use the same
+/// attachment points for drawing and measuring them, including the tassel.
+struct BeadsHeadGeometry {
   let diameter: CGFloat
-  let sway: CGFloat
-  let material: BeadsMaterial
-  let image: CGImage?
 
-  private var towerDiameter: CGFloat { diameter * BeadsRitualMetrics.towerScale }
+  var towerDiameter: CGFloat { diameter * BeadsRitualMetrics.towerScale }
 
-  private var tower: CGPoint {
+  var tower: CGPoint {
     CGPoint(
       x: BeadsHeadMetrics.anchor.x - (diameter + towerDiameter) / 2,
       y: BeadsHeadMetrics.anchor.y - diameter * 0.17
     )
   }
 
+  var tip: CGPoint {
+    CGPoint(x: tower.x - towerDiameter * 0.6, y: tower.y - towerDiameter * 0.38)
+  }
+
+  func tasselEnd(thread: Int, sway: CGFloat = 0) -> CGPoint {
+    let offset = CGFloat(thread) / CGFloat(BeadsRitualMetrics.tasselThreads - 1) - 0.5
+    let uneven = CGFloat((thread * 37) % 7)
+    return CGPoint(
+      x: tip.x - BeadsHeadMetrics.tasselLean + sway + offset * BeadsRitualMetrics.tasselSpread,
+      y: tip.y + BeadsRitualMetrics.tasselLength + uneven
+    )
+  }
+
+  var bounds: CGRect {
+    func bounds(around point: CGPoint, diameter: CGFloat) -> CGRect {
+      CGRect(x: point.x - diameter / 2, y: point.y - diameter / 2, width: diameter, height: diameter)
+    }
+    let fittings = bounds(around: BeadsHeadMetrics.anchor, diameter: diameter)
+      .union(bounds(around: tower, diameter: towerDiameter))
+      .union(bounds(around: tip, diameter: BeadsHeadMetrics.bindingLength))
+    return (0..<BeadsRitualMetrics.tasselThreads).reduce(fittings) { result, thread in
+      result.union(bounds(around: tasselEnd(thread: thread), diameter: BeadsHeadMetrics.tasselWidth))
+    }
+  }
+}
+
+/// The strand owns interpolation. Animating the incoming diameter or
+/// placement a second time would make the fittings drift off the join.
+private struct BeadsHeadAssembly: View {
+  let diameter: CGFloat
+  let sway: CGFloat
+  let material: BeadsMaterial
+  let image: CGImage?
+
   var body: some View {
     let palette = material.palette
-    let tip = CGPoint(x: tower.x - towerDiameter * 0.6, y: tower.y - towerDiameter * 0.38)
+    let geometry = BeadsHeadGeometry(diameter: diameter)
+    let tip = geometry.tip
     ZStack(alignment: .topLeading) {
       Path { path in
         path.move(to: tip)
-        path.addLine(to: tower)
+        path.addLine(to: geometry.tower)
         path.addLine(to: BeadsHeadMetrics.anchor)
       }
       .stroke(palette.cord, style: StrokeStyle(lineWidth: BeadsStrandMetrics.threadWidth, lineCap: .round))
 
       Path { path in
-        let threads = BeadsRitualMetrics.tasselThreads
-        for thread in 0..<threads {
-          let offset = CGFloat(thread) / CGFloat(threads - 1) - 0.5
-          let uneven = CGFloat((thread * 37) % 7)
+        for thread in 0..<BeadsRitualMetrics.tasselThreads {
           path.move(to: tip)
           path.addQuadCurve(
-            to: CGPoint(
-              x: tip.x - BeadsHeadMetrics.tasselLean + sway + offset * BeadsRitualMetrics.tasselSpread,
-              y: tip.y + BeadsRitualMetrics.tasselLength + uneven
-            ),
+            to: geometry.tasselEnd(thread: thread, sway: sway),
             control: CGPoint(
               x: tip.x - BeadsHeadMetrics.tasselLean + sway * 0.3,
               y: tip.y + BeadsHeadMetrics.tasselBend
@@ -146,8 +171,8 @@ private struct BeadsHeadAssembly: View {
         .rotationEffect(.degrees(-35))
         .position(tip)
 
-      BeadsMaterialBead(material: material, diameter: towerDiameter, image: image)
-        .position(tower)
+      BeadsMaterialBead(material: material, diameter: geometry.towerDiameter, image: image)
+        .position(geometry.tower)
 
       BeadsMaterialBead(material: material, diameter: diameter, image: image)
         .position(BeadsHeadMetrics.anchor)
