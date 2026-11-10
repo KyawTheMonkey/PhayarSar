@@ -10,6 +10,7 @@ struct Beads: Identifiable, Sendable {
   let rounds: Int
   /// Nil for bead sets saved before recitations were introduced.
   let recitation: BeadsRecitation?
+  var completedRecitations: Int = 0
 
   static let defaultCount = 9
   static let countRange = 1...10_000
@@ -84,11 +85,13 @@ final class BeadsStore: ObservableObject {
         else { return nil }
         // Older bead sets predate round targets. A missing target means one
         // complete strand, so migration never hides an existing saved set.
-        let rounds = record.rounds?.intValue ?? Beads.defaultRounds
+        let storedRounds = record.rounds?.intValue ?? Beads.defaultRounds
+        let rounds = Beads.roundsRange.contains(storedRounds) ? storedRounds : Beads.defaultRounds
         return Beads(
           id: id, name: name, count: count,
-          rounds: Beads.roundsRange.contains(rounds) ? rounds : Beads.defaultRounds,
-          recitation: KloudCodableValue.decode(BeadsRecitation.self, from: record.recitationData)
+          rounds: rounds,
+          recitation: KloudCodableValue.decode(BeadsRecitation.self, from: record.recitationData),
+          completedRecitations: min(count * rounds, max(0, record.completedRecitations?.intValue ?? 0))
         )
       }
       didFailToLoad = false
@@ -143,6 +146,27 @@ final class BeadsStore: ObservableObject {
     try KloudStack.shared.store(for: BeadsRecord.self).delete(
       where: NSPredicate(format: "id == %@", id as NSUUID)
     )
+    reload()
+  }
+
+  /// Commit each deliberate count before acknowledging it. Progress belongs
+  /// to the saved set, so dismissing the screen, terminating the app or moving
+  /// guest data into an account does not silently restart a recitation.
+  func setProgress(id: UUID, completedRecitations: Int) throws {
+    guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
+    let store = KloudStack.shared.store(for: BeadsRecord.self)
+    guard let record = try store.first(where: NSPredicate(format: "id == %@", id as NSUUID)) else {
+      throw CocoaError(.validationMissingMandatoryProperty)
+    }
+    let target = (record.count?.intValue ?? Beads.defaultCount) * (record.rounds?.intValue ?? Beads.defaultRounds)
+    let previous = record.completedRecitations
+    record.completedRecitations = NSNumber(value: min(target, max(0, completedRecitations)))
+    do {
+      try store.save()
+    } catch {
+      record.completedRecitations = previous
+      throw error
+    }
     reload()
   }
 

@@ -200,6 +200,74 @@ public enum AppColor {
     public static let shadow = Color.dynamic(light: Palette.BeadMaterial.shadowLight, dark: Palette.BeadMaterial.shadowDark)
   }
 
+  /// The beads session sits on the app's shared background gradient and
+  /// follows the chosen theme like any other screen. The beads bring their own
+  /// colour; these are only the text and controls around them.
+  public enum BeadsSession {
+    public static let text = Color.dynamic(light: Palette.BeadSession.textLight, dark: Palette.BeadSession.textDark)
+    public static let secondaryText = Color.dynamic(light: Palette.BeadSession.secondaryTextLight, dark: Palette.BeadSession.secondaryTextDark)
+    public static let actionSurface = Color.dynamic(light: Palette.BeadSession.actionSurfaceLight, dark: Palette.BeadSession.actionSurfaceDark)
+    public static let actionText = Color.dynamic(light: Palette.BeadSession.actionTextLight, dark: Palette.BeadSession.actionTextDark)
+    public static let accent = text
+
+    /// SpriteKit keeps shader uniforms alive across theme changes. Supply
+    /// concrete colours once per appearance instead of asking dynamic
+    /// UIKit/AppKit providers to resolve inside the rendering loop.
+    public struct RenderingPalette {
+      /// The numeral beside the bead in hand.
+      public let numeral: Color
+      /// What the beads pick up from the finger they rest on.
+      public let skin: Color
+    }
+
+    public static func renderingPalette(for scheme: ColorScheme) -> RenderingPalette {
+      RenderingPalette(
+        numeral: scheme == .dark ? Palette.BeadSession.numeralDark : Palette.BeadSession.numeralLight,
+        skin: Palette.BeadSession.skin
+      )
+    }
+
+    /// One mala's worth of colour. These are what the bead shader works from,
+    /// not swatches: a metal's `body` is what it tints a reflection with, a
+    /// wood's is its heartwood, and a stone runs from `deep` to `pale` across
+    /// its mottling and glows `glow` where light passes through it. A material
+    /// is the same object under either theme, so there is one value of each.
+    public struct MaterialPalette: Sendable {
+      public let body: Color
+      public let deep: Color
+      public let pale: Color
+      public let glow: Color
+      public let cord: Color
+      public let tassel: Color
+      public let binding: Color
+    }
+
+    public static let titanium = MaterialPalette(
+      body: Palette.BeadMaterials.titanium, deep: Palette.BeadMaterials.titanium, pale: Palette.BeadMaterials.titanium,
+      glow: Palette.BeadMaterials.titanium, cord: Palette.BeadMaterials.titaniumCord,
+      tassel: Palette.BeadMaterials.titaniumTassel, binding: Palette.BeadMaterials.titaniumBinding)
+    public static let gold = MaterialPalette(
+      body: Palette.BeadMaterials.gold, deep: Palette.BeadMaterials.gold, pale: Palette.BeadMaterials.gold,
+      glow: Palette.BeadMaterials.gold, cord: Palette.BeadMaterials.goldCord,
+      tassel: Palette.BeadMaterials.goldTassel, binding: Palette.BeadMaterials.goldBinding)
+    public static let sandalwood = MaterialPalette(
+      body: Palette.BeadMaterials.sandalwood, deep: Palette.BeadMaterials.sandalwood, pale: Palette.BeadMaterials.sandalwood,
+      glow: Palette.BeadMaterials.sandalwood, cord: Palette.BeadMaterials.sandalwoodCord,
+      tassel: Palette.BeadMaterials.sandalwoodTassel, binding: Palette.BeadMaterials.sandalwoodBinding)
+    public static let bodhi = MaterialPalette(
+      body: Palette.BeadMaterials.bodhiPale, deep: Palette.BeadMaterials.bodhiDeep, pale: Palette.BeadMaterials.bodhiPale,
+      glow: Palette.BeadMaterials.bodhiPale, cord: Palette.BeadMaterials.bodhiCord,
+      tassel: Palette.BeadMaterials.bodhiTassel, binding: Palette.BeadMaterials.bodhiBinding)
+    public static let jade = MaterialPalette(
+      body: Palette.BeadMaterials.jadePale, deep: Palette.BeadMaterials.jadeDeep, pale: Palette.BeadMaterials.jadePale,
+      glow: Palette.BeadMaterials.jadeGlow, cord: Palette.BeadMaterials.jadeCord,
+      tassel: Palette.BeadMaterials.jadeTassel, binding: Palette.BeadMaterials.jadeBinding)
+    public static let amber = MaterialPalette(
+      body: Palette.BeadMaterials.amberPale, deep: Palette.BeadMaterials.amberDeep, pale: Palette.BeadMaterials.amberPale,
+      glow: Palette.BeadMaterials.amberGlow, cord: Palette.BeadMaterials.amberCord,
+      tassel: Palette.BeadMaterials.amberTassel, binding: Palette.BeadMaterials.amberBinding)
+  }
+
   // MARK: - Particle reveal
 
   /// The light palette carries colour as ink on a pale card; the dark palette
@@ -264,6 +332,55 @@ public enum AppColor {
 /// TextSecondary, TextTertiary) — do not use these directly, go through
 /// `AppColor`.
 fileprivate enum Palette {
+  enum BeadSession {
+    static let textLight = Color(hex: "#242528")
+    static let textDark = Color(hex: "#F7F2EC")
+    static let secondaryTextLight = Color(hex: "#686A6E")
+    static let secondaryTextDark = Color(hex: "#9E979C")
+    static let actionSurfaceLight = Color(hex: "#11161B")
+    static let actionSurfaceDark = Color(hex: "#1C1920")
+    static let actionTextLight = Color(hex: "#FFFFFF")
+    static let actionTextDark = Color(hex: "#FFFFFF")
+    static let numeralLight = Color(hex: "#6E4E2C")
+    static let numeralDark = Color(hex: "#E6CBA3")
+    static let skin = Color(hex: "#E8A484")
+  }
+
+  enum BeadMaterials {
+    // These feed the bead shader's lighting, which brightens and gamma-encodes
+    // them. They are deliberately darker and more saturated than the colour
+    // they end up as on screen; do not correct them by eye against a swatch.
+    static let titanium = Color(hex: "#A3A6B3")
+    static let titaniumCord = Color(hex: "#968C7E")
+    static let titaniumTassel = Color(hex: "#BAAE9C")
+    static let titaniumBinding = Color(hex: "#D9A65C")
+    static let gold = Color(hex: "#FFC257")
+    static let goldCord = Color(hex: "#7A2220")
+    static let goldTassel = Color(hex: "#9C2624")
+    static let goldBinding = Color(hex: "#F6D080")
+    static let sandalwood = Color(hex: "#854D29")
+    static let sandalwoodCord = Color(hex: "#8C321C")
+    static let sandalwoodTassel = Color(hex: "#C8782C")
+    static let sandalwoodBinding = Color(hex: "#E4B870")
+    static let bodhiDeep = Color(hex: "#0B0201")
+    static let bodhiPale = Color(hex: "#660E06")
+    static let bodhiCord = Color(hex: "#A01C24")
+    static let bodhiTassel = Color(hex: "#B5222B")
+    static let bodhiBinding = Color(hex: "#E4B870")
+    static let jadeDeep = Color(hex: "#002B17")
+    static let jadePale = Color(hex: "#3DA866")
+    static let jadeGlow = Color(hex: "#4DF28C")
+    static let jadeCord = Color(hex: "#C8A462")
+    static let jadeTassel = Color(hex: "#D6B470")
+    static let jadeBinding = Color(hex: "#F4D690")
+    static let amberDeep = Color(hex: "#4D1200")
+    static let amberPale = Color(hex: "#CC660F")
+    static let amberGlow = Color(hex: "#FFA829")
+    static let amberCord = Color(hex: "#6C201E")
+    static let amberTassel = Color(hex: "#8E2824")
+    static let amberBinding = Color(hex: "#F4CC7C")
+  }
+
   enum Reveal {
     static let roseLight = Color(hex: "#B13D72")
     static let violetLight = Color(hex: "#7750B7")

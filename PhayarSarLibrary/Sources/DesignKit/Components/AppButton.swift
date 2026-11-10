@@ -80,6 +80,8 @@ public struct AppButton: View {
   private let systemImage: String?
   private let kind: AppButtonKind
   private let isLoading: Bool
+  private let foregroundOverride: Color?
+  private let backgroundOverride: Color?
   private let action: () -> Void
 
   /// - Parameters:
@@ -88,19 +90,29 @@ public struct AppButton: View {
   ///   - isLoading: Swaps the label for a spinner and stops the button
   ///     responding. The frame does not change, so a row of buttons does not
   ///     resize as one of them starts working.
+  ///   - foreground: Optional ink for a screen with a fixed palette; omitted
+  ///     buttons keep their kind's shared DesignKit appearance.
+  ///   - background: Optional surface paired with that ink.
   public init(
     _ title: String,
     systemImage: String? = nil,
     kind: AppButtonKind = .primary,
     isLoading: Bool = false,
+    foreground: Color? = nil,
+    background: Color? = nil,
     action: @escaping () -> Void
   ) {
     self.title = title
     self.systemImage = systemImage
     self.kind = kind
     self.isLoading = isLoading
+    self.foregroundOverride = foreground
+    self.backgroundOverride = background
     self.action = action
   }
+
+  private var foreground: Color { foregroundOverride ?? kind.foreground }
+  private var background: Color { backgroundOverride ?? kind.background }
 
   public var body: some View {
     Button(action: action) {
@@ -118,15 +130,15 @@ public struct AppButton: View {
 
         if isLoading {
           ProgressView()
-            .tint(kind.foreground)
+            .tint(foreground)
         }
       }
       .font(AppFont.headline)
-      .foregroundStyle(kind.foreground)
+      .foregroundStyle(foreground)
       .frame(maxWidth: .infinity)
       .padding(.vertical, AppButtonMetrics.verticalPadding)
       .background(
-        kind.background,
+        background,
         in: RoundedRectangle(
           cornerRadius: AppButtonMetrics.cornerRadius,
           style: .continuous

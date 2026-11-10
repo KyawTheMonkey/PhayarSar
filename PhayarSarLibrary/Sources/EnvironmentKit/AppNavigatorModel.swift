@@ -165,6 +165,8 @@ public enum RouterDestination: Hashable, Codable {
   case nissaya(prayerID: String)
   /// The saved set is edited in place within the Beads navigation stack.
   case beadsEditor(beadsID: UUID)
+  /// Counts full recitations against a saved bead set's strand and round target.
+  case beadsSession(beadsID: UUID)
   case beadsPrayerBrowser
   case beadsPrayerSelection(prayerID: String, location: PrayerPassageLocation? = nil)
 }

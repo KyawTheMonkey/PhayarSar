@@ -49,6 +49,7 @@ public enum AppListSectionMetrics {
 /// The content is treated as opaque — separators between rows are not inserted
 /// automatically, so add your own `Divider()` where you want them.
 public struct AppListSection<Header: View, Content: View, Footer: View>: View {
+  @Environment(\.appListSectionAppearance) private var appearance
   private let header: Header
   private let content: Content
   private let footer: Footer
@@ -109,8 +110,8 @@ public struct AppListSection<Header: View, Content: View, Footer: View>: View {
       }
       .padding(contentInsets)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .background(AppColor.surface, in: shape)
-      .overlay(shape.strokeBorder(AppColor.border, lineWidth: 0.5))
+      .background(appearance.background, in: shape)
+      .overlay(shape.strokeBorder(appearance.border, lineWidth: 0.5))
       .padding(.horizontal, horizontalInset)
 
       if Footer.self != EmptyView.self {
@@ -121,6 +122,33 @@ public struct AppListSection<Header: View, Content: View, Footer: View>: View {
           .padding(.horizontal, labelInset)
       }
     }
+  }
+}
+
+// MARK: - Scoped appearance
+
+private struct AppListSectionAppearance: Sendable {
+  let background: Color
+  let border: Color
+}
+
+private struct AppListSectionAppearanceKey: EnvironmentKey {
+  static let defaultValue = AppListSectionAppearance(background: AppColor.surface, border: AppColor.border)
+}
+
+private extension EnvironmentValues {
+  var appListSectionAppearance: AppListSectionAppearance {
+    get { self[AppListSectionAppearanceKey.self] }
+    set { self[AppListSectionAppearanceKey.self] = newValue }
+  }
+}
+
+extension View {
+  /// An immersive screen can keep the shared section's insets, corner shape
+  /// and row behaviour while supplying its own surface, without changing the
+  /// app-wide theme or rebuilding the section as a feature-specific card.
+  public func appListSectionAppearance(background: Color, border: Color) -> some View {
+    environment(\.appListSectionAppearance, AppListSectionAppearance(background: background, border: border))
   }
 }
 

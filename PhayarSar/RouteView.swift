@@ -36,6 +36,8 @@ struct RouteView: View {
       NissayaScreen(prayerID: prayerID)
     case let .beadsEditor(beadsID):
       BeadsCreatorScreen(beadsID: beadsID)
+    case let .beadsSession(beadsID):
+      BeadsSessionScreen(beadsID: beadsID)
     case .beadsPrayerBrowser:
       BeadsPrayerBrowserScreen()
     case let .beadsPrayerSelection(prayerID, location):

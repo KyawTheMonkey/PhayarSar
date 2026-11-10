@@ -627,6 +627,86 @@
     "En": "No beads yet",
     "Mm": "ပုတီး မရှိသေးပါ"
   },
+  "beads_session_count": {
+    "En": "Pass one bead",
+    "Mm": "ပုတီးတစ်စေ့ စိပ်ရန်"
+  },
+  "beads_session_pull_hint": {
+    "En": "Pull the next bead to your thumb after each recitation.",
+    "Mm": "ဂါထာတစ်ပုဒ် ရွတ်ပြီးတိုင်း နောက်ပုတီးတစ်စေ့ကို လက်မဆီသို့ ဆွဲချပါ။"
+  },
+  "beads_session_turn_hint": {
+    "En": "Round complete. Pull to turn the mala around.",
+    "Mm": "တစ်ကြော့ ပြည့်ပါပြီ။ ပုတီးကို ပြန်လှည့်ရန် ဆွဲချပါ။"
+  },
+  "beads_material": {
+    "En": "Bead material",
+    "Mm": "ပုတီးစေ့ အမျိုးအစား"
+  },
+  "beads_material_titanium": {
+    "En": "Titanium",
+    "Mm": "တိုက်တေနီယမ်"
+  },
+  "beads_material_gold": {
+    "En": "Gold",
+    "Mm": "ရွှေ"
+  },
+  "beads_material_sandalwood": {
+    "En": "Sandalwood",
+    "Mm": "စန္ဒကူး"
+  },
+  "beads_material_bodhi": {
+    "En": "Bodhi seed",
+    "Mm": "ဗောဓိစေ့"
+  },
+  "beads_material_jade": {
+    "En": "Jade",
+    "Mm": "ကျောက်စိမ်း"
+  },
+  "beads_material_amber": {
+    "En": "Amber",
+    "Mm": "ပယင်း"
+  },
+  "beads_session_progress": {
+    "En": "{0} / {1}",
+    "Mm": "{0} / {1}"
+  },
+  "beads_session_round": {
+    "En": "Round {0} of {1}",
+    "Mm": "{1} ကြော့အနက် {0} ကြော့မြောက်"
+  },
+  "beads_session_undo": {
+    "En": "Undo one bead",
+    "Mm": "ပုတီးတစ်စေ့ ပြန်လျှော့ရန်"
+  },
+  "beads_session_complete": {
+    "En": "Practice complete",
+    "Mm": "ပုတီးစိပ်ခြင်း ပြီးဆုံးပါပြီ"
+  },
+  "beads_session_restart": {
+    "En": "Start again",
+    "Mm": "ပြန်လည် စတင်ရန်"
+  },
+  "beads_session_start_over": {
+    "En": "Start over",
+    "Mm": "အစကပြန်စမယ်"
+  },
+  "beads_session_start_over_confirm": {
+    "En": "Start over from the first bead? Your count so far will be cleared.",
+    "Mm": "ပထမပုတီးစေ့မှ ပြန်စမလား။ ယခုအထိ ရေတွက်ထားသည်များ ပျက်သွားပါမည်။"
+  },
+  "beads_session_not_found": {
+    "En": "This bead set is no longer available",
+    "Mm": "ဤပုတီးကုံးကို မတွေ့နိုင်တော့ပါ"
+  },
+  "beads_session_save_error": {
+    "En": "Couldn’t save your progress. Please try that bead again.",
+    "Mm": "ရေတွက်ထားသည်ကို မသိမ်းဆည်းနိုင်ပါ။ ထိုပုတီးစေ့ကို ထပ်မံစိပ်ပါ။"
+  },
+  "beads_session_add_recitation": {
+    "En": "Add a recitation to this bead set",
+    "Mm": "ဤပုတီးကုံးအတွက် ရွတ်ဖတ်မည့် ဂါထာ ထည့်ပါ"
+  },
   "beads_empty_message": {
     "En": "Add your first bead set to begin your practice.",
     "Mm": "ပုတီးစိပ်ရန် ပထမဆုံး ပုတီးတစ်ကုံး ထည့်ပါ။"

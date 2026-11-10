@@ -52,6 +52,7 @@ public struct AppEmptyStateView: View {
   private let message: String?
   private let actionTitle: String?
   private let action: (() -> Void)?
+  private let foreground: Color?
 
   /// - Parameters:
   ///   - systemImage: SF Symbol standing in for whatever is missing.
@@ -68,6 +69,7 @@ public struct AppEmptyStateView: View {
     title: String,
     message: String? = nil,
     actionTitle: String? = nil,
+    foreground: Color? = nil,
     action: (() -> Void)? = nil
   ) {
     self.systemImage = systemImage
@@ -75,13 +77,14 @@ public struct AppEmptyStateView: View {
     self.message = message
     self.actionTitle = actionTitle
     self.action = action
+    self.foreground = foreground
   }
 
   public var body: some View {
     VStack(spacing: AppEmptyStateMetrics.spacing) {
       Image(systemName: systemImage)
         .font(.system(size: AppEmptyStateMetrics.iconSize, weight: .light))
-        .foregroundStyle(AppColor.textTertiary)
+        .foregroundStyle(foreground?.opacity(0.6) ?? AppColor.textTertiary)
         // The title already says what is missing; the symbol repeating it is
         // noise to a screen reader.
         .accessibilityHidden(true)
@@ -89,7 +92,8 @@ public struct AppEmptyStateView: View {
       textBlock
 
       if let actionTitle, let action {
-        AppButton(actionTitle, kind: .secondary, action: action)
+        AppButton(actionTitle, kind: .secondary,
+          foreground: foreground, background: foreground?.opacity(0.12), action: action)
           .frame(maxWidth: AppEmptyStateMetrics.actionWidth)
       }
     }
@@ -103,12 +107,12 @@ public struct AppEmptyStateView: View {
     VStack(spacing: AppEmptyStateMetrics.textSpacing) {
       Text(title)
         .font(AppFont.headline)
-        .foregroundStyle(AppColor.textPrimary)
+        .foregroundStyle(foreground ?? AppColor.textPrimary)
 
       if let message {
         Text(message)
           .font(AppFont.subheadline)
-          .foregroundStyle(AppColor.textSecondary)
+          .foregroundStyle(foreground?.opacity(0.75) ?? AppColor.textSecondary)
       }
     }
     .multilineTextAlignment(.center)

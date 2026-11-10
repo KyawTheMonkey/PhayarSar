@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSMotionUsageDescription</key>
+	<string>Device motion lets your prayer beads swing naturally when you tilt or move your device.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>DMSerifDisplay-Regular.ttf</string>

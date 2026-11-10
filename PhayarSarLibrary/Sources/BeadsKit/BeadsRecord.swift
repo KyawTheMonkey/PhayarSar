@@ -11,6 +11,9 @@ public final class BeadsRecord: NSManagedObject, KloudEntity {
   @NSManaged public var count: NSNumber?
   @NSManaged public var rounds: NSNumber?
   @NSManaged public var recitationData: Data?
+  /// Finished recitations survive leaving the screen. The strand's physical
+  /// position is deliberately not persisted or interpreted as a count.
+  @NSManaged public var completedRecitations: NSNumber?
   @NSManaged public var createdAt: Date?
 
   public static var storageLabel: String { L10n.beadsTab }
@@ -24,6 +27,7 @@ public final class BeadsRecord: NSManagedObject, KloudEntity {
       KloudAttribute.make("count", .integer32AttributeType),
       KloudAttribute.make("rounds", .integer32AttributeType, defaultValue: 1),
       KloudAttribute.codable("recitationData"),
+      KloudAttribute.make("completedRecitations", .integer64AttributeType, defaultValue: 0),
       KloudAttribute.make("createdAt", .dateAttributeType),
     ]
     return entity

@@ -69,7 +69,7 @@ public struct BeadsScreen: View {
       Section {
         ForEach(store.beads) { beads in
           Button {
-            navigator.navigate(to: .beadsEditor(beadsID: beads.id))
+            navigator.navigate(to: .beadsSession(beadsID: beads.id))
           } label: {
             HStack(spacing: AppSettingsRowMetrics.iconSpacing) {
               VStack(alignment: .leading, spacing: BeadsScreenMetrics.rowSpacing) {
@@ -99,6 +99,11 @@ public struct BeadsScreen: View {
           .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) { deleteBeads(id: beads.id) } label: {
               Label(L10n.delete, systemImage: "trash")
+            }
+            Button {
+              navigator.navigate(to: .beadsEditor(beadsID: beads.id))
+            } label: {
+              Label(L10n.beadsEdit, systemImage: "pencil")
             }
           }
         }
