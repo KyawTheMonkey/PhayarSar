@@ -7,6 +7,7 @@ import SwiftUI
 public enum BeadsCreatorMetrics {
   public static let verticalPadding: CGFloat = 24
   public static let maxWidth: CGFloat = 520
+  static let materialToCountSpacing: CGFloat = 32
 }
 
 /// Draft fields stay local until Save. Adding dismisses its sheet; editing
@@ -50,7 +51,7 @@ public struct BeadsCreatorScreen: View {
         VStack(spacing: 0) {
           BeadsStrandView(count: count, material: material)
           BeadsMaterialPicker(material: $material)
-            .padding(.bottom, AppListSectionMetrics.recommendedSectionSpacing)
+            .padding(.bottom, BeadsCreatorMetrics.materialToCountSpacing)
           BeadsCountPicker(count: $count, isValid: $isValidCount)
         }
         .appHorizontalInset()
