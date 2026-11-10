@@ -1,10 +1,8 @@
 import DesignKit
 import Inject
-import LocalisationKit
-import PrayersKit
 import SwiftUI
 
-private enum OngoingPrayerMetrics {
+private enum HomeContinueCardMetrics {
   static let spacing: CGFloat = 12
   static let coverSize: CGFloat = 48
   static let coverCornerRadius: CGFloat = 16
@@ -13,24 +11,28 @@ private enum OngoingPrayerMetrics {
   static let progressHeight: CGFloat = 5
 }
 
-struct OngoingPrayerView: View {
+struct HomeContinueCard<Artwork: View>: View {
   @ObserveInjection private var injectionObserver
-  let prayer: Prayer
-  let category: PrayerCategory?
-  let reading: PrayerContinuationStore.Reading
+  let title: String
+  let summary: String
+  let fraction: Double
   let onTap: () -> Void
+  @ViewBuilder let artwork: () -> Artwork
 
   var body: some View {
     Button(action: onTap) {
-      HStack(spacing: OngoingPrayerMetrics.spacing) {
-        PrayerCoverImage(prayerID: prayer.id)
-          .frame(width: OngoingPrayerMetrics.coverSize, height: OngoingPrayerMetrics.coverSize)
-          .clipShape(RoundedRectangle(cornerRadius: OngoingPrayerMetrics.coverCornerRadius))
+      HStack(spacing: HomeContinueCardMetrics.spacing) {
+        artwork()
+          .frame(width: HomeContinueCardMetrics.coverSize, height: HomeContinueCardMetrics.coverSize)
+          .clipShape(RoundedRectangle(cornerRadius: HomeContinueCardMetrics.coverCornerRadius))
+          .accessibilityHidden(true)
 
-        VStack(alignment: .leading, spacing: OngoingPrayerMetrics.textSpacing) {
-          Text(prayer.title)
+        VStack(alignment: .leading, spacing: HomeContinueCardMetrics.textSpacing) {
+          Text(title)
             .font(AppFont.listItemTitle)
             .foregroundStyle(AppColor.textPrimary)
+            .lineLimit(1)
+            .truncationMode(.tail)
 
           Text(summary)
             .font(AppFont.caption)
@@ -43,11 +45,11 @@ struct OngoingPrayerView: View {
               .overlay(alignment: .leading) {
                 Capsule()
                   .fill(AppColor.primary)
-                  .frame(width: proxy.size.width * min(max(reading.fraction, 0), 1))
+                  .frame(width: proxy.size.width * min(max(fraction, 0), 1))
               }
           }
-          .frame(height: OngoingPrayerMetrics.progressHeight)
-          .padding(.top, OngoingPrayerMetrics.progressTopPadding)
+          .frame(height: HomeContinueCardMetrics.progressHeight)
+          .padding(.top, HomeContinueCardMetrics.progressTopPadding)
           .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -56,17 +58,10 @@ struct OngoingPrayerView: View {
           .foregroundStyle(AppColor.primary)
           .accessibilityHidden(true)
       }
+      .frame(maxHeight: .infinity)
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
     .enableInjection()
-  }
-
-  private var summary: String {
-    let progress = L10n.continuePrayerProgress(
-      .init(stringLiteral: reading.verse.formatted()),
-      .init(stringLiteral: reading.verses.formatted())
-    )
-    return category.map { "\($0.displayText) • \(progress)" } ?? progress
   }
 }

@@ -879,6 +879,10 @@
     "En": "{0} of {1} verses",
     "Mm": "ဂါထာ {1} ပုဒ်အနက် {0} ပုဒ်"
   },
+  "continue_beads_progress": {
+    "En": "{0} of {1} beads",
+    "Mm": "ပုတီးစေ့ {1} စေ့အနက် {0} စေ့"
+  },
   "home_search": {
     "En": "Search",
     "Mm": "ရှာရန်"

@@ -34,14 +34,33 @@ struct Beads: Identifiable, Sendable {
   }
 }
 
+/// A read-only summary for surfaces that can resume a saved practice.
+public struct BeadsContinuation: Identifiable, Sendable {
+  public let id: UUID
+  public let name: String
+  public let completed: Int
+  public let total: Int
+}
+
 /// Publishes values rather than managed objects: a sign-in replaces the store,
 /// and a screen must not keep references into the context that just closed.
 @MainActor
-final class BeadsStore: ObservableObject {
-  static let shared = BeadsStore()
+public final class BeadsStore: ObservableObject {
+  public static let shared = BeadsStore()
 
   @Published private(set) var beads: [Beads] = []
   @Published private(set) var didFailToLoad = false
+
+  public var ongoingSessions: [BeadsContinuation] {
+    guard !didFailToLoad else { return [] }
+    return beads.compactMap { beads in
+      let total = beads.count * beads.rounds
+      guard beads.completedRecitations > 0, beads.completedRecitations < total else { return nil }
+      return BeadsContinuation(
+        id: beads.id, name: beads.name, completed: beads.completedRecitations, total: total
+      )
+    }
+  }
 
   struct RecitationReveal {
     let beadsID: UUID
@@ -72,7 +91,7 @@ final class BeadsStore: ObservableObject {
     }
   }
 
-  func reload() {
+  public func reload() {
     guard isSchemaAvailable else { return }
     do {
       let records = try KloudStack.shared.store(for: BeadsRecord.self).fetch(

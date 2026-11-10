@@ -2,18 +2,39 @@ import DesignKit
 import Inject
 import LocalisationKit
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 private enum HomeContinueMetrics {
+  static let phoneCardWidthFraction: CGFloat = 4.0 / 5.0
   static let maximumCardWidth: CGFloat = 480
   static let nextCardPeek: CGFloat = 24
   static let labelKerning: CGFloat = 0.6
 }
 
-private struct HomeContinueWidthKey: PreferenceKey {
-  static var defaultValue: CGFloat { 0 }
+/// Measure at the final width so wrapped summaries and Dynamic Type can grow
+/// the whole row together. AppCard fills the resulting height for each item.
+private struct HomeContinueRow: Layout {
+  let cardWidth: CGFloat
 
-  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-    value = nextValue()
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    let cardProposal = ProposedViewSize(width: cardWidth, height: nil)
+    let height = subviews.map { $0.sizeThatFits(cardProposal).height }.max() ?? 0
+    let gaps = max(subviews.count - 1, 0)
+    return CGSize(
+      width: CGFloat(subviews.count) * cardWidth + CGFloat(gaps) * AppCardMetrics.spacing,
+      height: height
+    )
+  }
+
+  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    let cardProposal = ProposedViewSize(width: cardWidth, height: bounds.height)
+    var x = bounds.minX
+    for subview in subviews {
+      subview.place(at: CGPoint(x: x, y: bounds.minY), anchor: .topLeading, proposal: cardProposal)
+      x += cardWidth + AppCardMetrics.spacing
+    }
   }
 }
 
@@ -39,11 +60,13 @@ struct HomeContinueCarousel<Item: Identifiable, Card: View>: View {
   #endif
 
   private var cardWidth: CGFloat {
-    // Before the width preference arrives, a zero-width card wraps every
-    // character onto its own line and gives the carousel an enormous height.
-    let available = width > 0
-      ? max(width - horizontalInset * 2, 0)
-      : AppCardMetrics.idealWidth
+    guard width > 0 else { return AppCardMetrics.idealWidth }
+    #if os(iOS)
+    if UIDevice.current.userInterfaceIdiom == .phone {
+      return width * HomeContinueMetrics.phoneCardWidthFraction
+    }
+    #endif
+    let available = width - horizontalInset * 2
     let peek = items.count > 1 ? HomeContinueMetrics.nextCardPeek + AppCardMetrics.spacing : 0
     return min(max(available - peek, 0), HomeContinueMetrics.maximumCardWidth)
   }
@@ -59,14 +82,9 @@ struct HomeContinueCarousel<Item: Identifiable, Card: View>: View {
           .padding(.horizontal, horizontalInset + AppListSectionMetrics.contentInsets.leading)
 
         ScrollView(.horizontal, showsIndicators: false) {
-          HStack(spacing: AppCardMetrics.spacing) {
+          HomeContinueRow(cardWidth: cardWidth) {
             ForEach(items) { item in
               AppCard { card(item) }
-                .frame(width: cardWidth)
-                // AppCard fills height for grids. This horizontal strip needs
-                // its natural height at the resolved width instead, including
-                // any extra room required by Burmese text and Dynamic Type.
-                .fixedSize(horizontal: false, vertical: true)
             }
           }
           .continuationScrollTargets()
@@ -74,13 +92,8 @@ struct HomeContinueCarousel<Item: Identifiable, Card: View>: View {
         }
         .continuationScrollBehavior()
         .fixedSize(horizontal: false, vertical: true)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
       }
-      .background {
-        GeometryReader { proxy in
-          Color.clear.preference(key: HomeContinueWidthKey.self, value: proxy.size.width)
-        }
-      }
-      .onPreferenceChange(HomeContinueWidthKey.self) { width = $0 }
       .enableInjection()
     }
   }

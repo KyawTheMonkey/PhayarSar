@@ -1,3 +1,4 @@
+import BeadsKit
 import DesignKit
 import EnvironmentKit
 import Inject
@@ -9,6 +10,18 @@ private enum HomeScreenMetrics {
   static let contentTopPadding: CGFloat = 8
   static let contentBottomPadding: CGFloat = 16
   static let segmentVerticalPadding: CGFloat = 8
+}
+
+private enum HomeContinuation: Identifiable {
+  case prayer(Prayer, PrayerContinuationStore.Reading)
+  case beads(BeadsContinuation)
+
+  var id: RouterDestination {
+    switch self {
+    case let .prayer(prayer, _): .prayer(prayerID: prayer.id)
+    case let .beads(session): .beadsSession(beadsID: session.id)
+    }
+  }
 }
 
 public struct HomeScreen: View {
@@ -29,14 +42,16 @@ public struct HomeScreen: View {
   @EnvironmentObject private var navigator: AppNavigatorModel
   @StateObject private var viewModel = HomeViewModel()
   @ObservedObject private var continuation = PrayerContinuationStore.shared
+  @ObservedObject private var beads = BeadsStore.shared
 
   public init() {}
 
-  private var continuingReadings: [PrayerContinuationStore.Reading] {
+  private var continuations: [HomeContinuation] {
+    let sessions = beads.ongoingSessions.map(HomeContinuation.beads)
     guard let reading = continuation.reading,
-          PrayerCatalog.shared.prayer(id: reading.prayerID) != nil
-    else { return [] }
-    return [reading]
+          let prayer = PrayerCatalog.shared.prayer(id: reading.prayerID)
+    else { return sessions }
+    return [.prayer(prayer, reading)] + sessions
   }
 
   public var body: some View {
@@ -45,17 +60,8 @@ public struct HomeScreen: View {
         spacing: AppListSectionMetrics.recommendedSectionSpacing,
         pinnedViews: [.sectionHeaders]
       ) {
-        HomeContinueCarousel(items: continuingReadings) { reading in
-          if let prayer = PrayerCatalog.shared.prayer(id: reading.prayerID) {
-            OngoingPrayerView(
-              prayer: prayer,
-              category: viewModel.sections.first { section in
-                section.prayers.contains { $0.id == prayer.id }
-              }?.category,
-              reading: reading,
-              onTap: { navigator.navigate(to: .prayer(prayerID: prayer.id)) }
-            )
-          }
+        HomeContinueCarousel(items: continuations) { item in
+          continuationCard(item)
         }
 
         Section {
@@ -75,7 +81,10 @@ public struct HomeScreen: View {
       .padding(.top, HomeScreenMetrics.contentTopPadding)
       .padding(.bottom, HomeScreenMetrics.contentBottomPadding)
     }
-    .onAppear { viewModel.onAppear() }
+    .onAppear {
+      viewModel.onAppear()
+      beads.reload()
+    }
     .background(AppBackgroundGradient())
     // The system owns both title sizes and the scroll view's navigation inset.
     // Measuring and moving an overlay title alongside that inset creates two
@@ -87,6 +96,43 @@ public struct HomeScreen: View {
     #endif
     .toolbar { HomeToolbar() }
     .enableInjection()
+  }
+
+  @ViewBuilder
+  private func continuationCard(_ item: HomeContinuation) -> some View {
+    switch item {
+    case let .prayer(prayer, reading):
+      let progress = L10n.continuePrayerProgress(
+        .init(stringLiteral: reading.verse.formatted()),
+        .init(stringLiteral: reading.verses.formatted())
+      )
+      let category = viewModel.sections.first { section in
+        section.prayers.contains { $0.id == prayer.id }
+      }?.category
+      HomeContinueCard(
+        title: prayer.title, summary: category.map { "\($0.displayText) • \(progress)" } ?? progress,
+        fraction: reading.fraction, onTap: { navigator.navigate(to: item.id) }
+      ) {
+        PrayerCoverImage(prayerID: prayer.id)
+      }
+    case let .beads(session):
+      HomeContinueCard(
+        title: session.name,
+        summary: L10n.continueBeadsProgress(
+          .init(stringLiteral: session.completed.formatted()),
+          .init(stringLiteral: session.total.formatted())
+        ),
+        fraction: Double(session.completed) / Double(session.total),
+        onTap: { navigator.navigate(to: item.id) }
+      ) {
+        ZStack {
+          AppColor.primarySoft
+          Image(systemName: "circle.hexagonpath")
+            .font(AppFont.title)
+            .foregroundStyle(AppColor.primary)
+        }
+      }
+    }
   }
 
   @ViewBuilder
