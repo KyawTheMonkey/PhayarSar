@@ -42,7 +42,9 @@ public struct BeadsCreatorScreen: View {
   }
 
   private var canSave: Bool {
-    !trimmedName.isEmpty && isValidCount && isValidRounds && recitationDraft.recitation != nil
+    !trimmedName.isEmpty && isValidCount && isValidRounds
+      && Beads.countRange.contains(count) && Beads.roundsRange.contains(rounds)
+      && recitationDraft.recitation != nil
   }
 
   public var body: some View {
@@ -62,19 +64,6 @@ public struct BeadsCreatorScreen: View {
         }
         BeadsRecitationSection()
         BeadsRoundsPicker(rounds: $rounds, isValid: $isValidRounds)
-        if didFailToSave {
-          Text(L10n.beadsSaveError)
-            .font(AppFont.subheadline)
-            .foregroundStyle(AppColor.error)
-            .appHorizontalInset()
-        }
-        AppButton(
-          beadsID == nil ? L10n.beadsAdd : L10n.beadsSaveChanges,
-          systemImage: beadsID == nil ? "plus" : "checkmark", action: save
-        )
-        .disabled(!canSave)
-        .opacity(canSave ? 1 : 0.5)
-        .appHorizontalInset()
         if beadsID != nil {
           AppButton(L10n.beadsDelete, systemImage: "trash", kind: .destructive, action: delete)
             .appHorizontalInset()
@@ -97,6 +86,9 @@ public struct BeadsCreatorScreen: View {
             .font(AppFont.body)
         }
       }
+      ToolbarItem(placement: .primaryAction) {
+        saveToolbarItem
+      }
     }
     .onAppear {
       if let beadsID { recitationDraft.prepareToEdit(beadsID: beadsID) }
@@ -104,14 +96,31 @@ public struct BeadsCreatorScreen: View {
     .alert(L10n.deleteFailed, isPresented: $didFailToDelete) {
       Button(L10n.done, role: .cancel) {}
     }
+    .alert(L10n.beadsSaveError, isPresented: $didFailToSave) {
+      Button(L10n.done, role: .cancel) {}
+    }
     .enableInjection()
   }
 
+  @ViewBuilder
+  private var saveToolbarItem: some View {
+    let button = Button(action: save) {
+      Image(systemName: "checkmark")
+    }
+    .accessibilityLabel(beadsID == nil ? L10n.beadsAdd : L10n.beadsSaveChanges)
+    if canSave {
+      if #available(iOS 26, macOS 26, *) {
+        button.buttonStyle(.glassProminent).tint(AppColor.primary)
+      } else {
+        button.buttonStyle(.borderedProminent).tint(AppColor.primary)
+      }
+    } else {
+      button.disabled(true)
+    }
+  }
+
   private func save() {
-    guard !trimmedName.isEmpty, isValidCount, isValidRounds,
-          Beads.countRange.contains(count), Beads.roundsRange.contains(rounds),
-          let recitation = recitationDraft.recitation
-    else { return }
+    guard canSave, let recitation = recitationDraft.recitation else { return }
     do {
       if let beadsID {
         try BeadsStore.shared.update(
