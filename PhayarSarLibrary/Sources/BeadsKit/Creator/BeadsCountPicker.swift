@@ -4,11 +4,11 @@ import LocalisationKit
 import SwiftUI
 
 enum BeadsCountPickerMetrics {
-  static let controlSize: CGFloat = 52
+  static let controlSize: CGFloat = 48
   static let numberWidth: CGFloat = 128
-  static let numberSize: CGFloat = 40
+  static let numberSize: CGFloat = 36
   static let presets = [9, 27, 108]
-  static let spacing: CGFloat = 20
+  static let spacing: CGFloat = 14
 }
 
 struct BeadsCountPicker: View {

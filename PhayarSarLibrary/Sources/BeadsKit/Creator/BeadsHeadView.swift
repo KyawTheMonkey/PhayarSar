@@ -9,12 +9,11 @@ enum BeadsHeadMetrics {
   static let trailingReach: CGFloat = 24
   static let topReach: CGFloat = 24
   static let bottomReach: CGFloat = 76
-  static let wrapWidth: CGFloat = 4
-  static let wrapHeight: CGFloat = 7
-  static let cordWidth: CGFloat = 1.7
-  static let cordHighlightWidth: CGFloat = 0.45
-  static let terminalWidth: CGFloat = 3.5
-  static let terminalHeight: CGFloat = 6
+  static let bindingLength: CGFloat = 6
+  static let bindingWidth: CGFloat = 2.2
+  static let tasselWidth: CGFloat = 1.1
+  static let tasselLean: CGFloat = 11
+  static let tasselBend: CGFloat = 12
   static let kick: CGFloat = 6
   static let springStiffness: Double = 95
   static let springDamping: Double = 8
@@ -36,10 +35,12 @@ struct BeadsHeadView: View {
   @State private var previousCount: Int?
   let diameter: CGFloat
   let count: Int
+  let material: BeadsMaterial
+  let image: CGImage?
 
   var body: some View {
     TimelineView(.animation(paused: motionStart == nil || reduceMotion)) { timeline in
-      BeadsHeadAssembly(diameter: diameter, sway: sway(at: timeline.date))
+      BeadsHeadAssembly(diameter: diameter, sway: sway(at: timeline.date), material: material, image: image)
     }
     .task(id: MotionTrigger(count: count, reduceMotion: reduceMotion)) {
       let oldCount = previousCount
@@ -87,108 +88,65 @@ struct BeadsHeadView: View {
 private struct BeadsHeadAssembly: View {
   let diameter: CGFloat
   let sway: CGFloat
+  let material: BeadsMaterial
+  let image: CGImage?
 
-  private var root: CGPoint {
+  private var towerDiameter: CGFloat { diameter * BeadsRitualMetrics.towerScale }
+
+  private var tower: CGPoint {
     CGPoint(
-      x: BeadsHeadMetrics.anchor.x - diameter / 2 - BeadsHeadMetrics.wrapWidth / 2,
-      y: BeadsHeadMetrics.anchor.y + BeadsHeadMetrics.wrapWidth / 2
+      x: BeadsHeadMetrics.anchor.x - (diameter + towerDiameter) / 2,
+      y: BeadsHeadMetrics.anchor.y - diameter * 0.17
     )
   }
 
   var body: some View {
+    let palette = material.palette
+    let tip = CGPoint(x: tower.x - towerDiameter * 0.6, y: tower.y - towerDiameter * 0.38)
     ZStack(alignment: .topLeading) {
-      // A low, broad reflection keeps this slightly larger bead from reading
-      // as an eye beside the connector and cord.
-      PolishedBead(diameter: diameter, reflectionStrength: 0.42)
-        .frame(width: diameter, height: diameter)
-        .scaleEffect(x: 1, y: 0.94)
-        .position(BeadsHeadMetrics.anchor)
+      Path { path in
+        path.move(to: tip)
+        path.addLine(to: tower)
+        path.addLine(to: BeadsHeadMetrics.anchor)
+      }
+      .stroke(palette.cord, style: StrokeStyle(lineWidth: BeadsStrandMetrics.threadWidth, lineCap: .round))
 
-      BeadsDrapedCord(root: root, sway: sway)
-        .stroke(
-          AppColor.Beads.warmth,
-          style: StrokeStyle(lineWidth: BeadsHeadMetrics.cordWidth, lineCap: .round, lineJoin: .round)
-        )
-        .overlay {
-          BeadsDrapedCord(root: root, sway: sway)
-            .stroke(
-              AppColor.Beads.thread.opacity(0.6),
-              style: StrokeStyle(lineWidth: BeadsHeadMetrics.cordHighlightWidth, lineCap: .round)
+      Path { path in
+        let threads = BeadsRitualMetrics.tasselThreads
+        for thread in 0..<threads {
+          let offset = CGFloat(thread) / CGFloat(threads - 1) - 0.5
+          let uneven = CGFloat((thread * 37) % 7)
+          path.move(to: tip)
+          path.addQuadCurve(
+            to: CGPoint(
+              x: tip.x - BeadsHeadMetrics.tasselLean + sway + offset * BeadsRitualMetrics.tasselSpread,
+              y: tip.y + BeadsRitualMetrics.tasselLength + uneven
+            ),
+            control: CGPoint(
+              x: tip.x - BeadsHeadMetrics.tasselLean + sway * 0.3,
+              y: tip.y + BeadsHeadMetrics.tasselBend
             )
+          )
         }
+      }
+      .stroke(palette.tassel, style: StrokeStyle(lineWidth: BeadsHeadMetrics.tasselWidth, lineCap: .round))
 
-      wrappedEnd(width: BeadsHeadMetrics.wrapWidth, height: BeadsHeadMetrics.wrapHeight)
-        .rotationEffect(.degrees(68))
-        .position(root)
+      Capsule()
+        .fill(palette.binding)
+        .frame(width: BeadsHeadMetrics.bindingLength, height: BeadsHeadMetrics.bindingWidth)
+        .rotationEffect(.degrees(-35))
+        .position(tip)
 
-      wrappedEnd(width: BeadsHeadMetrics.terminalWidth, height: BeadsHeadMetrics.terminalHeight)
-        .rotationEffect(.degrees(-32 + Double(sway)))
-        .position(BeadsDrapedCord.firstEnd(root: root, sway: sway))
+      BeadsMaterialBead(material: material, diameter: towerDiameter, image: image)
+        .position(tower)
 
-      wrappedEnd(width: BeadsHeadMetrics.terminalWidth, height: BeadsHeadMetrics.terminalHeight)
-        .rotationEffect(.degrees(16 + Double(sway) * 0.6))
-        .position(BeadsDrapedCord.secondEnd(root: root, sway: sway))
+      BeadsMaterialBead(material: material, diameter: diameter, image: image)
+        .position(BeadsHeadMetrics.anchor)
     }
     .frame(width: BeadsHeadMetrics.width, height: BeadsHeadMetrics.height)
     .transaction {
       $0.animation = nil
       $0.disablesAnimations = true
-    }
-  }
-
-  private func wrappedEnd(width: CGFloat, height: CGFloat) -> some View {
-    Capsule()
-      .fill(
-        LinearGradient(
-          colors: [AppColor.Beads.warmth, AppColor.Beads.thread.opacity(0.8), AppColor.Beads.warmth],
-          startPoint: .leading,
-          endPoint: .trailing
-        )
-      )
-      .frame(width: width, height: height)
-  }
-}
-
-/// Both ends hang on the same side of the join with different lengths and
-/// curvature. The moving control points bend the cord itself, rather than
-/// rotating a rigid fork, and the root remains attached throughout the sway.
-private struct BeadsDrapedCord: Shape {
-  var root: CGPoint
-  var sway: CGFloat
-
-  static func firstEnd(root: CGPoint, sway: CGFloat) -> CGPoint {
-    CGPoint(x: root.x - 12 + sway, y: root.y + 43 - sway * 0.2)
-  }
-
-  static func secondEnd(root: CGPoint, sway: CGFloat) -> CGPoint {
-    CGPoint(x: root.x - 24 + sway * 0.8, y: root.y + 56 + sway * 0.15)
-  }
-
-  func path(in rect: CGRect) -> Path {
-    Path { path in
-      path.move(to: root)
-      path.addCurve(
-        to: CGPoint(x: root.x - 27 + sway * 0.5, y: root.y + 23),
-        control1: CGPoint(x: root.x - 14, y: root.y - 3),
-        control2: CGPoint(x: root.x - 34 + sway * 0.3, y: root.y + 10)
-      )
-      path.addCurve(
-        to: Self.firstEnd(root: root, sway: sway),
-        control1: CGPoint(x: root.x - 27 + sway * 0.7, y: root.y + 33),
-        control2: CGPoint(x: root.x - 12 + sway, y: root.y + 34)
-      )
-
-      path.move(to: root)
-      path.addCurve(
-        to: CGPoint(x: root.x - 23 + sway * 0.4, y: root.y + 29),
-        control1: CGPoint(x: root.x - 10, y: root.y + 4),
-        control2: CGPoint(x: root.x - 30 + sway * 0.2, y: root.y + 17)
-      )
-      path.addCurve(
-        to: Self.secondEnd(root: root, sway: sway),
-        control1: CGPoint(x: root.x - 18 + sway * 0.5, y: root.y + 39),
-        control2: CGPoint(x: root.x - 21 + sway * 0.8, y: root.y + 47)
-      )
     }
   }
 }

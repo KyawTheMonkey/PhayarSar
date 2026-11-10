@@ -11,17 +11,15 @@ enum BeadsStrandMetrics {
   static let centerY = height / 2
   static let maximumVisibleBeads = 108
   static let samples = 540
-  static let maximumDiameter: CGFloat = 34
+  static let maximumDiameter: CGFloat = 43
   static let minimumDiameter: CGFloat = 12
   static let beadsPerCoil = 36
   static let minimumRadius: CGFloat = 22
   static let maximumRadius: CGFloat = 100
-  static let radiusPerBead: CGFloat = 6.8
+  static let radiusPerBead: CGFloat = 8.8
   static let coilHorizontalSpread: CGFloat = 16
   static let coilVerticalSpread: CGFloat = 28
   static let threadWidth: CGFloat = 1.5
-  static let shadowRadius: CGFloat = 2
-  static let shadowOffset: CGFloat = 3
   static let animationResponse: Double = 0.48
   static let animationDamping: Double = 0.87
 }
@@ -33,17 +31,19 @@ struct BeadsStrandView: View {
   @ObserveInjection private var injectionObserver
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   let count: Int
+  let material: BeadsMaterial
 
   private var visibleCount: Int {
     min(max(count, 1), BeadsStrandMetrics.maximumVisibleBeads)
   }
 
   var body: some View {
+    let images = (0..<material.patterns).map { BeadsMaterialArtwork.image(for: material, pattern: $0) }
     GeometryReader { proxy in
       let scale = min(proxy.size.width / BeadsStrandMetrics.drawingWidth, 1)
       let geometry = BeadsStrandGeometry(count: visibleCount)
 
-      BeadsStrandLoop(frame: BeadsStrandFrame(geometry: geometry), count: count)
+      BeadsStrandLoop(frame: BeadsStrandFrame(geometry: geometry), count: count, material: material, images: images)
         .scaleEffect(scale)
         .frame(width: proxy.size.width, height: proxy.size.height)
     }
@@ -60,66 +60,6 @@ struct BeadsStrandView: View {
     .accessibilityHidden(true)
     .allowsHitTesting(false)
     .enableInjection()
-  }
-}
-
-// MARK: - Material
-
-struct PolishedBead: View {
-  let diameter: CGFloat
-  var reflectionStrength: Double = 1
-
-  var body: some View {
-    Circle()
-      .fill(
-        RadialGradient(
-          stops: [
-            .init(color: AppColor.Beads.rim, location: 0),
-            .init(color: AppColor.Beads.warmth, location: 0.3),
-            .init(color: AppColor.Beads.core, location: 0.7),
-            .init(color: AppColor.Beads.warmth, location: 1),
-          ],
-          center: UnitPoint(x: 0.28, y: 0.22),
-          startRadius: 0,
-          endRadius: diameter * 0.95
-        )
-      )
-      .overlay {
-        Circle()
-          .strokeBorder(
-            LinearGradient(
-              colors: [AppColor.Beads.reflection.opacity(0.65 * reflectionStrength), AppColor.Beads.core, AppColor.Beads.rim.opacity(0.7)],
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            ),
-            lineWidth: diameter * 0.025
-          )
-      }
-      .overlay(alignment: .topLeading) {
-        Ellipse()
-          .fill(
-            LinearGradient(
-              colors: [AppColor.Beads.reflection.opacity(0.95 * reflectionStrength), AppColor.Beads.reflection.opacity(0.05 * reflectionStrength)],
-              startPoint: .topLeading,
-              endPoint: .bottomTrailing
-            )
-          )
-          .frame(width: diameter * 0.28, height: diameter * 0.17)
-          .rotationEffect(.degrees(-38))
-          .offset(x: diameter * 0.19, y: diameter * 0.15)
-      }
-      .overlay(alignment: .bottomTrailing) {
-        Ellipse()
-          .fill(AppColor.Beads.rim.opacity(0.35))
-          .frame(width: diameter * 0.34, height: diameter * 0.07)
-          .rotationEffect(.degrees(-28))
-          .offset(x: -diameter * 0.13, y: -diameter * 0.15)
-      }
-      .shadow(
-        color: AppColor.Beads.shadow,
-        radius: BeadsStrandMetrics.shadowRadius,
-        y: BeadsStrandMetrics.shadowOffset
-      )
   }
 }
 
@@ -282,6 +222,8 @@ private struct BeadsStrandFrame: VectorArithmetic {
 private struct BeadsStrandLoop: View, Animatable {
   nonisolated var frame: BeadsStrandFrame
   let count: Int
+  let material: BeadsMaterial
+  let images: [CGImage?]
 
   nonisolated var animatableData: BeadsStrandFrame {
     get { frame }
@@ -297,18 +239,17 @@ private struct BeadsStrandLoop: View, Animatable {
         }
         path.closeSubpath()
       }
-      .stroke(AppColor.Beads.thread, lineWidth: BeadsStrandMetrics.threadWidth)
+      .stroke(material.palette.cord, lineWidth: BeadsStrandMetrics.threadWidth)
 
       ForEach(0..<BeadsStrandMetrics.maximumVisibleBeads, id: \.self) { index in
         let bead = frame.bead(at: index)
-        PolishedBead(diameter: bead.diameter)
-          .frame(width: bead.diameter, height: bead.diameter)
+        BeadsMaterialBead(material: material, diameter: bead.diameter, image: images[index % images.count])
           .opacity(frame.opacity(at: index))
           .position(bead.position)
           .zIndex(bead.position.y)
       }
 
-      BeadsHeadView(diameter: frame.headDiameter, count: count)
+      BeadsHeadView(diameter: frame.headDiameter, count: count, material: material, image: images[0])
         .position(
           x: frame.head.x + BeadsHeadMetrics.width / 2 - BeadsHeadMetrics.anchor.x,
           y: frame.head.y + BeadsHeadMetrics.height / 2 - BeadsHeadMetrics.anchor.y

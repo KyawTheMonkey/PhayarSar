@@ -8,6 +8,7 @@ struct Beads: Identifiable, Sendable {
   let name: String
   let count: Int
   let rounds: Int
+  let material: BeadsMaterial
   /// Nil for bead sets saved before recitations were introduced.
   let recitation: BeadsRecitation?
   var completedRecitations: Int = 0
@@ -90,6 +91,7 @@ final class BeadsStore: ObservableObject {
         return Beads(
           id: id, name: name, count: count,
           rounds: rounds,
+          material: record.material.flatMap(BeadsMaterial.init(rawValue:)) ?? BeadsMaterial.defaultMaterial,
           recitation: KloudCodableValue.decode(BeadsRecitation.self, from: record.recitationData),
           completedRecitations: min(count * rounds, max(0, record.completedRecitations?.intValue ?? 0))
         )
@@ -100,7 +102,9 @@ final class BeadsStore: ObservableObject {
     }
   }
 
-  func add(id: UUID, name: String, count: Int, rounds: Int, recitation: BeadsRecitation) throws {
+  func add(
+    id: UUID, name: String, count: Int, rounds: Int, material: BeadsMaterial, recitation: BeadsRecitation
+  ) throws {
     guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
     let store = KloudStack.shared.store(for: BeadsRecord.self)
     let recitationData = try JSONEncoder().encode(recitation)
@@ -111,6 +115,7 @@ final class BeadsStore: ObservableObject {
       record.name = name
       record.count = NSNumber(value: count)
       record.rounds = NSNumber(value: rounds)
+      record.material = material.rawValue
       record.recitationData = recitationData
       record.createdAt = .now
     }
@@ -119,23 +124,46 @@ final class BeadsStore: ObservableObject {
 
   /// Edit the existing identity and keep its creation date, so saving does not
   /// turn an edit into a duplicate or move the set to the top of the list.
-  func update(id: UUID, name: String, count: Int, rounds: Int, recitation: BeadsRecitation) throws {
+  func update(
+    id: UUID, name: String, count: Int, rounds: Int, material: BeadsMaterial, recitation: BeadsRecitation
+  ) throws {
     guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
     let store = KloudStack.shared.store(for: BeadsRecord.self)
     guard let record = try store.first(where: NSPredicate(format: "id == %@", id as NSUUID)) else {
       throw CocoaError(.validationMissingMandatoryProperty)
     }
     let data = try JSONEncoder().encode(recitation)
-    let previous = (record.name, record.count, record.rounds, record.recitationData)
+    let previous = (record.name, record.count, record.rounds, record.material, record.recitationData)
     record.name = name
     record.count = NSNumber(value: count)
     record.rounds = NSNumber(value: rounds)
+    record.material = material.rawValue
     record.recitationData = data
     do {
       try store.save()
     } catch {
       // A later save elsewhere must not commit an edit that reported failure.
-      (record.name, record.count, record.rounds, record.recitationData) = previous
+      (record.name, record.count, record.rounds, record.material, record.recitationData) = previous
+      throw error
+    }
+    reload()
+  }
+
+  /// The session menu changes only the finish. In particular, a material
+  /// change must not rewrite progress or any fields another editor may own.
+  func setMaterial(id: UUID, material: BeadsMaterial) throws {
+    guard isSchemaAvailable else { throw KloudError.entityNotInSchema(BeadsRecord.entityName) }
+    let store = KloudStack.shared.store(for: BeadsRecord.self)
+    guard let record = try store.first(where: NSPredicate(format: "id == %@", id as NSUUID)) else {
+      throw CocoaError(.validationMissingMandatoryProperty)
+    }
+    let previous = record.material
+    guard previous != material.rawValue else { return }
+    record.material = material.rawValue
+    do {
+      try store.save()
+    } catch {
+      record.material = previous
       throw error
     }
     reload()

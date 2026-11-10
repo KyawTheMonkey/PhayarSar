@@ -18,6 +18,7 @@ public struct BeadsCreatorScreen: View {
   @State private var draftID = UUID()
   @State private var name = ""
   @State private var count = Beads.defaultCount
+  @State private var material: BeadsMaterial = .defaultMaterial
   @State private var isValidCount = true
   @State private var rounds = Beads.defaultRounds
   @State private var isValidRounds = true
@@ -31,6 +32,7 @@ public struct BeadsCreatorScreen: View {
       _name = State(initialValue: beads.name)
       _count = State(initialValue: beads.count)
       _rounds = State(initialValue: beads.rounds)
+      _material = State(initialValue: beads.material)
     }
   }
 
@@ -46,7 +48,9 @@ public struct BeadsCreatorScreen: View {
     ScrollView {
       VStack(spacing: AppListSectionMetrics.recommendedSectionSpacing) {
         VStack(spacing: 0) {
-          BeadsStrandView(count: count)
+          BeadsStrandView(count: count, material: material)
+          BeadsMaterialPicker(material: $material)
+            .padding(.bottom, AppListSectionMetrics.recommendedSectionSpacing)
           BeadsCountPicker(count: $count, isValid: $isValidCount)
         }
         .appHorizontalInset()
@@ -110,11 +114,11 @@ public struct BeadsCreatorScreen: View {
     do {
       if let beadsID {
         try BeadsStore.shared.update(
-          id: beadsID, name: trimmedName, count: count, rounds: rounds, recitation: recitation
+          id: beadsID, name: trimmedName, count: count, rounds: rounds, material: material, recitation: recitation
         )
       } else {
         try BeadsStore.shared.add(
-          id: draftID, name: trimmedName, count: count, rounds: rounds, recitation: recitation
+          id: draftID, name: trimmedName, count: count, rounds: rounds, material: material, recitation: recitation
         )
       }
       finish()

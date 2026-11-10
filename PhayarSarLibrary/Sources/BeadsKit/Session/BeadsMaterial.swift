@@ -1,13 +1,14 @@
 import DesignKit
-import Foundation
 import LocalisationKit
 
 /// What the mala is made of. Every material is rendered by the same shader
 /// from a handful of numbers, so adding one is a palette and a case here, not
-/// new drawing code. The choice belongs to the person, not to a bead set: a
-/// mala is a thing you own and keep using.
+/// new drawing code. The creator and the session both render the finish
+/// saved with the bead set.
 enum BeadsMaterial: String, CaseIterable, Identifiable, Sendable {
   case titanium, gold, sandalwood, bodhi, jade, amber
+
+  static let defaultMaterial: Self = .sandalwood
 
   /// How light meets the bead: mirrored, scattered across a grain, let
   /// through, or caught in the furrows of a dried seed. The raw value is what the shader branches on.

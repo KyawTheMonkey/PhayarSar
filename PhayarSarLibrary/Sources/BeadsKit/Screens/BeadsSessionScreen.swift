@@ -23,6 +23,7 @@ public struct BeadsSessionScreen: View {
   @StateObject private var session: BeadsSessionState
   @State private var isVisible = false
   @State private var didEnter = false
+  @State private var didFailToSaveMaterial = false
   private let beadsID: UUID
 
   public init(beadsID: UUID) {
@@ -56,7 +57,7 @@ public struct BeadsSessionScreen: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .modifier(BeadsStageBackdrop(motion: session.motion, stageScheme: colorScheme, material: session.material))
+    .modifier(BeadsStageBackdrop(motion: session.motion, stageScheme: colorScheme, material: beads?.material ?? .defaultMaterial))
     .foregroundStyle(AppColor.BeadsSession.text)
     .tint(AppColor.BeadsSession.accent)
     .environment(\.colorScheme, colorScheme)
@@ -73,10 +74,12 @@ public struct BeadsSessionScreen: View {
           .lineLimit(1)
           .accessibilityAddTraits(.isHeader)
       }
-      if beads != nil {
+      if let beads {
         ToolbarItem(placement: .primaryAction) {
           Menu {
-            Picker(L10n.beadsMaterial, selection: $session.material) {
+            Picker(L10n.beadsMaterial, selection: Binding(
+              get: { self.beads?.material ?? beads.material }, set: selectMaterial
+            )) {
               ForEach(BeadsMaterial.allCases) { Text($0.title).tag($0) }
             }
           } label: {
@@ -121,7 +124,18 @@ public struct BeadsSessionScreen: View {
     .alert(L10n.beadsSessionSaveError, isPresented: $session.didFailToSave) {
       Button(L10n.done, role: .cancel) {}
     }
+    .alert(L10n.beadsSaveError, isPresented: $didFailToSaveMaterial) {
+      Button(L10n.done, role: .cancel) {}
+    }
     .enableInjection()
+  }
+
+  private func selectMaterial(_ material: BeadsMaterial) {
+    do {
+      try store.setMaterial(id: beadsID, material: material)
+    } catch {
+      didFailToSaveMaterial = true
+    }
   }
 
   private func content(_ beads: Beads) -> some View {
@@ -331,9 +345,6 @@ private final class BeadsSessionState: ObservableObject {
   let motion = BeadsRitualMotion()
   @Published var didFailToSave = false
   @Published private(set) var showsHint = !BeadsSessionPreferences.isHintRetired
-  @Published var material = BeadsSessionPreferences.material {
-    didSet { BeadsSessionPreferences.material = material }
-  }
   private let beadsID: UUID
 
   init(beadsID: UUID) {
@@ -436,7 +447,7 @@ private struct BeadsRitualPreview: View {
 
   var body: some View {
     BeadsRitualView(motion: motion, accessibilityValue: L10n.beadsCount)
-      .modifier(BeadsStageBackdrop(motion: motion, stageScheme: .dark, material: .titanium))
+      .modifier(BeadsStageBackdrop(motion: motion, stageScheme: .dark, material: .defaultMaterial))
       .onAppear {
         motion.sync(BeadsSessionShape(count: 9, rounds: 3, completed: 3))
         motion.setActive(true, reduceMotion: false)

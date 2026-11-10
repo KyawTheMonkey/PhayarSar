@@ -659,16 +659,9 @@ private struct BeadsPullInput {
   }
 }
 
-/// A hint that has done its job once should not come back, and a mala once
-/// chosen stays chosen.
+/// A hint that has done its job once should not come back.
 enum BeadsSessionPreferences {
   private static let hintKey = "beads.session.hint.retired"
-  private static let materialKey = "beads.session.material"
-
-  static var material: BeadsMaterial {
-    get { BeadsMaterial(rawValue: UserDefaults.standard.string(forKey: materialKey) ?? "") ?? .titanium }
-    set { UserDefaults.standard.set(newValue.rawValue, forKey: materialKey) }
-  }
 
   static var isHintRetired: Bool {
     get { UserDefaults.standard.bool(forKey: hintKey) }
