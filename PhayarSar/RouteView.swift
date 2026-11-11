@@ -30,6 +30,8 @@ struct RouteView: View {
       ProfileScreen()
     case let .prayerDetail(prayerID):
       PrayerDetailScreen(prayerID: prayerID)
+    case let .prayerCollection(collectionID):
+      PrayerCollectionScreen(collectionID: collectionID)
     case let .prayer(prayerID):
       PrayerScreen(prayerID: prayerID)
     case let .nissaya(prayerID):

@@ -894,5 +894,97 @@
   "home_search": {
     "En": "Search",
     "Mm": "ရှာရန်"
+  },
+  "home_filter_all": {
+    "En": "All",
+    "Mm": "အားလုံး"
+  },
+  "home_filter_prayers": {
+    "En": "Prayers",
+    "Mm": "ဘုရားစာ"
+  },
+  "home_filter_audio": {
+    "En": "Audio",
+    "Mm": "အသံ"
+  },
+  "featured_morning_title": {
+    "En": "This morning",
+    "Mm": "ယနေ့နံနက်"
+  },
+  "featured_day_title": {
+    "En": "This afternoon",
+    "Mm": "ယနေ့နေ့လယ်"
+  },
+  "featured_evening_title": {
+    "En": "This evening",
+    "Mm": "ယနေ့ညနေ"
+  },
+  "see_all": {
+    "En": "See all",
+    "Mm": "အားလုံးကြည့်ရန်"
+  },
+  "prayer_count": {
+    "En": "{0} prayers",
+    "Mm": "ဘုရားစာ {0} ပုဒ်"
+  },
+  "audio_empty_title": {
+    "En": "Recitations are on their way",
+    "Mm": "ရွတ်ဖတ်သံများ မကြာမီ ရောက်ရှိလာပါမည်"
+  },
+  "audio_empty_message": {
+    "En": "Recorded chanting will appear here. Until then, every prayer is ready to read.",
+    "Mm": "ရွတ်ဖတ်သံများကို ဤနေရာတွင် ပြသပါမည်။ ထိုမတိုင်မီ ဘုရားစာအားလုံးကို ဖတ်ရှုနိုင်ပါသည်။"
+  },
+  "browse_prayers": {
+    "En": "Browse prayers",
+    "Mm": "ဘုရားစာများ ကြည့်ရန်"
+  },
+  "hero_resume": {
+    "En": "Resume",
+    "Mm": "ဆက်ဖတ်ရန်"
+  },
+  "find_a_prayer_for": {
+    "En": "Find a prayer for",
+    "Mm": "အခါအလိုက် ဘုရားစာများ"
+  },
+  "moment_waking": {
+    "En": "Waking up",
+    "Mm": "အိပ်ရာထ"
+  },
+  "moment_sleep": {
+    "En": "Before sleep",
+    "Mm": "မအိပ်မီ"
+  },
+  "moment_sabbath": {
+    "En": "Sabbath day",
+    "Mm": "ဥပုသ်နေ့"
+  },
+  "moment_protection": {
+    "En": "Protection",
+    "Mm": "အကာအကွယ်"
+  },
+  "moment_loved_ones": {
+    "En": "For loved ones",
+    "Mm": "ချစ်ခင်သူများအတွက်"
+  },
+  "moment_unwell": {
+    "En": "When unwell",
+    "Mm": "နေမကောင်းသည့်အခါ"
+  },
+  "two_minutes_or_less": {
+    "En": "Two minutes or less",
+    "Mm": "၂ မိနစ်အတွင်း"
+  },
+  "by_scripture": {
+    "En": "By scripture",
+    "Mm": "ကျမ်းအလိုက်"
+  },
+  "collection_summary": {
+    "En": "{0} prayers • {1} min",
+    "Mm": "ဘုရားစာ {0} ပုဒ် • {1} မိနစ်"
+  },
+  "collection_not_found": {
+    "En": "This collection is no longer available.",
+    "Mm": "ဤစုစည်းမှုကို ရှာမတွေ့ပါ။"
   }
 }

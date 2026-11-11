@@ -158,6 +158,10 @@ public enum RouterDestination: Hashable, Codable {
   /// user, and `AuthManager` is the one place that knows who that is.
   case profile
   case prayerDetail(prayerID: String)
+  /// A themed or category list of prayers, pushed from Home's All filter. The
+  /// id is a `PrayerCollection` id such as `moment.sleep` or
+  /// `category.precepts`; HomeKit owns what those resolve to.
+  case prayerCollection(collectionID: String)
   /// The reading screen itself, pushed from the detail screen's "Start".
   case prayer(prayerID: String)
   /// The study screen — each verse against its translation, pushed from the
