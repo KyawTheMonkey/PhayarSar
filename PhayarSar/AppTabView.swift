@@ -16,6 +16,9 @@ import SwiftUI
 struct AppTabView: View {
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @EnvironmentObject private var navigator: AppNavigatorModel
+  /// One namespace for every zoom transition in the app — see
+  /// `EnvironmentValues.zoomNamespace`.
+  @Namespace private var zoomNamespace
 
   /// Mac always gets the split view. On iOS/iPadOS we key off the
   /// horizontal size class so it adapts live to iPad multitasking,
@@ -40,6 +43,9 @@ struct AppTabView: View {
       }
     }
     .tint(DesignKit.AppColor.primary)
+    // Above every stack, so a source inside a tab's root and the destination
+    // built by `navigationDestination` resolve the same namespace.
+    .environment(\.zoomNamespace, zoomNamespace)
     // On the outermost view rather than inside a stack, so a sheet presents
     // above the tab bar instead of within whichever tab happened to open it.
     .sheet(item: $navigator.presentedSheet) { destination in
