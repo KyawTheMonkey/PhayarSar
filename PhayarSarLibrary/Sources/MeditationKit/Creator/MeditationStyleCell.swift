@@ -24,7 +24,7 @@ enum MeditationStyleCellMetrics {
 
 /// One meditation style, as a whole screen of the creator's collection view.
 ///
-/// Deliberately plain: a tinted field, a placeholder glyph, a title and a line
+/// Deliberately plain: a neutral canvas, a placeholder glyph, a title and a line
 /// of summary, centred. Each style is getting its own artwork and its own
 /// controls — see ``MeditationStyle`` — and this is the shape they will grow
 /// into rather than a card they will replace.
@@ -46,6 +46,8 @@ final class MeditationStyleCell: UICollectionViewCell {
   }
 
   private func setUpSubviews() {
+    contentView.backgroundColor = UIColor(AppColor.background)
+
     // Square, and no corner radius of its own. The sheet already clips its
     // content to the system's corner, so rounding here would round *inside*
     // that — and, worse, would leave a notch of the app showing where two
@@ -100,7 +102,6 @@ final class MeditationStyleCell: UICollectionViewCell {
   }
 
   func configure(with style: MeditationStyle) {
-    contentView.backgroundColor = UIColor(style.tint)
     symbolView.image = UIImage(systemName: style.systemImage)
     titleLabel.text = style.title
     summaryLabel.text = style.summary

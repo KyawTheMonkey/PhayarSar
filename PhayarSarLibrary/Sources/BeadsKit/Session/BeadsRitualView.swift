@@ -58,9 +58,8 @@ struct BeadsRitualBoundsKey: PreferenceKey {
   }
 }
 
-/// The app's own background gradient with the SpriteKit stage on top, so the
-/// session sits in the same room as every other screen and follows the
-/// chosen theme. No hand and no glow of its own.
+/// Layers the SpriteKit stage over the neutral canvas in the same coordinate
+/// space as the gesture region.
 struct BeadsStageBackdrop: ViewModifier {
   @ObserveInjection private var injectionObserver
   @ObservedObject var motion: BeadsRitualMotion
@@ -71,7 +70,7 @@ struct BeadsStageBackdrop: ViewModifier {
     content.backgroundPreferenceValue(BeadsRitualBoundsKey.self) { anchor in
       GeometryReader { proxy in
         ZStack {
-          AppBackgroundGradient()
+          AppColor.background
           #if os(iOS) || os(macOS)
           if let anchor {
             BeadsSpriteView(

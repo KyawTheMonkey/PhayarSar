@@ -54,7 +54,7 @@ public enum MeditationStyle: String, CaseIterable, Identifiable, Hashable, Senda
     }
   }
 
-  /// The field colour behind the whole screen.
+  /// The style's identifying tint, available to its artwork and controls.
   public var tint: Color {
     switch self {
     case .incenseStick:

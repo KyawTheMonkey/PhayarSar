@@ -85,7 +85,7 @@ public struct HomeScreen: View {
       viewModel.onAppear()
       beads.reload()
     }
-    .background(AppBackgroundGradient())
+    .appTabBackground()
     // The system owns both title sizes and the scroll view's navigation inset.
     // Measuring and moving an overlay title alongside that inset creates two
     // competing layouts, especially when Continue appears or disappears.

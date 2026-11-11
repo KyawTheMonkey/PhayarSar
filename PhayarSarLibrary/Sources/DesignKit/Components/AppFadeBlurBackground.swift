@@ -27,11 +27,6 @@ public enum AppFadeBlurMetrics {
 /// }
 /// ```
 ///
-/// Designed to sit over `AppBackgroundGradient`. A solid `AppColor.background`
-/// fill would visibly mismatch there — the gradient's top half carries a warm
-/// `primarySoft` tint — which is why this is a material plus a soft wash rather
-/// than an opaque bar.
-///
 /// **On the blur being uniform:** the app ships to iOS 16, which has no public
 /// variable-radius blur (`.visualEffect` is iOS 17, Metal `.layerEffect` iOS 17).
 /// This is a fixed-radius material whose *coverage* fades spatially — the same

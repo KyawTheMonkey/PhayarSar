@@ -86,24 +86,95 @@ extension Color {
 
 // MARK: - Screen background gradient
 
-/// Soft top-to-bottom glow used as the screen background. Pairs with
-/// translucent .appSurface cards (see `GlassCard`) for depth instead of
-/// a flat fill. Adapts automatically to light/dark mode.
+public enum AppBackgroundGradientMetrics {
+  public static let glowCenter = UnitPoint(x: 0.5, y: 0.04)
+  public static let glowEndRadiusFraction: CGFloat = 0.7
+  public static let orbitRadiusFraction: CGFloat = 0.22
+  public static let orbitDuration: TimeInterval = 24
+  public static let entranceDuration: TimeInterval = 2
+  public static let frameInterval: TimeInterval = 1.0 / 30
+}
+
+/// The brand glow marks the root of a tab. Its warm base is separate from the
+/// neutral canvas so both can follow the appearance without sharing a tint.
 public struct AppBackgroundGradient: View {
-  @Environment(\.colorScheme) private var colorScheme
-  
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.scenePhase) private var scenePhase
+  @State private var isVisible = false
+  @State private var elapsedBeforePause: TimeInterval = 0
+  @State private var resumedAt: Date?
+
   public init() {}
+
+  private var shouldAnimate: Bool {
+    isVisible && scenePhase == .active && !reduceMotion
+  }
   
   public var body: some View {
-    LinearGradient(colors: [AppColor.primarySoft, AppColor.background], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.48))
-      .ignoresSafeArea()
+    GeometryReader { proxy in
+      TimelineView(.animation(
+        minimumInterval: AppBackgroundGradientMetrics.frameInterval,
+        paused: !shouldAnimate
+      )) { context in
+        EllipticalGradient(
+          colors: [AppColor.tabBackgroundGlow, AppColor.tabBackgroundBase],
+          center: glowCenter(at: context.date, size: proxy.size),
+          endRadiusFraction: AppBackgroundGradientMetrics.glowEndRadiusFraction
+        )
+      }
+    }
+    .ignoresSafeArea()
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+    .onAppear { isVisible = true }
+    .onDisappear {
+      isVisible = false
+      updateClock(isRunning: false)
+    }
+    .onChange(of: shouldAnimate) { updateClock(isRunning: $0) }
+  }
+
+  /// Start at the resting centre and ease outward into the orbit. Using elapsed
+  /// visible time avoids jumping to a wall-clock position on first appearance,
+  /// and pausing the clock keeps returning tabs at the position they left.
+  private func glowCenter(at date: Date, size: CGSize) -> UnitPoint {
+    let center = AppBackgroundGradientMetrics.glowCenter
+    guard size.width > 0, size.height > 0 else { return center }
+    let runningTime = resumedAt.map { max(date.timeIntervalSince($0), 0) } ?? 0
+    let elapsed = elapsedBeforePause + runningTime
+    let phase = elapsed
+      .truncatingRemainder(dividingBy: AppBackgroundGradientMetrics.orbitDuration)
+      / AppBackgroundGradientMetrics.orbitDuration * 2 * .pi
+    let entrance = min(elapsed / AppBackgroundGradientMetrics.entranceDuration, 1)
+    let easedEntrance = entrance * entrance * (3 - 2 * entrance)
+    // Normalise by each dimension so the orbit stays circular on wide windows.
+    let radius = min(size.width, size.height)
+      * AppBackgroundGradientMetrics.orbitRadiusFraction * easedEntrance
+    return UnitPoint(
+      x: center.x + cos(phase) * radius / size.width,
+      y: center.y + sin(phase) * radius / size.height
+    )
+  }
+
+  private func updateClock(isRunning: Bool) {
+    if isRunning {
+      if resumedAt == nil { resumedAt = .now }
+    } else if let resumedAt {
+      elapsedBeforePause += Date.now.timeIntervalSince(resumedAt)
+      self.resumedAt = nil
+    }
   }
 }
 
 extension View {
-  /// Applies the app's calm gradient background behind this view.
+  /// Applies the neutral canvas behind a screen, including its safe areas.
   public func appBackground() -> some View {
-    self.background(AppBackgroundGradient())
+    background(AppColor.background.ignoresSafeArea())
+  }
+
+  /// Applies the brand gradient behind the root screen of a tab.
+  public func appTabBackground() -> some View {
+    background(AppBackgroundGradient())
   }
 }
 

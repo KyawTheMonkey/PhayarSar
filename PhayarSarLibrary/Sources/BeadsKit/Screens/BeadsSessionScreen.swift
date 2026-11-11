@@ -117,8 +117,14 @@ public struct BeadsSessionScreen: View {
       if let shape { session.motion.sync(shape) }
       updateActivity()
     }
-    .onChange(of: scenePhase) { _ in updateActivity() }
-    .onChange(of: reduceMotion) { _ in updateActivity() }
+    // The new value is handed on, never read back from the environment. On
+    // iOS 16 this closure belongs to the view as it was before the change, so
+    // `scenePhase` in here is still the old phase. Reading it left the stage
+    // running when the app went inactive and then stopped it for good on the
+    // way back: the app switcher or Control Centre over the session froze it
+    // until the screen was left and entered again.
+    .onChange(of: scenePhase) { phase in updateActivity(phase: phase) }
+    .onChange(of: reduceMotion) { reduced in updateActivity(reduceMotion: reduced) }
     .onChange(of: navigator.presentedSheet) { _ in updateActivity() }
     .onChange(of: store.didFailToLoad) { _ in updateActivity() }
     .alert(L10n.beadsSessionSaveError, isPresented: $session.didFailToSave) {
@@ -148,6 +154,7 @@ public struct BeadsSessionScreen: View {
             session.restart(beads)
           }
         }
+        .overlay { BeadsSessionDropped(motion: session.motion) }
     }
   }
 
@@ -166,10 +173,10 @@ public struct BeadsSessionScreen: View {
     }
   }
 
-  private func updateActivity() {
-    let active = isVisible && scenePhase == .active && navigator.presentedSheet == nil
+  private func updateActivity(phase: ScenePhase? = nil, reduceMotion reduced: Bool? = nil) {
+    let active = isVisible && (phase ?? scenePhase) == .active && navigator.presentedSheet == nil
       && beads != nil && !store.didFailToLoad
-    session.motion.setActive(active, reduceMotion: reduceMotion)
+    session.motion.setActive(active, reduceMotion: reduced ?? reduceMotion)
     #if os(iOS)
     // A prayer takes minutes between touches; the screen must not dim out
     // from under the thumb. Cleared when the session leaves the screen.
@@ -190,6 +197,14 @@ private struct BeadsSessionFooter: View {
   @State private var isConfirmingStartOver = false
 
   private var hint: String? {
+    // The mala's opinion of the pace outranks everything else on this line.
+    switch motion.pace {
+    // The drop itself is announced in the middle of the stage, where the
+    // mala just was. The advice stays here through it, so the footer keeps
+    // its height and the stage does not resize under a falling mala.
+    case .strained, .dropped: return L10n.beadsSessionTooFastHint
+    case .steady: break
+    }
     if motion.isAtHead { return L10n.beadsSessionTurnHint }
     return session.showsHint && motion.completion == .none ? L10n.beadsSessionPullHint : nil
   }
@@ -255,6 +270,57 @@ private struct BeadsSessionFooter: View {
       Text(L10n.beadsSessionStartOverConfirm)
     }
     .enableInjection()
+  }
+}
+
+public enum BeadsSessionDroppedMetrics {
+  /// The line waits for the mala to be most of the way down, so it arrives in
+  /// the space the mala has just left and not on top of it.
+  public static let appearDelay = 0.45
+  public static let leaveDuration = 0.3
+  public static let startScale: CGFloat = 0.94
+}
+
+/// What the stage says while the mala is on the floor. It stands where the
+/// mala hung a moment ago and is gone before the mala is lifted back, so the
+/// two never share the space. It was first a line in the footer, where a
+/// person watching the beads fall never looked.
+private struct BeadsSessionDropped: View {
+  @ObserveInjection private var injectionObserver
+  @ObservedObject var motion: BeadsRitualMotion
+  @State private var isShown = false
+
+  var body: some View {
+    Text(L10n.beadsSessionDroppedHint)
+      .font(AppFont.title)
+      .foregroundStyle(AppColor.BeadsSession.text)
+      .multilineTextAlignment(.center)
+      .fixedSize(horizontal: false, vertical: true)
+      .padding(.horizontal, BeadsSessionMetrics.horizontalPadding)
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .opacity(isShown ? 1 : 0)
+      .scaleEffect(isShown ? 1 : BeadsSessionDroppedMetrics.startScale)
+      .offset(y: isShown ? 0 : BeadsSessionCompletionMetrics.rise)
+      .allowsHitTesting(false)
+      .accessibilityHidden(!isShown)
+      .onChange(of: motion.pace) { pace in
+        guard pace == .dropped else { return leave() }
+        withAnimation(appear.delay(BeadsSessionDroppedMetrics.appearDelay)) { isShown = true }
+        // Leaves as the lift begins. If the drop ended early, `leave` has
+        // already run and this is a no-op.
+        DispatchQueue.main.asyncAfter(deadline: .now() + BeadsRitualMetrics.slipFloorDuration) { leave() }
+      }
+      .enableInjection()
+  }
+
+  private func leave() {
+    guard isShown else { return }
+    withAnimation(.easeOut(duration: BeadsSessionDroppedMetrics.leaveDuration)) { isShown = false }
+  }
+
+  private var appear: Animation {
+    .spring(response: BeadsSessionCompletionMetrics.springResponse,
+      dampingFraction: BeadsSessionCompletionMetrics.springDamping)
   }
 }
 

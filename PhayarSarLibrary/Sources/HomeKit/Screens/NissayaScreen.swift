@@ -116,7 +116,7 @@ public struct NissayaScreen: View {
         PrayerNotFoundView()
       }
     }
-    .background(AppColor.background)
+    .appBackground()
     .navigationTitle(prayer?.title ?? L10n.prayerNotFound)
     // No navigation bar on macOS, so no display mode to set either.
     #if os(iOS)

@@ -145,7 +145,7 @@ final class BeadsRitualScene: SKScene {
     if let pendingGeometry {
       geometry = pendingGeometry
       self.pendingGeometry = nil
-      motion.layout(height: pendingGeometry.region.height)
+      motion.layout(height: pendingGeometry.region.height, width: pendingGeometry.region.width)
     }
     if let pendingScheme, pendingScheme != scheme {
       let palette = AppColor.BeadsSession.renderingPalette(for: pendingScheme)
@@ -201,14 +201,35 @@ final class BeadsRitualScene: SKScene {
     let warmth = Double(material.warmth)
     // Strand space is y down from the finger's axis; the node is y up. Mid
     // turn the loop is seen edge on and lifted clear of the finger.
-    func placed(_ point: SIMD2<Double>) -> SIMD2<Double> { SIMD2(point.x * spin, point.y - lift + rise) }
-    let centre = SIMD2(0, max(0, model.point(at: model.bottom).y) / 2)
+    // A cord pulled taut draws the hanging loop in and down and sets it
+    // shivering. None of it reaches the half circle on the finger, which is
+    // the one part of the mala that never moves.
+    let taut = motion.tension
+    let shiver = motion.tremor * BeadsRitualMetrics.strainTremor
+    func placed(_ point: SIMD2<Double>) -> SIMD2<Double> {
+      let hanging = Self.smooth(point.y / radius)
+      let x = point.x * (1 - BeadsRitualMetrics.strainNarrowing * taut * hanging) + shiver * hanging
+      let y = point.y * (1 + BeadsRitualMetrics.strainStretch * taut * hanging)
+      return SIMD2(x * spin, y - lift + rise)
+    }
+    // Off the finger there is no strand to follow: each bead is wherever it
+    // fell, and the cord simply runs from one to the next.
+    let loose = motion.loose.flatMap { $0.count == count ? $0 : nil }
+    let held = loose == nil ? 1.0 : 1 - motion.looseness
+    var centre = SIMD2(0, max(0, model.point(at: model.bottom).y) / 2)
+    if let loose { centre = loose.reduce(SIMD2<Double>.zero) { $0 + $1.point } / Double(count) }
     func node(_ point: SIMD2<Double>) -> CGPoint { CGPoint(x: point.x, y: -point.y) }
 
     let path = CGMutablePath()
-    for (index, point) in model.path.enumerated() {
-      let position = node(placed(point))
-      if index == 0 { path.move(to: position) } else { path.addLine(to: position) }
+    if let loose {
+      for (index, bead) in loose.enumerated() {
+        if index == 0 { path.move(to: node(bead.point)) } else { path.addLine(to: node(bead.point)) }
+      }
+    } else {
+      for (index, point) in model.path.enumerated() {
+        let position = node(placed(point))
+        if index == 0 { path.move(to: position) } else { path.addLine(to: position) }
+      }
     }
     path.closeSubpath()
     cord.path = path
@@ -223,22 +244,26 @@ final class BeadsRitualScene: SKScene {
       let bead = beads[index]
       // One bead per lattice point round the closed strand. Past the bottom
       // of the loop a bead is one already counted; before it, one to come.
-      let distance = length - (Double(first + index) - transport) * pitch
+      let distance = loose?[index].distance ?? length - (Double(first + index) - transport) * pitch
       let past = distance < model.bottom
-      let slot = past ? first + index - count : first + index
-      let point = placed(model.point(at: distance))
+      let slot = loose?[index].slot ?? (past ? first + index - count : first + index)
+      let point = loose?[index].point ?? placed(model.point(at: distance))
       let fromPinch = past ? distance : length - distance
-      let near = 1 - Self.smooth(fromPinch / pitch)
+      // Nothing is in hand while the mala is on the floor.
+      let near = (1 - Self.smooth(fromPinch / pitch)) * held
       var emphasis = past
         ? 1 - 0.5 * Self.smooth(distance / (pitch * 1.2))
         : 0.5 + 0.22 * (1 - Self.smooth(fromPinch / (pitch * 4))) + 0.28 * near
       // The finger's shadow falls on the far strand just beneath it.
       if point.y > 0 { emphasis *= 1 - (1 - Self.smooth((point.y - 4) / 58)) * (point.x < 0 ? 0.62 : 0.08) }
+      // On the floor every bead is lit alike: there is no finger to shade
+      // some and no thumb to pick one out.
+      emphasis = BeadsSpriteMetrics.looseEmphasis + (emphasis - BeadsSpriteMetrics.looseEmphasis) * held
       let fingerDistance = max(1e-6, BeadsMala.length(point))
-      let fingerWarmth = warmth * (1 - Self.smooth((fingerDistance - radius - 2) / 30)) * spin
+      let fingerWarmth = warmth * (1 - Self.smooth((fingerDistance - radius - 2) / 30)) * spin * held
       let toThumb = thumb - point
       let thumbDistance = max(1e-6, BeadsMala.length(toThumb))
-      let thumbWarmth = warmth * (0.32 + grip) * (1 - Self.smooth((thumbDistance - 36) / 26))
+      let thumbWarmth = warmth * (0.32 + grip) * (1 - Self.smooth((thumbDistance - 36) / 26)) * held
       var swell = 0.0, gone = 0.0
       if finishing {
         let local = min(1, max(0, (finishTime - abs(Double(slot) - transport) * BeadsRitualMetrics.dissolveBeadStagger)
@@ -267,7 +292,7 @@ final class BeadsRitualScene: SKScene {
       if isHead, fade < 1 {
         if headsUsed == heads.count { heads.append(makeHead()) }
         layoutHead(heads[headsUsed], at: point, centre: centre, radius: size, fade: fade, light: light,
-          model: model, still: motion.reduceMotion, depth: bead.zPosition)
+          model: model, still: motion.reduceMotion, depth: bead.zPosition, ground: motion.looseFloor)
         headsUsed += 1
       }
     }
@@ -285,7 +310,7 @@ final class BeadsRitualScene: SKScene {
     // mala is drawn.
     label.position = CGPoint(x: pinch.x, y: pinch.y + BeadsRitualMetrics.beadRadius + BeadsRitualMetrics.labelInset)
     label.setScale(1 / zoom)
-    label.alpha = finishing ? 0 : CGFloat(motion.labelAlpha * (1 - entrance))
+    label.alpha = finishing || loose != nil ? 0 : CGFloat(motion.labelAlpha * (1 - entrance))
   }
 
   /// The head bead carries a small tower bead pointing out of the loop and a
@@ -298,7 +323,7 @@ final class BeadsRitualScene: SKScene {
   /// tassel snapped from left to right whenever a swing carried the head
   /// across the middle.
   private func layoutHead(_ head: Head, at point: SIMD2<Double>, centre: SIMD2<Double>, radius: Double, fade: Double,
-    light: Double, model: BeadsMala, still: Bool, depth: CGFloat) {
+    light: Double, model: BeadsMala, still: Bool, depth: CGFloat, ground: Double?) {
     var out = point - centre + SIMD2(BeadsMala.radius * 0.5, 0)
     out /= max(1e-6, BeadsMala.length(out))
     let towerRadius = radius * Double(BeadsRitualMetrics.towerScale)
@@ -341,6 +366,18 @@ final class BeadsRitualScene: SKScene {
         head.end = anchor + thread
         tasselSpeed = max(tasselSpeed, BeadsMala.length(head.end - head.previous) / step)
       }
+    }
+    // On the floor the tassel cannot hang through it. It lies along it.
+    // A head bead that landed tower down has its knot at the floor already,
+    // and then the whole tassel lies flat from there. Its weight is at rest
+    // either way: left with the speed of the fall it would whip sideways the
+    // moment the mala was lifted.
+    if let ground, head.end.y > ground || anchor.y >= ground {
+      let level = max(ground, anchor.y)
+      let drop = level - anchor.y
+      let reach = max(0, length * length - drop * drop).squareRoot()
+      head.end = SIMD2(anchor.x + (head.end.x < anchor.x ? -reach : reach), level)
+      head.previous = head.end
     }
     var hang = head.end - anchor
     hang /= max(1e-6, BeadsMala.length(hang))

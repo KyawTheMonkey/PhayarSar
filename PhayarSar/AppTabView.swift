@@ -106,6 +106,8 @@ struct AppTabView: View {
       SettingsScreen()
     default:
       Text(tab.title)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .appTabBackground()
     }
   }
 }

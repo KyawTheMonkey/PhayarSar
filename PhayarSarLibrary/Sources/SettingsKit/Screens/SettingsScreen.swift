@@ -70,10 +70,7 @@ public struct SettingsScreen: View {
       .padding(.top, 8)
       .padding(.bottom, 40)
     }
-    // A flat fill rather than `appBackground()`'s gradient: the rows have no
-    // card behind them to separate them from it, so the gradient's band would
-    // tint the top third of the list and nothing below it.
-    .background(AppColor.background.ignoresSafeArea())
+    .appTabBackground()
     .sheet(item: $optionSheet) { optionsSheet(for: $0) }
     .enableInjection()
   }

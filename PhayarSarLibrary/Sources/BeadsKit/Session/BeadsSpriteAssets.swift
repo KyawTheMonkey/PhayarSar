@@ -6,6 +6,8 @@ import SwiftUI
 public enum BeadsSpriteMetrics {
   public static let preferredFramesPerSecond = 60
   public static let conservingFramesPerSecond = 30
+  /// How brightly a bead is lit lying on the floor, off the finger.
+  public static let looseEmphasis = 0.8
   /// Every bead draws into the same square: room for the finish's swell and
   /// for the soft shadow a bead casts on the one beneath it.
   public static let quadSide: CGFloat = 76

@@ -179,9 +179,7 @@ struct MiscStatusLayout<Detail: View, Actions: View>: View {
     .frame(maxWidth: MiscStatusMetrics.maxTextWidth + MiscStatusMetrics.blockSpacing * 2)
     .frame(maxWidth: .infinity)
     // A `safeAreaInset` does not stop content scrolling underneath it, and an
-    // overscrolled message showing through the buttons reads as a glitch. Flat
-    // rather than the gradient: `AppBackgroundGradient` finishes at 48% height,
-    // so everything down here is this exact colour and the fill leaves no seam.
+    // overscrolled message showing through the buttons reads as a glitch.
     .background(AppColor.background)
   }
 }

@@ -38,6 +38,14 @@ public enum BeadsRitualMetrics {
   public static let giveFraction = 0.3
   public static let settleFrequency = 30.0
   public static let turnDuration = 0.8
+  /// Starting over winds the beads back past the thumb. A few beads take a
+  /// moment each; a long mala is capped so the rewind never becomes a wait.
+  public static let rewindBaseDuration = 0.3
+  public static let rewindBeadDuration = 0.1
+  public static let rewindMaximumDuration = 1.8
+  /// Ticks closer together than this blur into a buzz.
+  public static let rewindTickInterval = 0.05
+  public static let rewindKick = 40.0
   public static let turnLift = 10.0
   public static let dissolveDuration = 2.6
   /// Each bead's share of the finish: swell, flare, then fade. Beads start in
@@ -63,6 +71,35 @@ public enum BeadsRitualMetrics {
   public static let maximumFrameTime = 1.0 / 20
   public static let minimumGestureDistance: CGFloat = 3
   public static let restEnergy = 0.0005
+  /// Beads counted closer together than this cannot each have had a
+  /// recitation said over them: it is more than four a second. One quick pair
+  /// means nothing, so the pace has to hold for `paceRun` gaps in a row, five
+  /// beads, before the mala objects, and for `slipRun` before it is dropped.
+  public static let paceInterval = 0.25
+  public static let paceRun = 4
+  public static let slipRun = 7
+  /// On a round too short for those, the fewest fast gaps that still count
+  /// as a pace, and how many beads of warning must come before a drop.
+  public static let minimumPaceRun = 2
+  public static let slipWarning = 2
+  /// How long the warning outlives the last bead that was too fast.
+  public static let strainHold = 1.6
+  public static let strainResponse = 0.12
+  /// A taut cord gives less to the thumb, so each bead needs a longer pull.
+  public static let strainDrag = 0.25
+  public static let strainNarrowing = 0.28
+  public static let strainStretch = 0.05
+  public static let strainTremor = 1.3
+  public static let strainTremorFrequency = 17.0
+  /// From leaving the finger to being picked up again, then the lift itself.
+  public static let slipFloorDuration = 2.0
+  public static let slipRiseDuration = 1.0
+  public static let slipImpactInterval = 0.045
+  /// How long beads being put back take to get going. 1 is an even ease;
+  /// higher holds them back longer and brings them in faster.
+  public static let gatherPower = 1.8
+  public static let slipRiseRelaxation = 6
+  public static let slipKick = SIMD2<Double>(70, 40)
 }
 
 /// Which bead a slot on the strand holds. One head bead opens every round, so
@@ -119,6 +156,33 @@ struct BeadsRailGeometry: Equatable {
 final class BeadsRitualMotion: ObservableObject {
   enum Completion: Equatable { case none, dissolving, settled }
 
+  private struct Rewind {
+    var from: Double
+    var duration: Double
+    var progress = 0.0
+    var sinceTick = 0.0
+  }
+
+  /// How the mala is taking the pace it is being counted at.
+  enum Pace: Equatable { case steady, strained, dropped }
+
+  /// A bead off the finger. `slot` is which bead it is, fixed for the whole
+  /// fall so a bead cannot change into another one on the floor; `distance` is
+  /// where on the strand it will be put back.
+  struct LooseBead {
+    var slot: Int
+    var point: SIMD2<Double>
+    var distance: Double
+  }
+
+  private struct Slip {
+    var mala: BeadsLooseMala
+    var elapsed = 0.0
+    var sinceImpact = 0.0
+    var rise: Double?
+    var from: [SIMD2<Double>] = []
+  }
+
   private struct Turn {
     var direction: Int
     var progress = 0.0
@@ -128,6 +192,11 @@ final class BeadsRitualMotion: ObservableObject {
   @Published private(set) var isPulling = false
   @Published private(set) var completion = Completion.none
   @Published private(set) var presentationRevision = 0
+  @Published private(set) var pace = Pace.steady
+  /// Counts the times the mala has made its entrance, so that what SwiftUI
+  /// draws can make the same entrance at the same moment. The entrance itself
+  /// runs on the scene's clock and is never published frame by frame.
+  @Published private(set) var entranceRevision = 0
 
   var actions = BeadsRitualActions()
   private(set) var shape = BeadsSessionShape(count: 1, rounds: 1, completed: 0)
@@ -145,8 +214,24 @@ final class BeadsRitualMotion: ObservableObject {
   private(set) var labelText = ""
   private(set) var labelAlpha = 0.0
   var formatNumber: (Int) -> String = { String($0) }
+  /// How taut the cord is drawn, and the shiver that goes with it.
+  private(set) var tension = 0.0
+  private(set) var tremor = 0.0
+  /// The beads while the mala is off the finger, and how far off it is:
+  /// 1 on the floor, easing to 0 as it is lifted back.
+  private(set) var loose: [LooseBead]?
+  private(set) var looseness = 0.0
   private var turn: Turn?
+  private var rewind: Rewind?
+  private var slip: Slip?
+  private var lastCountTime: TimeInterval?
+  private var fastRun = 0
+  private var burstBase = 0
+  private var hasSlipped = false
+  private var paceToken = 0
+  private var clock = 0.0
   private var height = 0.0
+  private var width = 0.0
   private var labelRaised = false
   private var labelHold = 0.0
   private var transportVelocity = 0.0
@@ -240,6 +325,7 @@ final class BeadsRitualMotion: ObservableObject {
   /// was. Only the head bead visibly changes sides of the thumb.
   private func applyTurn(_ direction: Int) {
     passedHead = direction > 0
+    countDidChange()
     transport += Double(direction)
     transportVelocity = 0
     strand.kick(SIMD2(0, BeadsRitualMetrics.turnKick))
@@ -252,7 +338,17 @@ final class BeadsRitualMotion: ObservableObject {
 
   func sync(_ newShape: BeadsSessionShape) {
     let previous = shape
+    // Starting over mid-practice is shown, not cut to: the beads counted in
+    // this round run back past the thumb until the head bead is in hand
+    // again. Earlier rounds need no unwinding. Every bead but the head is
+    // alike, and a turned mala looks the same as an unturned one, so the head
+    // bead is only ever this round's count away from the thumb.
+    let counted = positionInRound.count
+    let startsOver = isActive && !reduceMotion && completion == .none
+      && newShape.completed == 0 && previous.completed > 0
+      && newShape.count == previous.count && newShape.rounds == previous.rounds
     shape = newShape
+    if newShape.completed == 0 { passedHead = false }
     if newShape.count != previous.count || newShape.rounds != previous.rounds {
       passedHead = false
       turn = nil
@@ -267,14 +363,33 @@ final class BeadsRitualMotion: ObservableObject {
       dissolveStart = nil
       beginCondense()
     }
-    if pull == nil, turn == nil { transport = Double(restSlot) }
+    countDidChange()
+    if startsOver, counted > 0 {
+      beginRewind(beads: counted)
+    } else if pull == nil, turn == nil, rewind == nil {
+      transport = Double(restSlot)
+    }
     wake()
+  }
+
+  private func beginRewind(beads: Int) {
+    cancelPull()
+    turn = nil
+    labelRaised = false
+    labelHold = 0
+    transportVelocity = 0
+    // The same picture as before the reset, counted from the new first bead.
+    transport = Double(restSlot + beads)
+    rewind = Rewind(from: transport, duration: min(BeadsRitualMetrics.rewindMaximumDuration,
+      BeadsRitualMetrics.rewindBaseDuration + BeadsRitualMetrics.rewindBeadDuration * Double(beads)))
+    publish()
   }
 
   /// The scene reports how tall the stage is. A mala that fits is drawn
   /// whole and as large as the stage allows; one that does not hangs off
   /// the bottom.
-  func layout(height: CGFloat) {
+  func layout(height: CGFloat, width: CGFloat) {
+    self.width = Double(width)
     guard abs(Double(height) - self.height) > 0.5 else { return }
     self.height = Double(height)
     rebuildStrand()
@@ -282,6 +397,13 @@ final class BeadsRitualMotion: ObservableObject {
 
   private func rebuildStrand() {
     guard height > 0 else { return }
+    // Not while the mala is off the finger. The loose beads are the strand's
+    // own, one for one, and a strand restrung under them leaves the scene
+    // with nothing it can match them to. This was found the hard way: a line
+    // leaving the footer at the moment of the drop made the stage a little
+    // taller, a long mala was restrung to suit, and the fall never showed.
+    // The new size is taken up when the mala is back.
+    guard slip == nil else { return }
     let fit = BeadsMala.fit(count: shape.count, height: height)
     zoom = fit.zoom
     let lattice = fit.lattice
@@ -308,6 +430,15 @@ final class BeadsRitualMotion: ObservableObject {
       if !wasActive { beginCondense() }
     } else {
       cancelPull()
+      if rewind != nil {
+        rewind = nil
+        transport = Double(restSlot)
+      }
+      endSlip()
+      paceToken &+= 1
+      pace = .steady
+      tension = 0
+      lastCountTime = nil
       #if os(iOS)
       haptics.stop()
       #endif
@@ -324,10 +455,10 @@ final class BeadsRitualMotion: ObservableObject {
   // MARK: - Pulling
 
   func beginPull(time: Date) {
-    guard isActive, pull == nil, turn == nil else { return }
+    guard isActive, pull == nil, turn == nil, rewind == nil, slip == nil else { return }
     pull = BeadsPullInput(startTime: time.timeIntervalSinceReferenceDate)
     isPulling = true
-    raiseLabel(for: restSlot)
+    showCount(raised: true)
     #if os(iOS)
     haptics.beginSlide()
     #endif
@@ -341,7 +472,7 @@ final class BeadsRitualMotion: ObservableObject {
     pull = input
     // The finger travels one bead spacing as drawn per bead, so the bead
     // stays under the thumb however the mala is strung or how near it is.
-    let pitches = input.translation / (strand.pitch * zoom)
+    let pitches = input.translation / (strand.pitch * zoom) * drag
     transport = Double(restSlot) + resolvedOffset(pitches)
     transportVelocity = 0
     #if os(iOS)
@@ -362,14 +493,14 @@ final class BeadsRitualMotion: ObservableObject {
     #endif
     // Judged on the finger's own travel: a turn at the head bead has no slide
     // of the strand to measure.
-    let pitches = input.translation / (strand.pitch * zoom)
+    let pitches = input.translation / (strand.pitch * zoom) * drag
     let velocity = input.velocity / (strand.pitch * zoom)
     let forward = pitches >= BeadsRitualMetrics.commitFraction
       || (pitches >= BeadsRitualMetrics.flickFraction && input.velocity >= BeadsRitualMetrics.flickVelocity)
     let backward = pitches <= -BeadsRitualMetrics.commitFraction
       || (pitches <= -BeadsRitualMetrics.flickFraction && input.velocity <= -BeadsRitualMetrics.flickVelocity)
     if forward, canPullForward {
-      commitForward()
+      commitForward(paced: true)
     } else if backward, canUndo {
       commitUndo()
     } else {
@@ -377,7 +508,7 @@ final class BeadsRitualMotion: ObservableObject {
       if abs(pitches) > 0.08 { haptics.release() }
       #endif
     }
-    if turn == nil { transportVelocity = min(3, max(-3, velocity * 0.4)) }
+    if turn == nil, slip == nil { transportVelocity = min(3, max(-3, velocity * 0.4)) }
     labelRaised = false
     if reduceMotion { settleInstantly() }
     publish()
@@ -400,7 +531,7 @@ final class BeadsRitualMotion: ObservableObject {
 
   /// VoiceOver and Switch Control count without a drag.
   func accessibleCount() {
-    guard isActive, canPullForward, turn == nil else { return }
+    guard isActive, canPullForward, turn == nil, rewind == nil, slip == nil else { return }
     let turning = isHead(restSlot)
     commitForward()
     if !turning { transport = Double(restSlot) - 1 + 0.6 }
@@ -410,7 +541,7 @@ final class BeadsRitualMotion: ObservableObject {
   }
 
   func accessibleUndo() {
-    guard isActive, canUndo, turn == nil else { return }
+    guard isActive, canUndo, turn == nil, rewind == nil, slip == nil else { return }
     let turning = isHead(restSlot - 1)
     commitUndo()
     if !turning { transport = Double(restSlot) + 1 - 0.6 }
@@ -438,7 +569,10 @@ final class BeadsRitualMotion: ObservableObject {
     return limit * (1 - exp(-distance / limit))
   }
 
-  private func commitForward() {
+  /// `paced` is a bead counted by a pull of the thumb. VoiceOver and Switch
+  /// Control count through an action, at whatever speed their own gesture
+  /// allows, and are never told they are going too fast.
+  private func commitForward(paced: Bool = false) {
     let slot = restSlot
     guard !isHead(slot) else {
       startTurn(1)
@@ -447,7 +581,8 @@ final class BeadsRitualMotion: ObservableObject {
     guard actions.count() else { return }
     shape.completed += 1
     if shape.completed % shape.count == 0 { passedHead = false }
-    labelHold = BeadsRitualMetrics.labelHoldDuration
+    countDidChange()
+    showCount(raised: false)
     strand.kick(SIMD2(0, BeadsRitualMetrics.countKick))
     if shape.isComplete {
       #if os(iOS)
@@ -458,7 +593,135 @@ final class BeadsRitualMotion: ObservableObject {
       #if os(iOS)
       haptics.click()
       #endif
+      if paced { notePace() }
     }
+  }
+
+  // MARK: - Pace
+
+  /// The floor of the stage in the strand's own space, while the mala is on it.
+  var looseFloor: Double? { slip.flatMap { $0.mala.floor.isFinite ? $0.mala.floor + $0.mala.radius : nil } }
+
+  private var drag: Double { 1 - BeadsRitualMetrics.strainDrag * tension }
+
+  /// Too fast is judged on counted beads only, and only on a run of them.
+  /// The threshold means impossible, not quick: a short mantra said briskly
+  /// must never be scolded.
+  private func notePace() {
+    let now = ProcessInfo.processInfo.systemUptime
+    defer { lastCountTime = now }
+    guard let last = lastCountTime, now - last <= BeadsRitualMetrics.paceInterval else {
+      fastRun = 0
+      // What the count was before this burst, should it turn out to be one.
+      burstBase = shape.completed - 1
+      return
+    }
+    fastRun += 1
+    // A burst cannot run past the head bead: turning the mala takes longer
+    // than the pace allows. So on a short mala the most a person can do is
+    // hurry through one whole round, and that is what drops it. The cord
+    // still tightens at least two beads sooner, because a drop that comes
+    // without a warning is a punishment and not a joke; a round too short to
+    // leave room for the warning only ever tightens.
+    let slipRun = min(BeadsRitualMetrics.slipRun, shape.count - 1)
+    let paceRun = min(BeadsRitualMetrics.paceRun, max(BeadsRitualMetrics.minimumPaceRun, slipRun - BeadsRitualMetrics.slipWarning))
+    guard fastRun >= paceRun else { return }
+    // Dropped once. After that the cord only tightens: a joke told twice in
+    // one sitting is an obstacle.
+    if fastRun >= slipRun, slipRun > paceRun, !hasSlipped, !reduceMotion, height > 0 {
+      beginSlip()
+    } else {
+      strain()
+    }
+  }
+
+  private func strain() {
+    if pace != .strained {
+      pace = .strained
+      #if os(iOS)
+      haptics.strain()
+      #endif
+    }
+    paceToken &+= 1
+    let token = paceToken
+    // A timer and not the frame clock: with Reduce Motion there are no frames,
+    // and the warning must still lift once the person slows down.
+    Task { [weak self] in
+      try? await Task.sleep(nanoseconds: UInt64(BeadsRitualMetrics.strainHold * 1_000_000_000))
+      guard let self, self.paceToken == token, self.pace == .strained else { return }
+      self.pace = .steady
+      self.wake()
+    }
+  }
+
+  /// The mala comes off the finger whole and falls. The beads counted in the
+  /// burst are given back first, so what is picked up again is the mala as it
+  /// was before the hurry, at the bead the person was really on.
+  private func beginSlip() {
+    let length = strand.length
+    guard length > 0 else { return }
+    hasSlipped = true
+    cancelPull()
+    let count = strand.lattice
+    let pitch = length / Double(count)
+    let hand = inHand
+    let first = Int((hand - 1e-6).rounded(.up))
+    // Exactly the beads as they are drawn at this instant.
+    var beads = (0..<count).map { index -> LooseBead in
+      let distance = length - (Double(first + index) - hand) * pitch
+      let slot = distance < strand.bottom ? first + index - count : first + index
+      return LooseBead(slot: slot, point: strand.point(at: distance), distance: distance)
+    }
+
+    while shape.completed > max(0, burstBase), actions.undo() {
+      shape.completed -= 1
+      if shape.completed > 0, shape.completed % shape.count == 0 { passedHead = true }
+    }
+    countDidChange()
+    fastRun = 0
+    lastCountTime = nil
+    labelRaised = false
+    labelHold = 0
+    transport = Double(restSlot)
+    transportVelocity = 0
+    let restored = inHand
+    for index in beads.indices {
+      var distance = (length - (Double(first + index) - restored) * pitch).truncatingRemainder(dividingBy: length)
+      if distance <= 0 { distance += length }
+      beads[index].distance = distance
+    }
+
+    let radius = Double(BeadsRitualMetrics.beadRadius)
+    // A mala too long for the stage already hangs out of sight below it. A
+    // floor at the bottom of the stage would be above those beads, and they
+    // would be shoved up onto it and stack upwards: a mala falling against
+    // gravity. It has no floor at all: it slides away off the bottom of the
+    // screen, past the footer, and is drawn back up.
+    let stageFloor = height / zoom - BeadsMala.headroom - radius
+    let lowest = beads.map(\.point.y).max() ?? 0
+    var mala = BeadsLooseMala(points: beads.map(\.point), link: pitch, radius: radius,
+      floor: lowest > stageFloor ? .infinity : stageFloor,
+      wall: width > 0 ? max(radius, width / 2 / zoom - radius) : .infinity)
+    mala.kick(BeadsRitualMetrics.slipKick)
+    slip = Slip(mala: mala)
+    loose = beads
+    looseness = 1
+    paceToken &+= 1
+    pace = .dropped
+    #if os(iOS)
+    haptics.release()
+    #endif
+    publish()
+    wake()
+  }
+
+  private func endSlip() {
+    guard slip != nil else { return }
+    slip = nil
+    loose = nil
+    looseness = 0
+    if pace == .dropped { pace = .steady }
+    rebuildStrand()
   }
 
   private func commitUndo() {
@@ -470,9 +733,8 @@ final class BeadsRitualMotion: ObservableObject {
     guard actions.undo() else { return }
     shape.completed -= 1
     if shape.completed > 0, shape.completed % shape.count == 0 { passedHead = true }
-    // The numeral names the bead in hand, which is now the one before.
-    raiseLabel(for: below - 1)
-    labelHold = BeadsRitualMetrics.labelHoldDuration
+    countDidChange()
+    showCount(raised: false)
     #if os(iOS)
     haptics.click()
     #endif
@@ -489,12 +751,16 @@ final class BeadsRitualMotion: ObservableObject {
   private func beginCondense() {
     guard !reduceMotion else { condense = 0; return }
     condense = 1
+    entranceRevision &+= 1
     wake()
   }
 
   private func settleInstantly() {
     if let turn, !turn.applied { applyTurn(turn.direction) }
     turn = nil
+    rewind = nil
+    endSlip()
+    tension = 0
     transport = Double(restSlot)
     transportVelocity = 0
     grip = 0
@@ -503,15 +769,28 @@ final class BeadsRitualMotion: ObservableObject {
     if completion == .dissolving { dissolve = 1; completion = .settled }
   }
 
-  private func raiseLabel(for slot: Int) {
-    guard case let .bead(number, _) = kind(of: slot) else {
+  /// The footer reads its count from here, but it is drawn by SwiftUI, which
+  /// only looks again when told to. The store's own publish is not a safe
+  /// signal to lean on: it fires from inside the save, before `shape` has
+  /// moved, and a turn at the head bead changes the count without saving
+  /// anything at all. So every change to the count, or to which side of the
+  /// head bead it is on, announces itself here after the fact.
+  private func countDidChange() { objectWillChange.send() }
+
+  /// The numeral beside the bead in hand is the count so far, the same
+  /// number the footer shows, at every moment. It once named the bead being
+  /// pulled instead, which ran one ahead of the footer through every drag and
+  /// two ahead of where a reverse pull was going.
+  private func showCount(raised: Bool) {
+    let count = positionInRound.count
+    guard count > 0 else {
       labelRaised = false
       labelHold = 0
       return
     }
-    labelText = formatNumber(number)
-    labelRaised = true
-    labelHold = 0
+    labelText = formatNumber(count)
+    labelRaised = raised
+    if !raised { labelHold = BeadsRitualMetrics.labelHoldDuration }
   }
 
   // MARK: - Clock
@@ -519,7 +798,8 @@ final class BeadsRitualMotion: ObservableObject {
   var hasEnergy: Bool {
     guard isActive else { return false }
     if reduceMotion { return false }
-    return isPulling || turn != nil || condense > 0 || grip > 0 || completion == .dissolving
+    return isPulling || turn != nil || rewind != nil || slip != nil || pace == .strained
+      || tension > BeadsRitualMetrics.restEnergy || condense > 0 || grip > 0 || completion == .dissolving
       || strand.speed > BeadsMalaMetrics.restSpeed || strand.isBouncing
       || abs(transport - Double(restSlot)) > BeadsRitualMetrics.restEnergy
       || abs(transportVelocity) > BeadsRitualMetrics.restEnergy
@@ -532,8 +812,98 @@ final class BeadsRitualMotion: ObservableObject {
     let elapsed = min(BeadsRitualMetrics.maximumFrameTime, max(0, time - (lastTime ?? time)))
     lastTime = time
     guard elapsed > 0 else { return }
+    clock += elapsed
 
-    if pull == nil {
+    let taut = pace == .strained ? 1.0 : 0.0
+    tension += (taut - tension) * (1 - exp(-elapsed / BeadsRitualMetrics.strainResponse))
+    if abs(tension - taut) < BeadsRitualMetrics.restEnergy { tension = taut }
+    tremor = sin(clock * 2 * .pi * BeadsRitualMetrics.strainTremorFrequency) * tension
+
+    if var current = slip, var beads = loose {
+      current.elapsed += elapsed
+      if let rise = current.rise {
+        // Lifted back over the finger, each bead to its own place.
+        let progress = min(1, rise + elapsed / BeadsRitualMetrics.slipRiseDuration)
+        let eased = Self.gather(progress)
+        for index in beads.indices {
+          beads[index].point = current.from[index] + (strand.point(at: beads[index].distance) - current.from[index]) * eased
+        }
+        // A straight line from where a bead lay to where it belongs can take
+        // it through its neighbours: the heap and the loop are not the same
+        // way round. Beads are solid, so they shoulder past each other.
+        let apart = Double(BeadsRitualMetrics.beadRadius) * 2
+        for _ in 0..<BeadsRitualMetrics.slipRiseRelaxation {
+          for index in beads.indices {
+            for other in (index + 1)..<beads.count {
+              let delta = beads[other].point - beads[index].point
+              let distance = BeadsMala.length(delta)
+              guard distance < apart else { continue }
+              let direction = distance > 1e-6 ? delta / distance : SIMD2(1, 0)
+              let correction = direction * ((apart - distance) * 0.5)
+              beads[index].point -= correction
+              beads[other].point += correction
+            }
+          }
+        }
+        looseness = 1 - eased
+        if progress >= 1 {
+          endSlip()
+          strand.kick(SIMD2(0, BeadsRitualMetrics.countKick))
+          #if os(iOS)
+          haptics.release()
+          #endif
+          publish()
+        } else {
+          current.rise = progress
+          slip = current
+          loose = beads
+        }
+      } else {
+        let landings = current.mala.advance(by: elapsed, down: strand.down, shove: strand.shove)
+        for index in beads.indices { beads[index].point = current.mala.points[index] }
+        current.sinceImpact += elapsed
+        if landings > 0, current.sinceImpact >= BeadsRitualMetrics.slipImpactInterval {
+          current.sinceImpact = 0
+          #if os(iOS)
+          haptics.tick()
+          #endif
+        }
+        if current.elapsed >= BeadsRitualMetrics.slipFloorDuration {
+          current.from = current.mala.points
+          current.rise = 0
+        }
+        slip = current
+        loose = beads
+      }
+    }
+
+    if var current = rewind {
+      let before = transport
+      let target = Double(restSlot)
+      current.progress = min(1, current.progress + elapsed / current.duration)
+      current.sinceTick += elapsed
+      transport = target + (current.from - target) * (1 - Self.gather(current.progress))
+      if current.progress >= 1 {
+        // The head bead is back under the thumb.
+        transport = target
+        rewind = nil
+        strand.kick(SIMD2(0, BeadsRitualMetrics.rewindKick))
+        #if os(iOS)
+        haptics.head()
+        #endif
+        publish()
+      } else {
+        // One tick as each bead passes the thumb, as far as they can be told apart.
+        let passed = Int(before.rounded(.up)) - Int(transport.rounded(.up))
+        if passed > 0, current.sinceTick >= BeadsRitualMetrics.rewindTickInterval {
+          current.sinceTick = 0
+          #if os(iOS)
+          haptics.tick()
+          #endif
+        }
+        rewind = current
+      }
+    } else if pull == nil {
       // Critically damped: a bead stops dead against its neighbour; it does not
       // bounce. The frequency is high enough that the stop reads as a click.
       let omega = BeadsRitualMetrics.settleFrequency
@@ -587,6 +957,15 @@ final class BeadsRitualMotion: ObservableObject {
   private func publish() { presentationRevision &+= 1 }
 
   private func wake() { wakeRequest?() }
+
+  /// For beads being put back where they belong: after a drop, and when
+  /// starting over. They set off slowly, gather speed, and are moving fast
+  /// when they arrive, then settle. An even ease in and out made the return
+  /// look carried; this makes it look let go of. The start is stretched and
+  /// the stop is left as it was, so the last bead still lands softly.
+  private static func gather(_ value: Double) -> Double {
+    smooth(pow(min(1, max(0, value)), BeadsRitualMetrics.gatherPower))
+  }
 
   private static func smooth(_ value: Double) -> Double {
     let t = min(1, max(0, value))

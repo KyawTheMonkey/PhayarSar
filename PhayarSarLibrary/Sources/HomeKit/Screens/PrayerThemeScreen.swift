@@ -46,15 +46,6 @@ enum PrayerThemeMetrics {
   /// transition and short enough not to eat the first control.
   static let stickyFadeHeight: CGFloat = 28
 
-  /// The controls sheet's own fill.
-  ///
-  /// One stop off `AppColor.background`, so the panel separates from the page
-  /// behind it while leaving the `AppColor.surface` cards on it as the brightest
-  /// thing in the stack. Computed rather than stored: `Color` is not `Sendable`,
-  /// and a `static let` of one trips Swift 6's concurrency checking the way the
-  /// `PreferenceKey` defaults elsewhere do.
-  static var sheetBackground: Color { AppColor.grey100 }
-
   /// Clearance above the first control and below the last.
   static let controlsTopPadding: CGFloat = 16
   static let controlsBottomPadding: CGFloat = 24
@@ -216,7 +207,7 @@ public struct PrayerThemeScreen: View {
         TwoPass()
       }
     }
-    .background(PrayerThemeMetrics.sheetBackground.ignoresSafeArea())
+    .appBackground()
     .onAppear(perform: clampTextSize)
     .onValueChange(colorScheme, perform: followAppearance)
     // Only the discrete choices tick. A slider crossing a detent every few
@@ -329,7 +320,7 @@ public struct PrayerThemeScreen: View {
       // medium detent, where a full navigation bar would spend a quarter of the
       // visible sheet saying what the reader just tapped.
       Header(title: L10n.themeAndSettings, leading: .none)
-        .background(PrayerThemeMetrics.sheetBackground)
+        .background(AppColor.background)
     }
     .hideNavBar()
   }
@@ -364,7 +355,7 @@ public struct PrayerThemeScreen: View {
       PinnedHead()
     }
     .hideNavBar()
-    .background(PrayerThemeMetrics.sheetBackground.ignoresSafeArea())
+    .appBackground()
   }
 
   /// The second pass's title bar and specimen, held still while the controls
@@ -377,9 +368,7 @@ public struct PrayerThemeScreen: View {
   ///
   /// The fill stops at the specimen and a gradient carries it the rest of the
   /// way down, so the controls dissolve as they pass under instead of being cut
-  /// off against an edge. Not `AppFadeBlurBackground`, which is built to sit
-  /// over `AppBackgroundGradient` and washes with `AppColor.background` — on
-  /// this sheet's flat `grey100` that reads as a second, wrongly-tinted panel.
+  /// off against an edge.
   @ViewBuilder
   private func PinnedHead() -> some View {
     VStack(spacing: 0) {
@@ -391,12 +380,12 @@ public struct PrayerThemeScreen: View {
           .appHorizontalInset()
           .padding(.top, PrayerThemeMetrics.specimenTopPadding)
       }
-      .background(PrayerThemeMetrics.sheetBackground)
+      .background(AppColor.background)
 
       LinearGradient(
         colors: [
-          PrayerThemeMetrics.sheetBackground,
-          PrayerThemeMetrics.sheetBackground.opacity(0)
+          AppColor.background,
+          AppColor.background.opacity(0)
         ],
         startPoint: .top,
         endPoint: .bottom

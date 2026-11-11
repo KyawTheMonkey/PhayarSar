@@ -14,6 +14,11 @@ enum BeadsHapticsMetrics {
   static let headSharpness: Float = 0.34
   static let headSpacing: TimeInterval = 0.11
   static let releaseIntensity: Float = 0.26
+  static let tickIntensity: Float = 0.5
+  static let tickSharpness: Float = 0.55
+  static let strainIntensity: Float = 0.8
+  static let strainSharpness: Float = 0.08
+  static let strainSpacing: TimeInterval = 0.08
   static let bloomDuration: TimeInterval = 1.4
 }
 
@@ -117,6 +122,20 @@ final class BeadsHaptics {
     play([
       transient(BeadsHapticsMetrics.headIntensity, BeadsHapticsMetrics.headSharpness, at: 0),
       transient(BeadsHapticsMetrics.headIntensity * 0.8, BeadsHapticsMetrics.headSharpness, at: BeadsHapticsMetrics.headSpacing),
+    ])
+  }
+
+  /// A bead running back past the thumb: lighter than a counted click, so a
+  /// string of them reads as beads slipping by and not as counts.
+  func tick() {
+    play([transient(BeadsHapticsMetrics.tickIntensity, BeadsHapticsMetrics.tickSharpness, at: 0)])
+  }
+
+  /// The cord pulling taut: low and blunt, nothing like a counted bead.
+  func strain() {
+    play([
+      transient(BeadsHapticsMetrics.strainIntensity, BeadsHapticsMetrics.strainSharpness, at: 0),
+      transient(BeadsHapticsMetrics.strainIntensity * 0.7, BeadsHapticsMetrics.strainSharpness, at: BeadsHapticsMetrics.strainSpacing),
     ])
   }
 

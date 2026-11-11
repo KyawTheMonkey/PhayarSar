@@ -639,6 +639,14 @@
     "En": "Round complete. Pull to turn the mala around.",
     "Mm": "တစ်ကြော့ ပြည့်ပါပြီ။ ပုတီးကို ပြန်လှည့်ရန် ဆွဲချပါ။"
   },
+  "beads_session_too_fast_hint": {
+    "En": "Easy now. One bead, one recitation.",
+    "Mm": "အသာလုပ်ပါ ကိုယ့်လူ။"
+  },
+  "beads_session_dropped_hint": {
+    "En": "Even the mala couldn't keep up.",
+    "Mm": "ပုတီးတောင် မလိုက်နိုင်တော့ဘူး။"
+  },
   "beads_material": {
     "En": "Bead material",
     "Mm": "ပုတီးစေ့ အမျိုးအစား"

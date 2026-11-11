@@ -23,6 +23,8 @@ struct BeadsRecitationText: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @ObservedObject var motion: BeadsRitualMotion
   @State private var shimmerProgress: CGFloat = 0
+  /// 1 before the passage has arrived, 0 once it is in place.
+  @State private var entrance = 1.0
   let text: String
 
   private var isShimmering: Bool { motion.isActive && !reduceMotion }
@@ -68,9 +70,32 @@ struct BeadsRecitationText: View {
     }
     .opacity(motion.isPulling ? BeadsRecitationTextMetrics.pullingOpacity : 1)
     .animation(.easeOut(duration: BeadsRecitationTextMetrics.dimDuration), value: motion.isPulling)
+    // The mala rises into place from below; the passage comes down to meet
+    // it from above. Same distance, same time, same straight fade, so the
+    // two read as one gesture of the stage opening and not as two effects.
+    .opacity(1 - entrance)
+    .offset(y: -BeadsRitualMetrics.entranceRise * entrance)
+    .onAppear { enter() }
+    .onChange(of: motion.entranceRevision) { _ in enter() }
     .accessibilityElement(children: .contain)
     .accessibilityLabel(L10n.beadsRecitation)
     .enableInjection()
+  }
+}
+
+extension BeadsRecitationText {
+  /// The mala does not make an entrance under Reduce Motion, and neither
+  /// does the passage: it is simply there.
+  private func enter() {
+    guard !reduceMotion else { entrance = 0; return }
+    var still = Transaction()
+    still.disablesAnimations = true
+    withTransaction(still) { entrance = 1 }
+    // A turn of the run loop apart, or the two writes fold into one and
+    // there is nothing to animate from.
+    DispatchQueue.main.async {
+      withAnimation(.linear(duration: BeadsRitualMetrics.condenseDuration)) { entrance = 0 }
+    }
   }
 }
 

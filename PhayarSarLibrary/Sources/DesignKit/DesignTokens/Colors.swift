@@ -19,9 +19,20 @@ public enum AppColor {
   
   // MARK: - Backgrounds
   
+  /// Neutral canvas for pushed screens and sheets.
   public static let background = Color.dynamic(
     light: Palette.Canvas.light,
     dark: Palette.Canvas.dark
+  )
+
+  static let tabBackgroundBase = Color.dynamic(
+    light: Palette.TabCanvas.light,
+    dark: Palette.TabCanvas.dark
+  )
+
+  static let tabBackgroundGlow = Color.dynamic(
+    light: Palette.TabCanvas.glowLight,
+    dark: Palette.TabCanvas.glowDark
   )
   
   /// Translucent panel color, meant to be layered on top of `background`.
@@ -157,19 +168,9 @@ public enum AppColor {
 
   // MARK: - Meditation
 
-  /// The field colour behind each meditation style's screen.
-  ///
-  /// One per style, and `Color.dynamic` rather than fixed — unlike
-  /// ``AppColor/Page``, which is paper the reader picked and so must stay the
-  /// colour they picked. A style's tint is not a choice, it is the identity of
-  /// the object being sat with, and it should follow the appearance like every
-  /// other surface in the app.
-  ///
-  /// Each pair is pale in light and deep in dark so that ``textPrimary`` and
-  /// ``textSecondary`` land on it at full contrast. That is the whole reason
-  /// these are not saturated brand colours: a mid-tone tint would need an ink
-  /// of its own, and then every control drawn over a style screen would need to
-  /// know which style it was on.
+  /// Identifying tints for meditation artwork and controls, kept separate from
+  /// the neutral screen canvas. Each pair follows the appearance and supports
+  /// the app's standard foreground colours.
   public enum Meditation {
     /// Sandalwood smoke — greyed and warm, not orange. The stick's colour, not
     /// the flame's, which is what keeps it apart from ``candle``.
@@ -200,9 +201,8 @@ public enum AppColor {
     public static let shadow = Color.dynamic(light: Palette.BeadMaterial.shadowLight, dark: Palette.BeadMaterial.shadowDark)
   }
 
-  /// The beads session sits on the app's shared background gradient and
-  /// follows the chosen theme like any other screen. The beads bring their own
-  /// colour; these are only the text and controls around them.
+  /// The beads bring their own colour. These tokens style the text and controls
+  /// around them on the app's neutral canvas.
   public enum BeadsSession {
     public static let text = Color.dynamic(light: Palette.BeadSession.textLight, dark: Palette.BeadSession.textDark)
     public static let recitationSheen = Color.dynamic(light: Palette.BeadSession.sheenLight, dark: Palette.BeadSession.sheenDark)
@@ -474,8 +474,15 @@ fileprivate enum Palette {
   }
 
   enum Canvas {
+    static let light = Color(hex: "#FAFAFA")
+    static let dark = Color(hex: "#121212")
+  }
+
+  enum TabCanvas {
     static let light = Color(hex: "#F8F1EF")
     static let dark = Color(hex: "#1E1516")
+    static let glowLight = Color(hex: "#E7BAC4")
+    static let glowDark = Color(hex: "#743345")
   }
 
   enum Surface {

@@ -46,7 +46,7 @@ public struct BeadsScreen: View {
         beadsList
       }
     }
-    .appBackground()
+    .appTabBackground()
     .toolbar {
       if !store.beads.isEmpty {
         ToolbarItem(placement: .primaryAction) {

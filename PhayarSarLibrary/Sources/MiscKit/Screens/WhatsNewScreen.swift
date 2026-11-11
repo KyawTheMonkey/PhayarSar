@@ -178,9 +178,7 @@ public struct WhatsNewScreen: View {
       .padding(.bottom, Metrics.actionBottomPadding)
       .frame(maxWidth: Metrics.maxWidth)
       .frame(maxWidth: .infinity)
-      // The list scrolls underneath this bar, so it needs to be opaque. Flat
-      // rather than the gradient: `AppBackgroundGradient` finishes at 48%
-      // height, so down here it is already this exact colour.
+      // Keep the list from showing through the action bar as it scrolls.
       .background(AppColor.background)
   }
 

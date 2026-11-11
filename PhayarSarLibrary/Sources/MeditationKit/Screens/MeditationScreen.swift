@@ -50,7 +50,7 @@ public struct MeditationScreen: View {
         .frame(maxWidth: .infinity, minHeight: proxy.size.height)
       }
     }
-    .appBackground()
+    .appTabBackground()
     .enableInjection()
   }
 }
