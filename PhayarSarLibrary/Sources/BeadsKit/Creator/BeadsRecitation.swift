@@ -158,6 +158,10 @@ public enum BeadsRecitationMetrics {
   public static let contentSpacing: CGFloat = 12
   public static let selectionSize: CGFloat = 22
   public static let editorPlaceholderInset: CGFloat = 5
+  /// The card growing to a newly chosen passage: underdamped on purpose, so
+  /// it overshoots and bounces back as the swell passes through it, and done
+  /// bouncing before the front has settled past the bottom edge.
+  public static let growth = Animation.spring(response: 0.6, dampingFraction: 0.58)
 }
 
 struct BeadsRecitationSection: View {
@@ -197,25 +201,7 @@ struct BeadsRecitationSection: View {
             }
         }
       } else {
-        AppListSection {
-          if let passage = draft.passage {
-            BeadsPassageView(
-              passage: passage, revealTrigger: draft.passageRevealID,
-              isRevealActive: isEditorVisible,
-              shouldReveal: draft.passageRevealID != draft.revealedPassageID,
-              onRevealCompleted: draft.didRevealPassage
-            ) {
-              navigator.navigate(to: [
-                .beadsPrayerBrowser,
-                .beadsPrayerSelection(prayerID: passage.prayerID, location: passage.location)
-              ])
-            }
-          } else {
-            AppSettingsRow(L10n.beadsPrayerChoose, systemImage: "book") {
-              navigator.navigate(to: .beadsPrayerBrowser)
-            }
-          }
-        }
+        BeadsPassageSection(isRevealActive: isEditorVisible)
       }
       Text(L10n.beadsRecitationCountHint)
         .font(AppFont.caption)
@@ -248,13 +234,89 @@ struct BeadsRecitationSection: View {
   }
 }
 
+/// The card lays out what it last revealed, not the draft's current passage.
+/// The picker updates the draft while the editor is still underneath it, and a
+/// card that re-laid itself out then would have finished growing before anyone
+/// saw it. The swap happens as the wave leaves rest, animated, so the card grows
+/// toward the new text while the front crosses it; what the card showed before
+/// rides ahead of the front as an overlay until the wave has taken it.
+private struct BeadsPassageSection: View {
+  @ObserveInjection private var injectionObserver
+  @EnvironmentObject private var draft: BeadsRecitationDraft
+  @EnvironmentObject private var navigator: AppNavigatorModel
+  @State private var shownPassage: PrayerPassage?
+  @State private var outgoing: Outgoing?
+  let isRevealActive: Bool
+
+  /// Distinguishes "nothing is outgoing" from "the choose row is outgoing".
+  private struct Outgoing {
+    let passage: PrayerPassage?
+  }
+
+  private var hasPendingReveal: Bool {
+    draft.passageRevealID != draft.revealedPassageID
+  }
+
+  var body: some View {
+    AppListSection {
+      side(shownPassage)
+        .appDistortionRevealSide(.revealed)
+        .overlay(alignment: .topLeading) {
+          if let outgoing {
+            side(outgoing.passage)
+              .appDistortionRevealSide(.outgoing)
+          }
+        }
+    }
+    .appDistortionReveal(
+      trigger: draft.passageRevealID,
+      isActive: isRevealActive,
+      shouldAnimate: hasPendingReveal,
+      onRevealStarted: {
+        outgoing = Outgoing(passage: shownPassage)
+        withAnimation(BeadsRecitationMetrics.growth) { shownPassage = draft.passage }
+      },
+      onRevealCompleted: {
+        outgoing = nil
+        draft.didRevealPassage()
+      }
+    )
+    .onAppear {
+      if !hasPendingReveal { shownPassage = draft.passage }
+    }
+    .onChange(of: draft.passage) { passage in
+      // Reopening a set, or a cancelled picker, changes the passage with no
+      // confirmation event: show it at once, with nothing to reveal.
+      if !hasPendingReveal { shownPassage = passage }
+    }
+    .enableInjection()
+  }
+
+  /// Full width whatever it holds, so an outgoing overlay laid over a short
+  /// one-line passage wraps exactly as it did when it was the card's content.
+  @ViewBuilder
+  private func side(_ passage: PrayerPassage?) -> some View {
+    Group {
+      if let passage {
+        BeadsPassageView(passage: passage) {
+          navigator.navigate(to: [
+            .beadsPrayerBrowser,
+            .beadsPrayerSelection(prayerID: passage.prayerID, location: passage.location)
+          ])
+        }
+      } else {
+        AppSettingsRow(L10n.beadsPrayerChoose, systemImage: "book") {
+          navigator.navigate(to: .beadsPrayerBrowser)
+        }
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+}
+
 struct BeadsPassageView: View {
   @ObserveInjection private var injectionObserver
   let passage: PrayerPassage
-  var revealTrigger: UUID? = nil
-  var isRevealActive = true
-  var shouldReveal = true
-  var onRevealCompleted: () -> Void = {}
   let openPicker: () -> Void
 
   var body: some View {
@@ -275,11 +337,7 @@ struct BeadsPassageView: View {
         .font(AppFont.body)
         .foregroundStyle(AppColor.textPrimary)
         .fixedSize(horizontal: false, vertical: true)
-        .appParticleReveal(
-          trigger: revealTrigger, shaderBundle: .module,
-          isActive: isRevealActive,
-          shouldAnimate: shouldReveal, onRevealCompleted: onRevealCompleted
-        )
+        .textSelection(.enabled)
     }
     .enableInjection()
   }

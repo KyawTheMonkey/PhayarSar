@@ -166,8 +166,7 @@ let package = Package(
     ),
     .target(
       name: "BeadsKit",
-      dependencies: ["EnvironmentKit", "DesignKit", "KloudKit", "PrayersKit"],
-      resources: [.process("Shaders")]
+      dependencies: ["EnvironmentKit", "DesignKit", "KloudKit", "PrayersKit"]
     )
   ]
 )

@@ -269,20 +269,22 @@ public enum AppColor {
       tassel: Palette.BeadMaterials.amberTassel, binding: Palette.BeadMaterials.amberBinding)
   }
 
-  // MARK: - Particle reveal
+  // MARK: - Distortion reveal
 
-  /// The light palette carries colour as ink on a pale card; the dark palette
-  /// carries it as light on a dark card. These are transient effect colours,
-  /// separate from chart identities and from the final readable text colour.
-  public enum ParticleReveal {
+  /// Three tints of the brand hue for the wave that reveals a chosen passage:
+  /// the colour flows between them along the front and round the card's edges.
+  /// Light mode carries it as ink on a pale card, so the base is the brand red
+  /// itself; dark mode carries it as light on a dark card, so every tint lifts.
+  /// Transient effect colours, separate from the final readable text colour.
+  public enum DistortionReveal {
+    public static let base = Color.dynamic(
+      light: Palette.Accent.light, dark: Palette.Accent.dark
+    )
+    public static let light = Color.dynamic(
+      light: Palette.Wave.lightLight, dark: Palette.Wave.lightDark
+    )
     public static let rose = Color.dynamic(
-      light: Palette.Reveal.roseLight, dark: Palette.Reveal.roseDark
-    )
-    public static let violet = Color.dynamic(
-      light: Palette.Reveal.violetLight, dark: Palette.Reveal.violetDark
-    )
-    public static let blue = Color.dynamic(
-      light: Palette.Reveal.blueLight, dark: Palette.Reveal.blueDark
+      light: Palette.Wave.roseLight, dark: Palette.Wave.roseDark
     )
   }
 
@@ -384,13 +386,11 @@ fileprivate enum Palette {
     static let amberBinding = Color(hex: "#F4CC7C")
   }
 
-  enum Reveal {
+  enum Wave {
+    static let lightLight = Color(hex: "#C4636F")
     static let roseLight = Color(hex: "#B13D72")
-    static let violetLight = Color(hex: "#7750B7")
-    static let blueLight = Color(hex: "#386DB6")
+    static let lightDark = Color(hex: "#E7BAC4")
     static let roseDark = Color(hex: "#F19BC5")
-    static let violetDark = Color(hex: "#BBACFA")
-    static let blueDark = Color(hex: "#92CBFA")
   }
 
   enum BeadMaterial {
