@@ -25,11 +25,6 @@ public enum AppColor {
     dark: Palette.Canvas.dark
   )
 
-  static let tabBackgroundBase = Color.dynamic(
-    light: Palette.TabCanvas.light,
-    dark: Palette.TabCanvas.dark
-  )
-
   static let tabBackgroundGlow = Color.dynamic(
     light: Palette.TabCanvas.glowLight,
     dark: Palette.TabCanvas.glowDark
@@ -328,6 +323,53 @@ public enum AppColor {
     light: Palette.Grey.grey700Light,
     dark: Palette.Grey.grey700Dark
   )
+
+  // MARK: - Tints
+
+  /// A coloured card surface and the ink that reads on it.
+  ///
+  /// For the few places where cards have to be told apart by colour rather
+  /// than by position — Home's hero pages and its grid of moments. Always used
+  /// as a pair: the ink is tuned to its own background and is not legible on
+  /// the page or on another tint.
+  ///
+  /// Saturated on purpose, and the same in both appearances. These sit beside
+  /// the prayer covers, which are vivid flat colour; an earlier set of deep,
+  /// dusty surfaces made the cards look like they belonged to a different app.
+  /// Each background is held just dark enough for its ink to clear 4:1, which
+  /// is why the green and teal are deeper than the covers' own.
+  ///
+  /// Not brand colours and not semantic ones. Nothing should mean "amber";
+  /// pick whichever keeps neighbouring cards distinct.
+  public struct Tint: Sendable, Hashable {
+    public let background: Color
+    public let ink: Color
+
+    public static let amber = Tint(
+      background: .dynamic(light: Palette.Tint.amberSoft, dark: Palette.Tint.amberDeep),
+      ink: .dynamic(light: Palette.Tint.amberInk, dark: Palette.Tint.amberPale)
+    )
+    public static let indigo = Tint(
+      background: .dynamic(light: Palette.Tint.indigoSoft, dark: Palette.Tint.indigoDeep),
+      ink: .dynamic(light: Palette.Tint.indigoInk, dark: Palette.Tint.indigoPale)
+    )
+    public static let rose = Tint(
+      background: .dynamic(light: Palette.Tint.roseSoft, dark: Palette.Tint.roseDeep),
+      ink: .dynamic(light: Palette.Tint.roseInk, dark: Palette.Tint.rosePale)
+    )
+    public static let forest = Tint(
+      background: .dynamic(light: Palette.Tint.forestSoft, dark: Palette.Tint.forestDeep),
+      ink: .dynamic(light: Palette.Tint.forestInk, dark: Palette.Tint.forestPale)
+    )
+    public static let plum = Tint(
+      background: .dynamic(light: Palette.Tint.plumSoft, dark: Palette.Tint.plumDeep),
+      ink: .dynamic(light: Palette.Tint.plumInk, dark: Palette.Tint.plumPale)
+    )
+    public static let teal = Tint(
+      background: .dynamic(light: Palette.Tint.tealSoft, dark: Palette.Tint.tealDeep),
+      ink: .dynamic(light: Palette.Tint.tealInk, dark: Palette.Tint.tealPale)
+    )
+  }
 }
 
 /// Primitive values mirror the color sets in `Assets.xcassets`
@@ -384,6 +426,35 @@ fileprivate enum Palette {
     static let amberCord = Color(hex: "#6C201E")
     static let amberTassel = Color(hex: "#8E2824")
     static let amberBinding = Color(hex: "#F4CC7C")
+  }
+
+  /// `Soft` + `Ink` are the light-mode pair, `Deep` + `Pale` the dark-mode one.
+  /// Currently identical; kept apart so either appearance can be tuned alone.
+  enum Tint {
+    static let amberSoft = Color(hex: "#FFD233")
+    static let amberInk = Color(hex: "#3D2600")
+    static let amberDeep = Color(hex: "#FFD233")
+    static let amberPale = Color(hex: "#3D2600")
+    static let indigoSoft = Color(hex: "#4450F0")
+    static let indigoInk = Color(hex: "#FFFFFF")
+    static let indigoDeep = Color(hex: "#4450F0")
+    static let indigoPale = Color(hex: "#FFFFFF")
+    static let roseSoft = Color(hex: "#EA3560")
+    static let roseInk = Color(hex: "#FFFFFF")
+    static let roseDeep = Color(hex: "#EA3560")
+    static let rosePale = Color(hex: "#FFFFFF")
+    static let forestSoft = Color(hex: "#0F9248")
+    static let forestInk = Color(hex: "#FFFFFF")
+    static let forestDeep = Color(hex: "#0F9248")
+    static let forestPale = Color(hex: "#FFFFFF")
+    static let plumSoft = Color(hex: "#A63AD6")
+    static let plumInk = Color(hex: "#FFFFFF")
+    static let plumDeep = Color(hex: "#A63AD6")
+    static let plumPale = Color(hex: "#FFFFFF")
+    static let tealSoft = Color(hex: "#0B8F83")
+    static let tealInk = Color(hex: "#FFFFFF")
+    static let tealDeep = Color(hex: "#0B8F83")
+    static let tealPale = Color(hex: "#FFFFFF")
   }
 
   enum Wave {
@@ -474,13 +545,12 @@ fileprivate enum Palette {
   }
 
   enum Canvas {
-    static let light = Color(hex: "#FAFAFA")
-    static let dark = Color(hex: "#121212")
+    // Mix 1% red into the neutral bases, rounded to 8-bit sRGB.
+    static let light = Color(hex: "#FAF8F8")
+    static let dark = Color(hex: "#141212")
   }
 
   enum TabCanvas {
-    static let light = Color(hex: "#F8F1EF")
-    static let dark = Color(hex: "#1E1516")
     static let glowLight = Color(hex: "#E7BAC4")
     static let glowDark = Color(hex: "#743345")
   }

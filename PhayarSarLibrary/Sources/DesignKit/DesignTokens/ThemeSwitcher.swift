@@ -87,16 +87,17 @@ extension Color {
 // MARK: - Screen background gradient
 
 public enum AppBackgroundGradientMetrics {
-  public static let glowCenter = UnitPoint(x: 0.5, y: 0.04)
-  public static let glowEndRadiusFraction: CGFloat = 0.7
+  public static let glowCenter = UnitPoint(x: 0.5, y: 0.08)
+  public static let glowHeightFraction: CGFloat = 0.38
+  public static let glowEndRadiusFraction: CGFloat = 0.68
   public static let orbitRadiusFraction: CGFloat = 0.22
   public static let orbitDuration: TimeInterval = 24
   public static let entranceDuration: TimeInterval = 2
   public static let frameInterval: TimeInterval = 1.0 / 30
 }
 
-/// The brand glow marks the root of a tab. Its warm base is separate from the
-/// neutral canvas so both can follow the appearance without sharing a tint.
+/// Draw the tab glow in a shallow band so it can spread across the header and
+/// finish fading before it reaches the content below.
 public struct AppBackgroundGradient: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.scenePhase) private var scenePhase
@@ -112,17 +113,23 @@ public struct AppBackgroundGradient: View {
   
   public var body: some View {
     GeometryReader { proxy in
+      let glowSize = CGSize(
+        width: proxy.size.width,
+        height: proxy.size.height * AppBackgroundGradientMetrics.glowHeightFraction
+      )
       TimelineView(.animation(
         minimumInterval: AppBackgroundGradientMetrics.frameInterval,
         paused: !shouldAnimate
       )) { context in
         EllipticalGradient(
-          colors: [AppColor.tabBackgroundGlow, AppColor.tabBackgroundBase],
-          center: glowCenter(at: context.date, size: proxy.size),
+          colors: [AppColor.tabBackgroundGlow, AppColor.background],
+          center: glowCenter(at: context.date, size: glowSize),
           endRadiusFraction: AppBackgroundGradientMetrics.glowEndRadiusFraction
         )
       }
+      .frame(width: glowSize.width, height: glowSize.height)
     }
+    .background(AppColor.background)
     .ignoresSafeArea()
     .allowsHitTesting(false)
     .accessibilityHidden(true)
