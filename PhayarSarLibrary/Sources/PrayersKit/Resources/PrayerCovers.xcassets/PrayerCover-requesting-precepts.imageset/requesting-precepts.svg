@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-requesting-precepts desc-requesting-precepts">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="24 24 752 752" role="img" aria-labelledby="title-requesting-precepts desc-requesting-precepts">
 <title id="title-requesting-precepts">သီလတောင်း</title>
 <desc id="desc-requesting-precepts">An offered bowl and lotus. Original flat-colour vector illustration for PhayarSar.</desc>
 <defs><clipPath id="crop-requesting-precepts"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
-<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#7A3FF2"/>
 <g clip-path="url(#crop-requesting-precepts)">
-<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
-<rect x="400" y="24" width="376" height="752" rx="0" fill="#346963"/><circle cx="400" cy="337" r="246" fill="#DDA547"/><g transform="translate(400 405) scale(0.83)"><path d="M0 20C-94 20-155-32-151-95C-72-96-17-55 0 20Z" fill="#C65D3B"/><path d="M0 20C94 20 155-32 151-95C72-96 17-55 0 20Z" fill="#C65D3B"/><path d="M0 20C-69-23-72-110 0-176C72-110 69-23 0 20Z" fill="#F2E5BF"/><path d="M-130 27Q0 104 130 27Q0 50-130 27Z" fill="#F2E5BF"/></g><g transform="translate(400 460) scale(1.13)"><path d="M-160 0H160C146 113 81 154 0 154C-81 154-146 113-160 0Z" fill="#182F32"/><rect x="-168" y="-18" width="336" height="27" rx="10" fill="#F2E5BF"/><rect x="-68" y="147" width="136" height="22" rx="0" fill="#182F32"/></g><path d="M111 698L148 596Q162 563 193 582L266 626H361Q388 626 388 650H233L164 725Z" fill="#C65D3B"/><path d="M689 698L652 596Q638 563 607 582L534 626H439Q412 626 412 650H567L636 725Z" fill="#DE9870"/>
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#7A3FF2"/>
+<rect x="400" y="24" width="376" height="752" rx="0" fill="#4A1FC4"/><circle cx="400" cy="337" r="246" fill="#FFD233"/><g transform="translate(400 405) scale(0.83)"><path d="M0 20C-94 20-155-32-151-95C-72-96-17-55 0 20Z" fill="#FF5A8C"/><path d="M0 20C94 20 155-32 151-95C72-96 17-55 0 20Z" fill="#FF5A8C"/><path d="M0 20C-69-23-72-110 0-176C72-110 69-23 0 20Z" fill="#FFFFFF"/><path d="M-130 27Q0 104 130 27Q0 50-130 27Z" fill="#FFFFFF"/></g><g transform="translate(400 460) scale(1.13)"><path d="M-160 0H160C146 113 81 154 0 154C-81 154-146 113-160 0Z" fill="#230F6B"/><rect x="-168" y="-18" width="336" height="27" rx="10" fill="#FFFFFF"/><rect x="-68" y="147" width="136" height="22" rx="0" fill="#230F6B"/></g><path d="M111 698L148 596Q162 563 193 582L266 626H361Q388 626 388 650H233L164 725Z" fill="#FF5A8C"/><path d="M689 698L652 596Q638 563 607 582L534 626H439Q412 626 412 650H567L636 725Z" fill="#FFC2D8"/>
 </g>
 </svg>

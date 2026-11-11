@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-angulimala desc-angulimala">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="24 24 752 752" role="img" aria-labelledby="title-angulimala desc-angulimala">
 <title id="title-angulimala">အင်္ဂုလိမာလသုတ်</title>
 <desc id="desc-angulimala">A new leaf cradled inside a sheltering arch. Original flat-colour vector illustration for PhayarSar.</desc>
 <defs><clipPath id="crop-angulimala"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
-<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2389E"/>
 <g clip-path="url(#crop-angulimala)">
-<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
-<circle cx="580" cy="204" r="134" fill="#DE9870"/><polygon points="24,652 776,394 776,776 24,776" fill="#DDA547"/><path d="M166 650V373.0a234.0 234.0 0 0 1 468 0V650Z" fill="#182F32"/><path d="M226 650V373.0a174.0 174.0 0 0 1 348 0V650Z" fill="#346963"/><g transform="translate(400 367) rotate(180) scale(1.09)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#F2E5BF"/></g><path d="M268 459Q294 559 400 577Q506 559 532 459Q454 464 400 522Q346 464 268 459Z" fill="#DE9870"/><path d="M255 550Q400 697 545 550" fill="none" stroke="#F2E5BF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="676" width="504" height="20" rx="0" fill="#C65D3B"/>
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2389E"/>
+<circle cx="580" cy="204" r="134" fill="#FFD3E9"/><polygon points="24,652 776,394 776,776 24,776" fill="#FFD233"/><path d="M166 650V373.0a234.0 234.0 0 0 1 468 0V650Z" fill="#5A0A45"/><path d="M226 650V373.0a174.0 174.0 0 0 1 348 0V650Z" fill="#B0127A"/><g transform="translate(400 367) rotate(180) scale(1.09)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#FFFFFF"/></g><path d="M268 459Q294 559 400 577Q506 559 532 459Q454 464 400 522Q346 464 268 459Z" fill="#FFD3E9"/><path d="M255 550Q400 697 545 550" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="676" width="504" height="20" rx="0" fill="#3D5AFE"/>
 </g>
 </svg>

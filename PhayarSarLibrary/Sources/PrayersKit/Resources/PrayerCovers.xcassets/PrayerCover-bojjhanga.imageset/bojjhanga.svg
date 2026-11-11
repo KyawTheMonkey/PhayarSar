@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-bojjhanga desc-bojjhanga">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="24 24 752 752" role="img" aria-labelledby="title-bojjhanga desc-bojjhanga">
 <title id="title-bojjhanga">ဗောဇ္ဈင်္ဂသုတ်</title>
 <desc id="desc-bojjhanga">Seven leaves along a growing branch. Original flat-colour vector illustration for PhayarSar.</desc>
 <defs><clipPath id="crop-bojjhanga"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
-<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#5A35E0"/>
 <g clip-path="url(#crop-bojjhanga)">
-<rect x="24" y="24" width="752" height="752" rx="0" fill="#346963"/>
-<circle cx="589" cy="208" r="135" fill="#F2E5BF"/><polygon points="24,776 24,607 776,360 776,776" fill="#91A68A"/><path d="M224 672Q448 470 496 182" fill="none" stroke="#182F32" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path d="M274 597C193 604 133 543 130 473C222 471 279 523 274 597Z" fill="#346963"/><path d="M322 544C333 453 431 426 481 452C454 537 389 560 322 544Z" fill="#F2E5BF"/><path d="M363 476C270 469 233 401 252 330C343 346 373 392 363 476Z" fill="#DDA547"/><path d="M404 404C432 321 513 298 566 331C536 407 459 432 404 404Z" fill="#F2E5BF"/><path d="M441 324C360 308 335 241 359 175C434 195 459 249 441 324Z" fill="#91A68A"/><path d="M466 263C506 198 568 193 606 226C570 287 521 299 466 263Z" fill="#DDA547"/><path d="M486 206C454 149 485 105 530 91C560 152 540 190 486 206Z" fill="#C65D3B"/><rect x="163" y="686" width="485" height="13" rx="0" fill="#182F32"/>
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#5A35E0"/>
+<circle cx="589" cy="208" r="135" fill="#FFFFFF"/><polygon points="24,776 24,607 776,360 776,776" fill="#8F6BFF"/><path d="M224 672Q448 470 496 182" fill="none" stroke="#2B1B8F" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path d="M274 597C193 604 133 543 130 473C222 471 279 523 274 597Z" fill="#5A35E0"/><path d="M322 544C333 453 431 426 481 452C454 537 389 560 322 544Z" fill="#FFFFFF"/><path d="M363 476C270 469 233 401 252 330C343 346 373 392 363 476Z" fill="#FF7A1A"/><path d="M404 404C432 321 513 298 566 331C536 407 459 432 404 404Z" fill="#FFFFFF"/><path d="M441 324C360 308 335 241 359 175C434 195 459 249 441 324Z" fill="#8F6BFF"/><path d="M466 263C506 198 568 193 606 226C570 287 521 299 466 263Z" fill="#FF7A1A"/><path d="M486 206C454 149 485 105 530 91C560 152 540 190 486 206Z" fill="#FF3D6E"/><rect x="163" y="686" width="485" height="13" rx="0" fill="#2B1B8F"/>
 </g>
 </svg>

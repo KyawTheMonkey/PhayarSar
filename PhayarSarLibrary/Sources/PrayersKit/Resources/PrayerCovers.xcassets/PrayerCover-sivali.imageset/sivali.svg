@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title-sivali desc-sivali">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="24 24 752 752" role="img" aria-labelledby="title-sivali desc-sivali">
 <title id="title-sivali">ရှင်သီဝလိ</title>
 <desc id="desc-sivali">A traveller&#x27;s parasol, bowl and leaves. Original flat-colour vector illustration for PhayarSar.</desc>
 <defs><clipPath id="crop-sivali"><rect x="24" y="24" width="752" height="752"/></clipPath></defs>
-<rect x="0" y="0" width="800" height="800" rx="0" fill="#F2E5BF"/>
+<rect x="0" y="0" width="800" height="800" rx="0" fill="#FF8A1F"/>
 <g clip-path="url(#crop-sivali)">
-<rect x="24" y="24" width="752" height="752" rx="0" fill="#F2E5BF"/>
-<rect x="24" y="24" width="376" height="752" rx="0" fill="#346963"/><circle cx="490" cy="302" r="202" fill="#DDA547"/><path d="M584 222L584 687" fill="none" stroke="#182F32" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/><path d="M400 238Q585 19 726 238Z" fill="#F2E5BF"/><path d="M584 97L584 238H726Q667 150 584 97Z" fill="#C65D3B"/><g transform="translate(245 346) rotate(-40) scale(0.8)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#F2E5BF"/></g><g transform="translate(323 326) rotate(40) scale(0.85)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#91A68A"/></g><g transform="translate(329 436) scale(1.1)"><path d="M-160 0H160C146 113 81 154 0 154C-81 154-146 113-160 0Z" fill="#182F32"/><rect x="-168" y="-18" width="336" height="27" rx="10" fill="#F2E5BF"/><rect x="-68" y="147" width="136" height="22" rx="0" fill="#182F32"/></g><ellipse cx="400" cy="681" rx="260" ry="18" fill="#182F32"/>
+<rect x="24" y="24" width="752" height="752" rx="0" fill="#FF8A1F"/>
+<rect x="24" y="24" width="376" height="752" rx="0" fill="#C8430C"/><circle cx="490" cy="302" r="202" fill="#FFE24D"/><path d="M584 222L584 687" fill="none" stroke="#5C1E00" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/><path d="M400 238Q585 19 726 238Z" fill="#FFF9EE"/><path d="M584 97L584 238H726Q667 150 584 97Z" fill="#6D3BF2"/><g transform="translate(245 346) rotate(-40) scale(0.8)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#FFF9EE"/></g><g transform="translate(323 326) rotate(40) scale(0.85)"><path d="M0 105C-12 60-78 30-69-22C-61-73-18-69 0-45C18-69 61-73 69-22C78 30 12 60 0 105Z" fill="#FFC37D"/></g><g transform="translate(329 436) scale(1.1)"><path d="M-160 0H160C146 113 81 154 0 154C-81 154-146 113-160 0Z" fill="#5C1E00"/><rect x="-168" y="-18" width="336" height="27" rx="10" fill="#FFF9EE"/><rect x="-68" y="147" width="136" height="22" rx="0" fill="#5C1E00"/></g><ellipse cx="400" cy="681" rx="260" ry="18" fill="#5C1E00"/>
 </g>
 </svg>
